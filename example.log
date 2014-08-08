@@ -1,0 +1,6 @@
+
+{"action": "click", "tile_id": 8, "position": 4, "pin": false,  "timestamp": 1407336655489, "ip": "103.242.154.10", "ua": "Mozilla/5.0 (Windows NT 5.1; rv:33.0) Gecko/20100101 Firefox/33.0", "locale": "en-US", "hll_index": 2754, "hll_value": 8, "url": "http://stackoverflow.com/questions/5998245/get-current-time-in-milliseconds-in-python"}
+{"action": "impression", "tile_id": 34, "position": 8, "pin": false,  "timestamp": 1407336655489, "ip": "103.242.154.10", "ua": "Mozilla/5.0 (Windows NT 5.1; rv:33.0) Gecko/20100101 Firefox/33.0", "locale": "en-US", "hll_index": 28, "hll_value": 17, "url": "http://www.json.org/fatfree.html"}
+{"action": "impression", "tile_id": 7, "position": 1, "pin": true,  "timestamp": 1407336655555, "ip": "18.33.154.9", "ua": "Mozilla/5.0 (Windows NT 5.1; rv:33.0) Gecko/20100101 Firefox/33.0", "locale": "en-US", "hll_index": 44, "hll_value": 1, "url": "http://stackoverflow.com/questions/18496372/how-to-parse-json-boolean-value"}
+{"action": "block", "tile_id": 8, "position": 1, "pin": false,  "timestamp": 1407336655678, "ip": "103.77.154.10", "ua": "Mozilla/5.0 (Windows NT 5.1; rv:33.0) Gecko/20100101 Firefox/33.0", "locale": "en-US", "hll_index": 259, "hll_value": 94, "url": "http://en.wikipedia.org/wiki/JSON"}
+
