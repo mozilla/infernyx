@@ -1,0 +1,1 @@
+This project contains data processing rules for the Disco and Inferno mapreduce rules for the Mozilla Tiles project.dd
