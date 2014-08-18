@@ -108,10 +108,10 @@ The url of the tile if it is a history tile.
 If it isn't a history tile (i.e. it is a directory tile), this key is not included in the tile object.
 
 ### pin
-Value: Boolean  
+Value: Integer  
 Status about this tile
 
-If this tile is pinned in firefox, the value of this key will be `true`. otherwise it won't be included in the tile object.
+If this tile is pinned in firefox, the value of this key will be `1`. otherwise it won't be included in the tile object.
 
 ### pos
 Value: Integer  
