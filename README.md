@@ -1,5 +1,8 @@
 This project contains data processing rules for the Disco and Inferno mapreduce rules for the Mozilla Tiles project.dd
 
+Infernix Input Payloads
+-----------------------
+
 The payload it expects is:
 
     {
@@ -21,21 +24,103 @@ The payload it expects is:
       ]
     }
 
-valid requests from firefox, one per line:
+Payloads from Firefox
+---------------------
 
-    {"locale":"en-US","tiles":[{"id":1},{"id":2},{"id":3},{"id":4},{"id":6},{"id":7},{"id":8},{"id":9},{"id":10}]} # impression ping, because there are no actions
-    {"locale":"en-US","tiles":[{"id":1,"pin":1},{"id":2},{"id":3},{"id":4},{"id":6},{"id":7},{"id":8},{"id":9},{"id":10}],"pin":0} # click ping, the action being "pin"
-    {"locale":"en-US","tiles":[{"id":1},{"id":2},{"id":3},{"id":4},{"id":6},{"id":7},{"id":8},{"id":9},{"id":10}],"unpin":0} # click ping, the action being "unpin"
-    {"locale":"en-US","tiles":[{"id":1},{"id":2},{"id":3},{"id":4},{"id":6},{"id":7},{"id":8},{"id":9},{"id":10}],"block":0} # click ping, the action being "block"
-    {"locale":"en-US","tiles":[{"id":2},{"id":3},{"id":4},{"id":6},{"id":7},{"id":8},{"id":9},{"id":10}]} # impression ping, after the "block" action
-    {"locale":"en-US","tiles":[{"id":5,"url":"https://www.mozilla.org/en-US/about/"},{"id":2},{"id":3},{"id":6},{"id":7},{"id":8},{"id":9},{"id":10}]} # impression ping, with an enhanced history tile
-    {"locale":"en-US","tiles":[{"id":5,"url":"https://www.mozilla.org/en-US/about/"},{"url":"https://twitter.com/Firefox"},{"id":2},{"id":3},{"id":6},{"id":7},{"id":8},{"id":9},{"id":10}]} # impression ping, with an enhanced and a regular history tile
-    {"locale":"en-US","tiles":[{"id":5,"url":"https://www.mozilla.org/en-US/about/"},{"id":2},{"id":3},{"id":6},{"id":8},{"id":9},{"id":10},{"pin":1,"pos":8,"url":"https://twitter.com/Firefox"}]} # note the empty tile at position 7
+Valid request examples from firefox, one per line:
 
-the web server listening to requests at the api endpoints will then inject a couple of parameters in the log
+Impression ping, because there are no actions
 
-these include:
+    {"locale":"en-US","tiles":[{"id":1},{"id":2},{"id":3},{"id":4},{"id":6},{"id":7},{"id":8},{"id":9},{"id":10}]}
+
+Click ping, the action being "pin"
+
+    {"locale":"en-US","tiles":[{"id":1,"pin":1},{"id":2},{"id":3},{"id":4},{"id":6},{"id":7},{"id":8},{"id":9},{"id":10}],"pin":0}
+
+Click ping, the action being "unpin"
+
+    {"locale":"en-US","tiles":[{"id":1},{"id":2},{"id":3},{"id":4},{"id":6},{"id":7},{"id":8},{"id":9},{"id":10}],"unpin":0}
+
+Click ping, the action being "block"
+
+    {"locale":"en-US","tiles":[{"id":1},{"id":2},{"id":3},{"id":4},{"id":6},{"id":7},{"id":8},{"id":9},{"id":10}],"block":0}
+
+Impression ping, after the "block" action
+
+    {"locale":"en-US","tiles":[{"id":2},{"id":3},{"id":4},{"id":6},{"id":7},{"id":8},{"id":9},{"id":10}]}
+
+Impression ping, with an enhanced history tile
+
+    {"locale":"en-US","tiles":[{"id":5,"url":"https://www.mozilla.org/en-US/about/"},{"id":2},{"id":3},{"id":6},{"id":7},{"id":8},{"id":9},{"id":10}]}
+
+Impression ping, with an enhanced and a regular history tile
+
+    {"locale":"en-US","tiles":[{"id":5,"url":"https://www.mozilla.org/en-US/about/"},{"url":"https://twitter.com/Firefox"},{"id":2},{"id":3},{"id":6},{"id":7},{"id":8},{"id":9},{"id":10}]}
+
+Note the empty tile at position 7
+
+    {"locale":"en-US","tiles":[{"id":5,"url":"https://www.mozilla.org/en-US/about/"},{"id":2},{"id":3},{"id":6},{"id":8},{"id":9},{"id":10},{"pin":1,"pos":8,"url":"https://twitter.com/Firefox"}]}
+
+The web server listening to requests at the api endpoints will then inject a couple of parameters in the log. These include:
  * timestamp: a unix timestamp at time of receipt, in UTC
  * date: an iso formatted date string for easy splitting by date, in UTC
  * ip: request originator's IPv4 address
  * ua: request originator's UA
+
+An important part of the payload sent by firefox is the `tiles` array. It contains a sequence of JSON objects with data about what was clicked.
+In the case of a non-impression payload, there will be an action included, which manifests itself as a top-level key to the payload. The value to this key is an integer. This represents the array index in the `tiles` array that this action is about.
+
+e.g.
+
+    {"locale":"en-US","tiles":[{"id":2}],"click":0}
+
+Means that a user clicked on tile at position 0 in `tiles`. That tile happens to be a directory tile with `id` 2.
+
+__Note__: There can only be one action key
+
+This key can be one of:
+ * click
+ * pin
+ * unpin
+ * block
+
+## Tiles Object
+
+
+These are the paramters it can have:
+
+ * id
+ * url
+ * pin
+ * pos
+
+### id
+A tile id.
+
+This is sent if the tile is a directory tile or an enhanced history tile. If it is strictly a history tile, this key won't be included in the tile object.
+
+### url
+The url of the tile if it is a history tile.
+
+If it isn't a history tile (i.e. it is a directory tile), this key is not included in the tile object.
+
+### pin
+Status about this tile.
+
+If this tile is pinned in firefox, the value of this key will be `true`. otherwise it won't be included in the tile object.
+
+### pos
+The position of the tile in the new tab page.
+
+this parameter is only included if the index in the array is not a meaningful representation of the tiles.
+If all tiles are contiguous in the Firefox new tab page (i.e. there are no gaps), this won't be included in the tile object.
+
+e.g. if a user only has 2 tiles, but happens to have dragged a tile to position 9 and has pinned it, there would be a gap between the tile at index 0 and the last tile, which would be at index 1, but ends up being at position 9.
+
+imagine the user having those tiles:
+
+    tiles: [{id: 1}, {id: 2}]
+
+the user drags tile id 2, and moves it to position 9
+
+    tiles: [{id: 1}, {id: 2, pos: 9}]
