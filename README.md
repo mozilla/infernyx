@@ -95,22 +95,26 @@ These are the paramters it can have:
  * pos
 
 ### id
+Value: Integer  
 A tile id.
 
 This is sent if the tile is a directory tile or an enhanced history tile. If it is strictly a history tile, this key won't be included in the tile object.
 
 ### url
+Value: String  
 The url of the tile if it is a history tile.
 
 If it isn't a history tile (i.e. it is a directory tile), this key is not included in the tile object.
 
 ### pin
-Status about this tile.
+Value: Boolean  
+Status about this tile
 
 If this tile is pinned in firefox, the value of this key will be `true`. otherwise it won't be included in the tile object.
 
 ### pos
-The position of the tile in the new tab page.
+Value: Integer  
+The position of the tile in the new tab page
 
 this parameter is only included if the index in the array is not a meaningful representation of the tiles.
 If all tiles are contiguous in the Firefox new tab page (i.e. there are no gaps), this won't be included in the tile object.
