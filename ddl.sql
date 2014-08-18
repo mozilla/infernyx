@@ -140,7 +140,7 @@ CREATE INDEX ix_impression_stats_daily_version ON impression_stats_daily (versio
 
 CREATE TABLE unique_hlls (
     unique_counts_daily_id INTEGER,
-    index SMALLSERIAL NOT NULL,
+    index SMALLINT NOT NULL,
     value SMALLINT NOT NULL,
     FOREIGN KEY(unique_counts_daily_id) REFERENCES unique_counts_daily (id)
 );

@@ -1,98 +1,12 @@
-import csv
-import sys
-import os
-import stat
-import tempfile
-import logging
 import datetime
 
 from inferno.lib.rule import chunk_json_stream
 from inferno.lib.rule import InfernoRule
 from inferno.lib.rule import Keyset
-
+from infernyx.database import insert_postgres, insert_redshift
 from functools import partial
-from collections import namedtuple
 
 AUTORUN = True
-
-
-# this function inserts disco job results to the database
-def insert_postgres(disco_iter, params, job_id, host, user, password):
-
-    def connect(host='localhost', user='postgres', password=None):
-        import psycopg2
-        from psycopg2.extras import DictCursor
-
-        connect_string = ("host=%s user=%s " % (host, user)) + ("password=%s" % password) if password else ''
-        print "CONNECT: %s" % connect_string
-        connection = psycopg2.connect(connect_string)
-        return connection, connection.cursor(cursor_factory=DictCursor)
-
-    def log(jid, msg, severity=logging.INFO):
-        logging.log(severity, '%s: %s', jid, msg)
-
-    def get_columns(kset):
-        keys = kset['key_parts']
-        values = kset['value_parts']
-        return ','.join(keys[1:] + values)
-
-    DataFile = namedtuple('DataFile', ['tempfile', 'tablename', 'columns'])
-
-    selector = None
-    csvwriter = None
-    total_lines = 0
-    connection, cursor = connect(host, user, password)
-    datafiles = []
-
-    query = "COPY %s (%s) FROM '%s' WITH DELIMITER '|'"
-    try:
-        for key, value in disco_iter:
-            # New keyset was discovered
-            if selector != key[0]:
-                selector = key[0]
-                keyset = params.keysets[selector]
-                tmp = tempfile.NamedTemporaryFile(delete=False, prefix=selector, dir='/tmp')
-                os.chmod(tmp.name, stat.S_IROTH | stat.S_IRGRP | stat.S_IRUSR)
-                csvwriter = csv.writer(tmp, delimiter='|', escapechar='\\', quoting=csv.QUOTE_NONE)
-                datafiles.append(DataFile(tmp, keyset['table'], get_columns(keyset)))
-                log(job_id, "Saving %s data in %s" % (keyset['table'], tmp.name))
-
-            data = tuple(key[1:]) + tuple(value)
-            escaped = [unicode(x).encode('unicode_escape') for x in data]
-            # log(job_id, 'Debug.persist_results: %s' % escaped, logging.DEBUG)
-            csvwriter.writerow(escaped)
-            total_lines += 1
-
-        for datafile in datafiles:
-            # Close the tempfile descriptor
-            datafile.tempfile.close()
-
-            # Default delimiter is |, default escape is backslash
-            command = query % (datafile.tablename, datafile.columns, datafile.tempfile.name)
-            log(job_id, "Executing: %s" % command)
-
-            cursor.execute(command)
-
-    except Exception as e:
-        log(job_id, "Error persisting results. Rolling back: %s" % e.message, logging.ERROR)
-        import traceback
-        trace = traceback.format_exc(15)
-        log(job_id,  trace, logging.ERROR)
-        connection.rollback()
-        raise e
-    else:
-        connection.commit()
-        log(job_id, "Processed %d records in %d keysets." % (total_lines, len(params.keysets)))
-    finally:
-        cursor.close()
-        connection.close()
-        for datafile in datafiles:
-            try:
-                if getattr(params, 'clean_db_files', True):
-                    os.unlink(datafile.tempfile.name)
-            except Exception as e:
-                log(job_id, "Error removing temp file: %s." % e, logging.ERROR)
-        sys.stdout.flush()
 
 
 def millstodate(val):
@@ -117,7 +31,7 @@ def impression_stats_init(input_iter, params):
         try:
             geoip_file = params.geoip_file
         except Exception as e:
-            print "GROOVY: %s" % e
+            # print "GROOVY: %s" % e
             geoip_file = './GeoLite2-Country.mmdb'
     params.geoip_db = geoip2.database.Reader(geoip_file)
 
@@ -219,10 +133,19 @@ RULES = [
         map_input_stream=chunk_json_stream,
         map_init_function=impression_stats_init,
         parts_preprocess=[parse_ip, parse_ua, parse_timestamp, parse_tiles],
-        result_processor=partial(insert_postgres,
-                                 host='localhost',
+        # result_processor=partial(insert_postgres,
+        #                          host='localhost',
+        #                          user='postgres',
+        #                          password='p@ssw0rd66'),
+        result_processor=partial(insert_redshift,
+                                 host='tiles-dev.cpjff3x26sut.us-east-1.redshift.amazonaws.com',
+                                 port=5439,
+                                 database='dev',
                                  user='postgres',
-                                 password='p@ssw0rd66'),
+                                 password='Password66',
+                                 key_id="AKIAICFKG2X6Y4VVFJVQ",
+                                 access_key="j3qLj0oNS3CUCQZUqZqTRqnBRE8oQ1fYwDzxC4fj",
+                                 bucket_name="infernyx-redshift"),
         combiner_function=combiner,
         keysets={
             'impression_stats': Keyset(
