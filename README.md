@@ -84,10 +84,11 @@ This key can be one of:
  * unpin
  * block
 
-## Tiles Object
+## Tile Object
 
+The payload from Firefox includes the `tiles` key which has as value an array of tile objects. This section describes the schema for tile objects found in this array.
 
-These are the paramters it can have:
+These are the parameters a tile object can have:
 
  * id
  * url
