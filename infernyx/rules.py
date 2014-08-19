@@ -5,6 +5,7 @@ from inferno.lib.rule import InfernoRule
 from inferno.lib.rule import Keyset
 from infernyx.database import insert_postgres, insert_redshift
 from functools import partial
+from config_infernyx import *
 
 AUTORUN = True
 
@@ -133,18 +134,19 @@ RULES = [
         map_input_stream=chunk_json_stream,
         map_init_function=impression_stats_init,
         parts_preprocess=[parse_ip, parse_ua, parse_timestamp, parse_tiles],
+        geoip_file=GEOIP,
         # result_processor=partial(insert_postgres,
         #                          host='localhost',
         #                          user='postgres',
-        #                          password='p@ssw0rd66'),
+        #                          password=PG_PASSWORD),
         result_processor=partial(insert_redshift,
-                                 host='tiles-dev.cpjff3x26sut.us-east-1.redshift.amazonaws.com',
+                                 host=RS_HOST,
                                  port=5439,
                                  database='dev',
                                  user='postgres',
-                                 password='Password66',
-                                 key_id="AKIAICFKG2X6Y4VVFJVQ",
-                                 access_key="j3qLj0oNS3CUCQZUqZqTRqnBRE8oQ1fYwDzxC4fj",
+                                 password=RS_PASSWORD,
+                                 key_id=AWS_KEY_ID,
+                                 access_key=AWS_ACCESS_KEY,
                                  bucket_name="infernyx-redshift"),
         combiner_function=combiner,
         keysets={

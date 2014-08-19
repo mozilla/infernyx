@@ -13,7 +13,6 @@ from psycopg2.extras import DictCursor
 
 
 DataFile = namedtuple('DataFile', ['tempfile', 'tablename', 'columns'])
-NameWrap = namedtuple('NameWrap', ['name'])
 
 
 def _connect(host='localhost', port=None, database=None, user='postgres', password=None):
@@ -36,16 +35,19 @@ def _build_datafiles(disco_iter, params, job_id):
     csvwriter = None
     datafiles = []
     total_lines = 0
+    tmp = None
 
     for key, value in disco_iter:
         # New keyset was discovered
         if pivot != key[0]:
             pivot = key[0]
             keyset = params.keysets[pivot]
+            if tmp:
+                tmp.close()
             tmp = tempfile.NamedTemporaryFile(delete=False, prefix=pivot, dir='/tmp')
             os.chmod(tmp.name, stat.S_IROTH | stat.S_IRGRP | stat.S_IRUSR)
             csvwriter = csv.writer(tmp, delimiter='|', escapechar='\\', quoting=csv.QUOTE_NONE)
-            datafiles.append(DataFile(tmp, keyset['table'], _get_columns(keyset)))
+            datafiles.append(DataFile(tmp.name, keyset['table'], _get_columns(keyset)))
             _log(job_id, "Saving %s data in %s" % (keyset['table'], tmp.name))
 
         data = tuple(key[1:]) + tuple(value)
@@ -54,6 +56,8 @@ def _build_datafiles(disco_iter, params, job_id):
         csvwriter.writerow(escaped)
         total_lines += 1
 
+    if tmp:
+        tmp.close()
     return datafiles, total_lines
 
 
@@ -62,11 +66,9 @@ def _insert_datafiles(host, port, database, user, password, datafiles, params, j
     try:
         query = "COPY %s (%s) FROM '%s' WITH %s DELIMITER '|'"
         for tmpfile, tablename, columns in datafiles:
-            # Close the tempfile descriptor
-            tmpfile.close()
 
             # Default delimiter is |, default escape is backslash
-            command = query % (tablename, columns, tmpfile.name, extras)
+            command = query % (tablename, columns, tmpfile, extras)
             _log(job_id, "Executing: %s" % command)
 
             cursor.execute(command)
@@ -87,7 +89,7 @@ def _insert_datafiles(host, port, database, user, password, datafiles, params, j
         for tmpfile, _, _ in datafiles:
             try:
                 if getattr(params, 'clean_db_files', True):
-                    os.unlink(tmpfile.name)
+                    os.unlink(tmpfile)
             except Exception as e:
                 _log(job_id, "Error removing temp file: %s." % e, logging.ERROR)
         sys.stdout.flush()
@@ -96,7 +98,7 @@ def _insert_datafiles(host, port, database, user, password, datafiles, params, j
 def _upload_s3(datafiles, key_id, access_key, job_id, bucket_name='infernyx'):
     rval = []
     for tmpfile, tablename, columns in datafiles:
-        with open(tmpfile.name) as f:
+        with open(tmpfile) as f:
             md5 = compute_md5(f)
 
         conn = boto.connect_s3(key_id, access_key)
@@ -105,10 +107,10 @@ def _upload_s3(datafiles, key_id, access_key, job_id, bucket_name='infernyx'):
         k = Key(bucket)
         k.key = "%s-%s" % (job_id, tablename)
 
-        k.set_contents_from_filename(tmpfile.name, md5=md5, replace=True)
+        k.set_contents_from_filename(tmpfile, md5=md5, replace=True)
         s3name = "s3://%s/%s" % (bucket_name, k.key)
 
-        rval.append(DataFile(NameWrap(s3name), tablename, columns))
+        rval.append(DataFile(s3name, tablename, columns))
         _log(job_id, "->S3 %s/%s" % (bucket_name, k.key))
     return rval
 
