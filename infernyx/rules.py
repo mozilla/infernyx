@@ -10,10 +10,6 @@ from config_infernyx import *
 AUTORUN = True
 
 
-def millstodate(val):
-    return datetime.datetime.fromtimestamp(long(val) / 1000).strftime('%Y-%m-%d')
-
-
 def combiner(key, value, buf, done, params):
     if not done:
         i = len(value)
@@ -66,24 +62,16 @@ def parse_ua(parts, params):
     yield parts
 
 
-def parse_timestamp(parts, params):
-    from datetime import datetime
-    timestamp = parts.get('timestamp')
-    try:
-        parts['day'] = datetime.datetime.fromtimestamp(long(timestamp) / 1000).strftime('%Y-%m-%d')
-    except:
-        print "Error parsing timestamp: %s" % timestamp
-        parts['day'] = datetime.today().strftime("%Y-%m-%d")
-    yield parts
-
-
 def parse_tiles(parts, params):
+    import sys
     """If we have a 'click', 'block' or 'pin' action, just emit one record,
         otherwise it's an impression, emit all of the records"""
     tiles = parts.get('tiles')
 
     position = None
-    vals = {'clicks': 0, 'impressions': 0, 'pinned': 0, 'blocked': 0, 'fetches': 0}
+    vals = {'clicks': 0, 'impressions': 0, 'pinned': 0, 'blocked': 0,
+            'sponsored': 0, 'sponsored_link': 0}
+    view = parts.get('view', sys.maxint)
 
     try:
         if parts.get('click') is not None:
@@ -98,9 +86,13 @@ def parse_tiles(parts, params):
             position = parts['block']
             vals['blocked'] = 1
             tiles = [tiles[position]]
-        elif parts.get('fetch') is not None:
-            position = parts['fetch']
-            vals['fetches'] = 1
+        elif parts.get('sponsored') is not None:
+            position = parts['sponsored']
+            vals['sponsored'] = 1
+            tiles = [tiles[position]]
+        elif parts.get('sponsored_link') is not None:
+            position = parts['sponsored_link']
+            vals['sponsored_link'] = 1
             tiles = [tiles[position]]
         else:
             vals['impressions'] = 1
@@ -121,7 +113,8 @@ def parse_tiles(parts, params):
             tile_id = tile.get('id')
             if tile_id is not None:
                 cparts['tile_id'] = tile_id
-            yield cparts
+            if position < view:
+                yield cparts
     except:
         print "Error parsing tiles: %s" % str(tiles)
 
@@ -133,7 +126,7 @@ RULES = [
         archive=True,
         map_input_stream=chunk_json_stream,
         map_init_function=impression_stats_init,
-        parts_preprocess=[parse_ip, parse_ua, parse_timestamp, parse_tiles],
+        parts_preprocess=[parse_ip, parse_ua, parse_tiles],
         geoip_file=GEOIP,
         # result_processor=partial(insert_postgres,
         #                          host='localhost',
@@ -151,9 +144,10 @@ RULES = [
         combiner_function=combiner,
         keysets={
             'impression_stats': Keyset(
-                key_parts=['day', 'position', 'locale', 'tile_id',
+                key_parts=['date', 'position', 'locale', 'tile_id',
                            'country_code', 'os', 'browser', 'version', 'device'],
-                value_parts=['impressions', 'clicks', 'pinned', 'blocked'],
+                value_parts=['impressions', 'clicks', 'pinned', 'blocked',
+                             'sponsored', 'sponsored_link'],
                 table='impression_stats_daily',
             ),
         },
