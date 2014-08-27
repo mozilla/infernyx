@@ -1,4 +1,0 @@
-# settings file for Infernyx
-# note that this file needs to be either in ~/.inferno
-# or /etc/inferno/settings.yaml
-geo_ip: /var/data/GeoLite2-Country.mmdb

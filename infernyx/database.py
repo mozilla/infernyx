@@ -116,9 +116,9 @@ def _upload_s3(datafiles, key_id, access_key, job_id, bucket_name='infernyx'):
 
 
 # this function inserts disco job results to the database
-def insert_postgres(disco_iter, params, job_id, host, user, password):
+def insert_postgres(disco_iter, params, job_id, host, database, user, password):
     datafiles, total_lines = _build_datafiles(disco_iter, params, job_id)
-    _insert_datafiles(host, None, None, user, password, datafiles, params, job_id, total_lines)
+    _insert_datafiles(host, None, database, user, password, datafiles, params, job_id, total_lines)
 
 
 def insert_redshift(disco_iter, params, job_id, host, port, database, user,

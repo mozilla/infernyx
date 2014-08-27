@@ -1,5 +1,3 @@
-import datetime
-
 from inferno.lib.rule import chunk_json_stream
 from inferno.lib.rule import InfernoRule
 from inferno.lib.rule import Keyset
@@ -106,14 +104,16 @@ def parse_tiles(parts, params):
 
             # the position can be specified implicity or explicity
             if tile.get('pos') is not None:
-                position = tile['pos']
+                slot = tile['pos']
             elif position is None:
-                position = i
-            cparts['position'] = position
+                slot = i
+            else:
+                slot = position
+            cparts['position'] = slot
             tile_id = tile.get('id')
             if tile_id is not None:
                 cparts['tile_id'] = tile_id
-            if position < view:
+            if position <= view:
                 yield cparts
     except:
         print "Error parsing tiles: %s" % str(tiles)
@@ -128,19 +128,20 @@ RULES = [
         map_init_function=impression_stats_init,
         parts_preprocess=[parse_ip, parse_ua, parse_tiles],
         geoip_file=GEOIP,
-        # result_processor=partial(insert_postgres,
-        #                          host='localhost',
-        #                          user='postgres',
-        #                          password=PG_PASSWORD),
-        result_processor=partial(insert_redshift,
-                                 host=RS_HOST,
-                                 port=5439,
-                                 database='dev',
+        result_processor=partial(insert_postgres,
+                                 host='localhost',
+                                 database='mozsplice',
                                  user='postgres',
-                                 password=RS_PASSWORD,
-                                 key_id=AWS_KEY_ID,
-                                 access_key=AWS_ACCESS_KEY,
-                                 bucket_name="infernyx-redshift"),
+                                 password=PG_PASSWORD),
+        # result_processor=partial(insert_redshift,
+        #                          host=RS_HOST,
+        #                          port=5439,
+        #                          database='dev',
+        #                          user='postgres',
+        #                          password=RS_PASSWORD,
+        #                          key_id=AWS_KEY_ID,
+        #                          access_key=AWS_ACCESS_KEY,
+        #                          bucket_name="infernyx-redshift"),
         combiner_function=combiner,
         keysets={
             'impression_stats': Keyset(
