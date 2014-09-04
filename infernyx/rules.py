@@ -141,7 +141,7 @@ RULES = [
                                  password=RS_PASSWORD,
                                  key_id=AWS_KEY_ID,
                                  access_key=AWS_ACCESS_KEY,
-                                 bucket_name="infernyx-redshift"),
+                                 bucket_name=RS_BUCKET),
         combiner_function=combiner,
         keysets={
             'impression_stats': Keyset(
