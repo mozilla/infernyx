@@ -8,6 +8,7 @@ import csv
 import boto
 from boto.s3.key import Key
 from boto.utils import compute_md5
+from boto.utils import get_instance_metadata
 import psycopg2
 from psycopg2.extras import DictCursor
 
@@ -28,6 +29,16 @@ def _get_columns(kset):
     keys = kset['key_parts']
     values = kset['value_parts']
     return ','.join(keys[1:] + values)
+
+
+def _get_sts_credentials():
+    metadata = get_instance_metadata()['iam']['security-credentials'].values().pop()
+    access_key = metadata['AccessKeyId']
+    secret_key = metadata['SecretAccessKey']
+    token = metadata['Token']
+    credentials = "credentials 'aws_access_key_id=%s;aws_secret_access_key=%s;token=%s'"
+    credentials %= (access_key, secret_key, token)
+    return credentials
 
 
 def _build_datafiles(disco_iter, params, job_id):
@@ -95,13 +106,13 @@ def _insert_datafiles(host, port, database, user, password, datafiles, params, j
         sys.stdout.flush()
 
 
-def _upload_s3(datafiles, key_id, access_key, job_id, bucket_name='infernyx'):
+def _upload_s3(datafiles, job_id, bucket_name='infernyx'):
     rval = []
     for tmpfile, tablename, columns in datafiles:
         with open(tmpfile) as f:
             md5 = compute_md5(f)
 
-        conn = boto.connect_s3(key_id, access_key)
+        conn = boto.connect_s3()
         bucket = conn.get_bucket(bucket_name, validate=False)
 
         k = Key(bucket)
@@ -122,10 +133,10 @@ def insert_postgres(disco_iter, params, job_id, host, database, user, password):
 
 
 def insert_redshift(disco_iter, params, job_id, host, port, database, user,
-                    password, key_id, access_key, bucket_name):
+                    password, bucket_name):
     datafiles, total_lines = _build_datafiles(disco_iter, params, job_id)
-    datafiles = _upload_s3(datafiles, key_id, access_key, job_id, bucket_name)
-    credentials = "credentials 'aws_access_key_id=%s;aws_secret_access_key=%s'" % (key_id, access_key)
+    datafiles = _upload_s3(datafiles, job_id, bucket_name)
+    credentials = _get_sts_credentials()
     _insert_datafiles(host, port, database, user, password, datafiles, params,
                       job_id, total_lines, extras=credentials)
 
