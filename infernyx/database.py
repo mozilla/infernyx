@@ -102,7 +102,7 @@ def _upload_s3(datafiles, key_id, access_key, job_id, bucket_name='infernyx'):
             md5 = compute_md5(f)
 
         conn = boto.connect_s3(key_id, access_key)
-        bucket = conn.get_bucket(bucket_name)
+        bucket = conn.get_bucket(bucket_name, validate=False)
 
         k = Key(bucket)
         k.key = "%s-%s" % (job_id, tablename)
