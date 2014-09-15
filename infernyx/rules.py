@@ -31,6 +31,16 @@ def impression_stats_init(input_iter, params):
     params.geoip_db = geoip2.database.Reader(geoip_file)
 
 
+def parse_date(parts, params):
+    from datetime import datetime
+
+    dt = datetime.strptime(parts['date'], "%Y-%m-%d")
+    parts['year'] = dt.year
+    parts['month'] = dt.month
+    parts['week'] = dt.isocalendar()[1]
+    yield parts
+
+
 def parse_ip(parts, params):
     ip = parts.get('ip', None)
     try:
@@ -126,7 +136,7 @@ RULES = [
         archive=True,
         map_input_stream=chunk_json_stream,
         map_init_function=impression_stats_init,
-        parts_preprocess=[parse_ip, parse_ua, parse_tiles],
+        parts_preprocess=[parse_date, parse_ip, parse_ua, parse_tiles],
         geoip_file=GEOIP,
         # result_processor=partial(insert_postgres,
         #                          host='localhost',
@@ -143,8 +153,8 @@ RULES = [
         combiner_function=combiner,
         keysets={
             'impression_stats': Keyset(
-                key_parts=['date', 'position', 'locale', 'tile_id',
-                           'country_code', 'os', 'browser', 'version', 'device'],
+                key_parts=['date', 'position', 'locale', 'tile_id', 'country_code', 'os', 'browser',
+                           'version', 'device', 'year', 'month', 'week'],
                 value_parts=['impressions', 'clicks', 'pinned', 'blocked',
                              'sponsored', 'sponsored_link'],
                 table='impression_stats_daily',
