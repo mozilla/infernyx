@@ -101,9 +101,10 @@ def _insert_datafiles(host, port, database, user, password, datafiles, params, j
     finally:
         cursor.close()
         connection.close()
-        for tmpfile, _, _, _ in datafiles:
+        for tmpfile, s3, _, _ in datafiles:
             try:
                 if getattr(params, 'clean_db_files', True):
+                    _log(job_id, "Cleaning up tmp files: %s (leaving s3: %s)" % (tmpfile, s3))
                     os.unlink(tmpfile)
             except Exception as e:
                 _log(job_id, "Error removing temp file: %s." % e, logging.ERROR)
