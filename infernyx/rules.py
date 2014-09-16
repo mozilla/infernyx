@@ -17,17 +17,12 @@ def combiner(key, value, buf, done, params):
 
 
 def impression_stats_init(input_iter, params):
-    from inferno.lib import settings
     import geoip2.database
-    opts = settings.InfernoSettings()
     try:
-        geoip_file = opts['geoip_db']
-    except:
-        try:
-            geoip_file = params.geoip_file
-        except Exception as e:
-            # print "GROOVY: %s" % e
-            geoip_file = './GeoLite2-Country.mmdb'
+        geoip_file = params.geoip_file
+    except Exception as e:
+        # print "GROOVY: %s" % e
+        geoip_file = './GeoLite2-Country.mmdb'
     params.geoip_db = geoip2.database.Reader(geoip_file)
 
 
