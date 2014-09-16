@@ -37,12 +37,13 @@ def parse_date(parts, params):
 
 
 def parse_ip(parts, params):
-    ip = parts.get('ip', None)
+    ips = parts.get('ip', None)
     try:
-        resp = params.geoip_db.country(parts['ip'])
+        ip = ips.split(',')[0].strip()
+        resp = params.geoip_db.country(ip)
         parts['country_code'] = resp.country.iso_code
     except:
-        print "Error parsing ip address: %s" % ip
+        print "Error parsing ip address: %s" % ips
         parts['country_code'] = 'ERROR'
     yield parts
 
