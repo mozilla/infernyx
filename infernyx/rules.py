@@ -132,7 +132,7 @@ def parse_tiles(parts, params):
 RULES = [
     InfernoRule(
         name='impression_stats',
-        source_tags=['incoming:impression_stats'],
+        source_tags=['incoming:impression'],
         archive=True,
         map_input_stream=chunk_json_stream,
         map_init_function=impression_stats_init,
