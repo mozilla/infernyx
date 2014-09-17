@@ -136,6 +136,7 @@ RULES = [
         geoip_file=GEOIP,
         max_blobs=1024,
         min_blobs=12,
+        no_purge=True,
         # result_processor=partial(insert_postgres,
         #                          host='localhost',
         #                          database='mozsplice',
