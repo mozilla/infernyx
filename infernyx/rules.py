@@ -43,7 +43,7 @@ def parse_ip(parts, params):
         resp = params.geoip_db.country(ip)
         parts['country_code'] = resp.country.iso_code
     except:
-        print "Error parsing ip address: %s" % ips
+        # print "Error parsing ip address: %s" % ips
         parts['country_code'] = 'ERROR'
     yield parts
 
