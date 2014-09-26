@@ -74,7 +74,7 @@ def parse_tiles(parts, params):
 
     position = None
     vals = {'clicks': 0, 'impressions': 0, 'pinned': 0, 'blocked': 0,
-            'sponsored': 0, 'sponsored_link': 0}
+            'sponsored': 0, 'sponsored_link': 0, 'newtabs': 0}
     view = parts.get('view', sys.maxint)
 
     try:
@@ -101,8 +101,17 @@ def parse_tiles(parts, params):
         else:
             vals['impressions'] = 1
 
-        # emit all relavant tiles for this action
         del parts['tiles']
+
+        # first emit the newtabs column
+        cparts = parts.copy()
+        cparts.update(vals)
+        cparts['newtabs'] = 1
+        cparts['position'] = -1
+        cparts['tile_id'] = -1
+        yield cparts
+
+        # emit all relavant tiles for this action
         for i, tile in enumerate(tiles):
             # print "Tile: %s" % str(tile)
             cparts = parts.copy()
