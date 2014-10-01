@@ -163,7 +163,7 @@ RULES = [
                 key_parts=['date', 'position', 'locale', 'tile_id', 'country_code', 'os', 'browser',
                            'version', 'device', 'year', 'month', 'week'],
                 value_parts=['impressions', 'clicks', 'pinned', 'blocked',
-                             'sponsored', 'sponsored_link'],
+                             'sponsored', 'sponsored_link', 'newtabs'],
                 table='impression_stats_daily',
             ),
         },
