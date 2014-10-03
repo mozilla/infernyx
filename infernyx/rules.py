@@ -36,6 +36,15 @@ def parse_date(parts, params):
     yield parts
 
 
+def parse_locale(parts, params):
+    # skip illegal locales
+    try:
+        if parts['locale'].lower() in params.locale_whitelist:
+            yield parts
+    except:
+        pass
+
+
 def parse_ip(parts, params):
     ips = parts.get('ip', None)
     try:
@@ -141,10 +150,18 @@ RULES = [
         archive=True,
         map_input_stream=chunk_json_stream,
         map_init_function=impression_stats_init,
-        parts_preprocess=[parse_date, parse_ip, parse_ua, parse_tiles],
+        parts_preprocess=[parse_date, parse_locale, parse_ip, parse_ua, parse_tiles],
         geoip_file=GEOIP,
         max_blobs=1024,
         min_blobs=12,
+        locale_whitelist={'ach', 'af', 'an', 'ar', 'as', 'ast', 'az', 'be', 'bg', 'bn-bd', 'bn-in', 'br', 'bs',
+                          'ca', 'cs', 'csb', 'cy', 'da', 'de', 'el', 'en-gb', 'en-us', 'en-za', 'eo', 'es-ar',
+                          'es-cl', 'es-es', 'es-mx', 'et', 'eu', 'fa', 'ff', 'fi', 'fr', 'fy-nl', 'ga-ie', 'gd',
+                          'gl', 'gu-IN', 'he', 'hi-IN', 'hr', 'hu', 'hsb', 'hy-AM', 'id', 'is', 'it', 'ja',
+                          'ja-jp-mac', 'ka', 'kk', 'km', 'kn', 'ko', 'ku', 'lij', 'lt', 'lv', 'mai', 'mk', 'ml',
+                          'mr', 'ms', 'my', 'nb-no', 'nl', 'nn-no', 'oc', 'or', 'pa-in', 'pl', 'pt-br', 'pt-pt',
+                          'rm', 'ro', 'ru', 'si', 'sk', 'sl', 'son', 'sq', 'sr', 'sv-se', 'sw', 'ta', 'te', 'th',
+                          'tr', 'uk', 'ur', 'vi', 'xh', 'zh-cn', 'zh-tw', 'zu'},
         # result_processor=partial(insert_postgres,
         #                          host='localhost',
         #                          database='mozsplice',
@@ -169,3 +186,5 @@ RULES = [
         },
     ),
 ]
+
+
