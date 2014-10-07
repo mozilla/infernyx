@@ -87,6 +87,16 @@ def parse_tiles(parts, params):
     view = parts.get('view', sys.maxint)
 
     try:
+        # first emit the newtabs column
+        cparts = parts.copy()
+        del cparts['tiles']
+        cparts.update(vals)
+        cparts['newtabs'] = 1
+        cparts['position'] = -1
+        cparts['tile_id'] = -1
+        yield cparts
+
+        # now prepare values for emitting this particular event
         if parts.get('click') is not None:
             position = parts['click']
             vals['clicks'] = 1
@@ -111,14 +121,6 @@ def parse_tiles(parts, params):
             vals['impressions'] = 1
 
         del parts['tiles']
-
-        # first emit the newtabs column
-        cparts = parts.copy()
-        cparts.update(vals)
-        cparts['newtabs'] = 1
-        cparts['position'] = -1
-        cparts['tile_id'] = -1
-        yield cparts
 
         # emit all relavant tiles for this action
         for i, tile in enumerate(tiles):
