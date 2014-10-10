@@ -62,10 +62,10 @@ def parse_ua(parts, params):
     ua = parts.get('ua', None)
     try:
         result_dict = user_agent_parser.Parse(ua)
-        parts['os'] = result_dict['os']['family']
-        parts['version'] = "%s.%s" % (result_dict['user_agent']['major'], result_dict['user_agent']['minor'])
-        parts['browser'] = result_dict['user_agent']['family']
-        parts['device'] = result_dict['device']['family']
+        parts['os'] = result_dict['os']['family'][:64]
+        parts['version'] = ("%s.%s" % (result_dict['user_agent']['major'], result_dict['user_agent']['minor']))[:64]
+        parts['browser'] = result_dict['user_agent']['family'][:64]
+        parts['device'] = result_dict['device']['family'][:64]
     except:
         print "Error parsing UA: %s" % ua
         parts.setdefault('os', 'n/a')
