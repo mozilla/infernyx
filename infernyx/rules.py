@@ -181,9 +181,14 @@ RULES = [
             'impression_stats': Keyset(
                 key_parts=['date', 'position', 'locale', 'tile_id', 'country_code', 'os', 'browser',
                            'version', 'device', 'year', 'month', 'week'],
-                value_parts=['impressions', 'clicks', 'pinned', 'blocked',
-                             'sponsored', 'sponsored_link', 'newtabs'],
+                value_parts=['impressions', 'clicks', 'pinned', 'blocked', 'sponsored', 'sponsored_link'],
                 table='impression_stats_daily',
+            ),
+            'newtab_stats': Keyset(
+                key_parts=['date', 'locale', 'country_code', 'os', 'browser',
+                           'version', 'device', 'year', 'month', 'week'],
+                value_parts=['newtabs'],
+                table='newtab_stats_daily',
             ),
         },
     ),
