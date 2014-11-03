@@ -121,7 +121,7 @@ def _upload_s3(datafiles, job_id, bucket_name='infernyx'):
         bucket = conn.get_bucket(bucket_name, validate=False)
 
         k = Key(bucket)
-        k.key = "%s-%s" % (job_id, tablename)
+        k.key = "%s-%s" % (job_id, tmpfile)
 
         k.set_contents_from_filename(tmpfile, md5=md5, replace=True)
 
