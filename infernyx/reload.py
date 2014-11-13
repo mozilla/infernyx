@@ -2,7 +2,7 @@ from inferno.lib.rule import chunk_json_stream
 from inferno.lib.rule import InfernoRule
 from inferno.lib.rule import Keyset
 from infernyx.database import insert_postgres, insert_redshift
-from infernyx.rules import impression_stats_init, parse_date, parse_locale, parse_ip, parse_ua, combiner, RULES
+from infernyx.rules import impression_stats_init, parse_date, parse_locale, parse_ip, parse_ua, combiner
 from functools import partial
 from config_infernyx import *
 
@@ -20,7 +20,15 @@ def parse_tiles(parts, params):
     cparts.update(vals)
     yield cparts
 
-imp_rule = [r for r in RULES if r.name == 'impression_stats'][0]
+
+def parse_timestamp(parts, params):
+    import datetime
+
+    timestamp = datetime.datetime.fromtimestamp(parts['timestamp'] / 1000.0)
+    parts['minute'] = timestamp.hour * 60 + timestamp.minute
+    parts['time'] = timestamp.strftime("%H:%M")
+    parts['count'] = 1
+    yield parts
 
 RULES = [
     InfernoRule(
@@ -57,9 +65,19 @@ RULES = [
                 key_parts=['date', 'position', 'locale', 'tile_id', 'country_code', 'os', 'browser',
                            'version', 'device', 'year', 'month', 'week'],
                 value_parts=['impressions', 'clicks', 'pinned', 'blocked',
-                             'sponsored', 'sponsored_link', 'newtabs'],
+                             'sponsored', 'sponsored_link'],
                 table='impression_stats_daily',
             ),
         },
+    ),
+    InfernoRule(
+        name='rps',
+        source_tags=['processed:impression'],
+        day_range=1,
+        map_input_stream=chunk_json_stream,
+        parts_preprocess=[parse_timestamp],
+        combiner_function=combiner,
+        key_parts=['date', 'time'],
+        value_parts=['count'],
     ),
 ]
