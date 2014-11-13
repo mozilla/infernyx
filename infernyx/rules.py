@@ -1,11 +1,15 @@
+from statsd import StatsClient
 from inferno.lib.rule import chunk_json_stream
 from inferno.lib.rule import InfernoRule
 from inferno.lib.rule import Keyset
 from infernyx.database import insert_postgres, insert_redshift
 from functools import partial
 from config_infernyx import *
+import datetime
 
 AUTORUN = True
+
+statsd = StatsClient(**STATSD)
 
 
 def combiner(key, value, buf, done, params):
@@ -87,7 +91,6 @@ def parse_tiles(parts, params):
     view = parts.get('view', sys.maxint)
 
     try:
-        # first emit the newtabs column
         cparts = parts.copy()
         del cparts['tiles']
         cparts.update(vals)
@@ -145,11 +148,26 @@ def parse_tiles(parts, params):
         print "Error parsing tiles: %s" % str(tiles)
 
 
+def report_rule_stats(job):
+    job_id = job.job_name
+    rule_name = job.rule_name
+    blobs = len(job.archiver.job_blobs)
+    jobinfo = job.disco.jobinfo(job_id)
+    status = jobinfo['active']
+    timestamp = datetime.datetime.strptime(jobinfo['timestamp'], "%Y/%m/%d %H:%M:%S")
+    now = datetime.datetime.now()
+    diff = (now - timestamp).seconds * 1000
+    statsd.incr("%s.blobs_processed" % rule_name, blobs)
+    statsd.incr("%s.%s" % (rule_name, status))
+    statsd.timer("%s.execution_time" % rule_name, diff)
+
+
 RULES = [
     InfernoRule(
         name='impression_stats',
         source_tags=['incoming:impression'],
         archive=True,
+        rule_cleanup=report_rule_stats,
         map_input_stream=chunk_json_stream,
         map_init_function=impression_stats_init,
         parts_preprocess=[parse_date, parse_locale, parse_ip, parse_ua, parse_tiles],
@@ -195,5 +213,3 @@ RULES = [
         },
     ),
 ]
-
-
