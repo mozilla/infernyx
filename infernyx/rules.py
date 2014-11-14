@@ -22,22 +22,37 @@ def combiner(key, value, buf, done, params):
 
 def impression_stats_init(input_iter, params):
     import geoip2.database
+    import re
     try:
         geoip_file = params.geoip_file
     except Exception as e:
         # print "GROOVY: %s" % e
         geoip_file = './GeoLite2-Country.mmdb'
     params.geoip_db = geoip2.database.Reader(geoip_file)
+    params.ip_pattern = re.compile("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
 
+
+def clean_data(parts, params):
+    import datetime
+    try:
+        assert parts['tiles'][0] is not None
+        assert params.ip_pattern.match(parts['ip'])
+        assert datetime.datetime.fromtimestamp(parts['timestamp'] / 1000.0)
+        yield parts
+    except:
+        pass
 
 def parse_date(parts, params):
     from datetime import datetime
 
-    dt = datetime.strptime(parts['date'], "%Y-%m-%d")
-    parts['year'] = dt.year
-    parts['month'] = dt.month
-    parts['week'] = dt.isocalendar()[1]
-    yield parts
+    try:
+        dt = datetime.strptime(parts['date'], "%Y-%m-%d")
+        parts['year'] = dt.year
+        parts['month'] = dt.month
+        parts['week'] = dt.isocalendar()[1]
+        yield parts
+    except:
+        pass
 
 
 def parse_locale(parts, params):
@@ -138,12 +153,13 @@ def parse_tiles(parts, params):
                 slot = i
             else:
                 slot = position
+            assert position < 1024
             cparts['position'] = slot
             tile_id = tile.get('id')
-            if tile_id is not None:
+            if tile_id is not None and tile_id < 10000000:
                 cparts['tile_id'] = tile_id
-            if position <= view:
-                yield cparts
+                if position <= view:
+                    yield cparts
     except:
         print "Error parsing tiles: %s" % str(tiles)
 
@@ -170,7 +186,7 @@ RULES = [
         rule_cleanup=report_rule_stats,
         map_input_stream=chunk_json_stream,
         map_init_function=impression_stats_init,
-        parts_preprocess=[parse_date, parse_locale, parse_ip, parse_ua, parse_tiles],
+        parts_preprocess=[clean_data, parse_date, parse_locale, parse_ip, parse_ua, parse_tiles],
         geoip_file=GEOIP,
         partitions=32,
         sort_buffer_size='25%',
