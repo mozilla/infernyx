@@ -2,7 +2,7 @@ from statsd import StatsClient
 from inferno.lib.rule import chunk_json_stream
 from inferno.lib.rule import InfernoRule
 from inferno.lib.rule import Keyset
-from infernyx.database import insert_postgres, insert_redshift
+from infernyx.database import insert_redshift
 from functools import partial
 from config_infernyx import *
 import datetime
@@ -165,17 +165,21 @@ def parse_tiles(parts, params):
 
 
 def report_rule_stats(job):
-    job_id = job.job_name
-    rule_name = job.rule_name
-    blobs = len(job.archiver.job_blobs)
-    jobinfo = job.disco.jobinfo(job_id)
-    status = jobinfo['active']
-    timestamp = datetime.datetime.strptime(jobinfo['timestamp'], "%Y/%m/%d %H:%M:%S")
-    now = datetime.datetime.now()
-    diff = (now - timestamp).seconds * 1000
-    statsd.incr("%s.blobs_processed" % rule_name, blobs)
-    statsd.incr("%s.%s" % (rule_name, status))
-    statsd.timer("%s.execution_time" % rule_name, diff)
+    try:
+        job_id = job.job_name
+        rule_name = job.rule_name
+        blobs = len(job.archiver.job_blobs)
+        jobinfo = job.disco.jobinfo(job_id)
+        status = jobinfo['active']
+        timestamp = datetime.datetime.strptime(jobinfo['timestamp'], "%Y/%m/%d %H:%M:%S")
+        now = datetime.datetime.now()
+        diff = (now - timestamp).seconds * 1000
+        statsd.incr("%s.blobs_processed" % rule_name, blobs)
+        statsd.incr("%s.%s" % (rule_name, status))
+        statsd.timer("%s.execution_time" % rule_name, diff)
+        print "Wrote stats for: %s" % job_id
+    except Exception as e:
+        print "Error writing stats %s" % e
 
 
 RULES = [
@@ -191,7 +195,7 @@ RULES = [
         partitions=32,
         sort_buffer_size='25%',
         max_blobs=1024,
-        min_blobs=12,
+        min_blobs=128,
         locale_whitelist={'ach', 'af', 'an', 'ar', 'as', 'ast', 'az', 'be', 'bg', 'bn-bd', 'bn-in', 'br', 'bs',
                           'ca', 'cs', 'csb', 'cy', 'da', 'de', 'el', 'en-gb', 'en-us', 'en-za', 'eo', 'es-ar',
                           'es-cl', 'es-es', 'es-mx', 'et', 'eu', 'fa', 'ff', 'fi', 'fr', 'fy-nl', 'ga-ie', 'gd',
@@ -200,11 +204,6 @@ RULES = [
                           'mr', 'ms', 'my', 'nb-no', 'nl', 'nn-no', 'oc', 'or', 'pa-in', 'pl', 'pt-br', 'pt-pt',
                           'rm', 'ro', 'ru', 'si', 'sk', 'sl', 'son', 'sq', 'sr', 'sv-se', 'sw', 'ta', 'te', 'th',
                           'tr', 'uk', 'ur', 'vi', 'xh', 'zh-cn', 'zh-tw', 'zu'},
-        # result_processor=partial(insert_postgres,
-        #                          host='localhost',
-        #                          database='mozsplice',
-        #                          user='postgres',
-        #                          password=PG_PASSWORD),
         result_processor=partial(insert_redshift,
                                  host=RS_HOST,
                                  port=5432,
@@ -217,7 +216,8 @@ RULES = [
             'impression_stats': Keyset(
                 key_parts=['date', 'position', 'locale', 'tile_id', 'country_code', 'os', 'browser',
                            'version', 'device', 'year', 'month', 'week'],
-                value_parts=['impressions', 'clicks', 'pinned', 'blocked', 'sponsored', 'sponsored_link'],
+                value_parts=['impressions', 'clicks', 'pinned', 'blocked', 'sponsored',
+                             'sponsored_link'],
                 table='impression_stats_daily',
             ),
             'newtab_stats': Keyset(
