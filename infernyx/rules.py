@@ -102,7 +102,7 @@ def parse_tiles(parts, params):
 
     position = None
     vals = {'clicks': 0, 'impressions': 0, 'pinned': 0, 'blocked': 0,
-            'sponsored': 0, 'sponsored_link': 0, 'newtabs': 0}
+            'sponsored': 0, 'sponsored_link': 0, 'newtabs': 0, 'enhanced': False}
     view = parts.get('view', sys.maxint)
 
     try:
@@ -155,8 +155,13 @@ def parse_tiles(parts, params):
                 slot = position
             assert position < 1024
             cparts['position'] = slot
+
+            url = tile.get('url')
+            if url is not None:
+                cparts['enhanced'] = True
+
             tile_id = tile.get('id')
-            if tile_id is not None and tile_id < 10000000:
+            if tile_id is not None and tile_id < 1000000:
                 cparts['tile_id'] = tile_id
                 if position <= view:
                     yield cparts
@@ -215,14 +220,13 @@ RULES = [
         keysets={
             'impression_stats': Keyset(
                 key_parts=['date', 'position', 'locale', 'tile_id', 'country_code', 'os', 'browser',
-                           'version', 'device', 'year', 'month', 'week'],
-                value_parts=['impressions', 'clicks', 'pinned', 'blocked', 'sponsored',
-                             'sponsored_link'],
+                           'version', 'device', 'year', 'month', 'week', 'enhanced'],
+                value_parts=['impressions', 'clicks', 'pinned', 'blocked', 'sponsored', 'sponsored_link'],
                 table='impression_stats_daily',
             ),
             'newtab_stats': Keyset(
-                key_parts=['date', 'locale', 'country_code', 'os', 'browser',
-                           'version', 'device', 'year', 'month', 'week'],
+                key_parts=['date', 'locale', 'country_code', 'os', 'browser', 'version', 'device', 'year',
+                           'month', 'week'],
                 value_parts=['newtabs'],
                 table='newtab_stats_daily',
             ),
