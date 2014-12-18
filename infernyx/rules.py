@@ -32,15 +32,22 @@ def impression_stats_init(input_iter, params):
     params.ip_pattern = re.compile("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
 
 
-def clean_data(parts, params):
+def clean_data(parts, params, imps=True):
     import datetime
     try:
-        assert parts['tiles'][0] is not None
+        if imps:
+            assert parts['tiles'][0] is not None
         assert params.ip_pattern.match(parts['ip'])
         assert datetime.datetime.fromtimestamp(parts['timestamp'] / 1000.0)
         yield parts
     except:
         pass
+
+
+def count(parts, params):
+    parts['count'] = 1
+    yield parts
+
 
 def parse_date(parts, params):
     from datetime import datetime
@@ -231,5 +238,32 @@ RULES = [
                 table='newtab_stats_daily',
             ),
         },
+    ),
+    InfernoRule(
+        name='application_stats',
+        source_tags=['incoming:app'],
+        archive=True,
+        rule_cleanup=report_rule_stats,
+        map_input_stream=chunk_json_stream,
+        map_init_function=impression_stats_init,
+        parts_preprocess=[partial(clean_data, imps=False), parse_date,
+                          parse_ip, parse_ua, count],
+        geoip_file=GEOIP,
+        partitions=32,
+        sort_buffer_size='25%',
+        max_blobs=1024,
+        min_blobs=32,
+        result_processor=partial(insert_redshift,
+                                 host=RS_HOST,
+                                 port=5432,
+                                 database=RS_DB,
+                                 user=RS_USER,
+                                 password=RS_PASSWORD,
+                                 bucket_name=RS_BUCKET),
+        combiner_function=combiner,
+        key_parts=['date', 'locale', 'ver', 'country_code', 'action', 'month', 'week', 'year', 'os',
+                   'browser', 'version', 'device'],
+        value_parts=['count'],
+        table='application_stats_daily',
     ),
 ]
