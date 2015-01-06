@@ -164,14 +164,14 @@ def parse_tiles(parts, params):
             cparts['position'] = slot
 
             url = tile.get('url')
-            if url is not None:
+            if url:
                 cparts['enhanced'] = True
+                cparts['url'] = url
 
             tile_id = tile.get('id')
-            if tile_id is not None and tile_id < 1000000:
+            if tile_id is not None and tile_id < 1000000 and position <= view:
                 cparts['tile_id'] = tile_id
-                if position <= view:
-                    yield cparts
+            yield cparts
     except:
         print "Error parsing tiles: %s" % str(tiles)
 
@@ -230,6 +230,12 @@ RULES = [
                            'version', 'device', 'year', 'month', 'week', 'enhanced'],
                 value_parts=['impressions', 'clicks', 'pinned', 'blocked', 'sponsored', 'sponsored_link'],
                 table='impression_stats_daily',
+            ),
+            'site_stats': Keyset(
+                key_parts=['date', 'locale', 'country_code', 'os', 'browser', 'version', 'device', 'year',
+                           'month', 'week', 'url'],
+                value_parts=['impressions', 'clicks', 'pinned', 'blocked', 'sponsored', 'sponsored_link'],
+                table='site_stats_daily',
             ),
             'newtab_stats': Keyset(
                 key_parts=['date', 'locale', 'country_code', 'os', 'browser', 'version', 'device', 'year',
