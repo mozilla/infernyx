@@ -176,6 +176,33 @@ def parse_tiles(parts, params):
         print "Error parsing tiles: %s" % str(tiles)
 
 
+def parse_urls(parts, params):
+    def combos(arr):
+        for i, ela in enumerate(arr):
+            rest = arr[i+1:]
+            for elb in rest:
+                if elb < ela:
+                    ela, elb = elb, ela
+                yield ela, elb
+
+    # only process 'impression' records
+    if "view" in parts:
+        tiles = parts.get('tiles')
+        date = parts.get('date')
+        locale = parts.get('locale')
+        country_code = parts.get('country_code')
+
+        urls = []
+        for tile in tiles:
+            url = tile.get('url')
+            if url:
+                urls.append(url)
+
+        for url_a, url_b in combos(urls):
+            # print date, locale, country_code, url_a, url_b
+            yield {'date': date, 'locale': locale, 'country_code': country_code, 'url_a': url_a, 'url_b': url_b,
+                   'count': 1}
+
 def report_rule_stats(job):
     try:
         job_id = job.job_name
@@ -271,5 +298,26 @@ RULES = [
                    'browser', 'version', 'device'],
         value_parts=['count'],
         table='application_stats_daily',
+    ),
+    InfernoRule(
+        name='site_tuples',
+        source_tags=['incoming:impression'],
+
+        # process yesterday's data, today at 2am
+        day_offset=1,
+        day_range=1,
+        time_delta={'oclock', 2},
+
+        map_input_stream=chunk_json_stream,
+        map_init_function=impression_stats_init,
+        result_tag='incoming:site_tuples',
+        result_processor=None,
+        parts_preprocess=[clean_data, parse_ip, parse_urls],
+        geoip_file=GEOIP,
+        partitions=32,
+        sort_buffer_size='25%',
+        combiner_function=combiner,
+        key_parts=['date', 'locale', 'country_code', 'url_a', 'url_b'],
+        value_parts=['count'],
     ),
 ]
