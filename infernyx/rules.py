@@ -192,12 +192,7 @@ def parse_urls(parts, params):
         locale = parts.get('locale')
         country_code = parts.get('country_code')
 
-        urls = []
-        for tile in tiles:
-            url = tile.get('url')
-            if url:
-                urls.append(url)
-
+        urls = (tile.url for tile in tiles if tile.url)
         for url_a, url_b in combos(urls):
             # print date, locale, country_code, url_a, url_b
             yield {'date': date, 'locale': locale, 'country_code': country_code, 'url_a': url_a, 'url_b': url_b,

@@ -9,6 +9,6 @@ setup(
     author='tspurway',
     author_email='tspurway@mozilla.com',
     description='Inferno rules for Tiles Project',
-    install_requires=['psycopg2', 'inferno', 'boto', 'geoip2', 'ua_parser', 'statsd'],
+    install_requires=['psycopg2', 'inferno', 'boto', 'geoip2', 'ua_parser', 'statsd', 'disco'],
     zip_safe=False,
 )
