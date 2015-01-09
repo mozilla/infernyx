@@ -39,6 +39,9 @@ def clean_data(parts, params, imps=True):
             assert parts['tiles'][0] is not None
         assert params.ip_pattern.match(parts['ip'])
         assert datetime.datetime.fromtimestamp(parts['timestamp'] / 1000.0)
+        parts['locale'] = parts['locale'][:12]
+        if parts.get('action'):
+            parts['action'] = parts['action'][:254]
         yield parts
     except:
         pass
