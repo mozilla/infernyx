@@ -75,7 +75,7 @@ def _build_datafiles(disco_iter, params, job_id):
 def _insert_datafiles(host, port, database, user, password, datafiles, params, job_id, total_lines, extras=''):
     connection, cursor = _connect(host, port, database, user, password)
     try:
-        query = "COPY %s (%s) FROM '%s' WITH %s DELIMITER '|'"
+        query = "COPY %s (%s) FROM '%s' WITH %s DELIMITER '|' TRUNCATECOLUMNS"
         for tmpfile, (s3_bucket, s3_key), tablename, columns in datafiles:
 
             # Default delimiter is |, default escape is backslash
