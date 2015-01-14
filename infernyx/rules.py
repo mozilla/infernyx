@@ -6,9 +6,10 @@ from infernyx.database import insert_redshift
 from functools import partial
 from config_infernyx import *
 import datetime
+import logging
 
+log = logging.getLogger(__name__)
 AUTORUN = True
-
 statsd = StatsClient(**STATSD)
 
 
@@ -167,16 +168,39 @@ def parse_tiles(parts, params):
             cparts['position'] = slot
 
             url = tile.get('url')
-            if url is not None:
+            if url:
                 cparts['enhanced'] = True
+                cparts['url'] = url
 
             tile_id = tile.get('id')
-            if tile_id is not None and isinstance(tile_id, int) and tile_id < 1000000:
+            if tile_id is not None and isinstance(tile_id, int) and tile_id < 1000000 and position <= view:
                 cparts['tile_id'] = tile_id
-                if position <= view:
-                    yield cparts
+            yield cparts
     except:
         print "Error parsing tiles: %s" % str(tiles)
+
+
+def parse_urls(parts, params):
+    def combos(arr):
+        for i, ela in enumerate(arr):
+            rest = arr[i+1:]
+            for elb in rest:
+                if elb < ela:
+                    ela, elb = elb, ela
+                yield ela, elb
+
+    # only process 'impression' records
+    if "view" in parts:
+        tiles = parts.get('tiles')
+        date = parts.get('date')
+        locale = parts.get('locale')
+        country_code = parts.get('country_code')
+
+        urls = [tile.get('url') for tile in tiles if tile.get('url')]
+        for url_a, url_b in combos(urls):
+            # print date, locale, country_code, url_a, url_b
+            yield {'date': date, 'locale': locale, 'country_code': country_code, 'url_a': url_a, 'url_b': url_b,
+                   'count': 1}
 
 
 def report_rule_stats(job):
@@ -192,9 +216,28 @@ def report_rule_stats(job):
         statsd.incr("%s.blobs_processed" % rule_name, blobs)
         statsd.incr("%s.%s" % (rule_name, status))
         statsd.timer("%s.execution_time" % rule_name, diff)
-        print "Wrote stats for: %s" % job_id
+        log.info("Wrote stats for: %s" % job_id)
     except Exception as e:
-        print "Error writing stats %s" % e
+        log.error("Error writing stats %s" % e)
+
+
+def tag_results(suffix, job):
+    try:
+        job_id = job.job_name
+        date = job.archiver.tags[0].split(':')[-1]
+        ddfs = job.ddfs
+
+        # create tag name
+        result_tag = "disco:results:%s" % job_id
+        blobs = list(ddfs.blobs(result_tag))
+        tag_name = suffix + date
+        if len(blobs):
+            log.info("Tagging %d results of job %s with tag %s" % (len(blobs), job_id, tag_name))
+            ddfs.tag(tag_name, blobs)
+        else:
+            log.warn("No data to tag for job %s" % job_id)
+    except Exception as e:
+        log.error("Error tagging results %s" % e)
 
 
 RULES = [
@@ -234,6 +277,12 @@ RULES = [
                 value_parts=['impressions', 'clicks', 'pinned', 'blocked', 'sponsored', 'sponsored_link'],
                 table='impression_stats_daily',
             ),
+            'site_stats': Keyset(
+                key_parts=['date', 'locale', 'country_code', 'os', 'browser', 'version', 'device', 'year',
+                           'month', 'week', 'url'],
+                value_parts=['impressions', 'clicks', 'pinned', 'blocked', 'sponsored', 'sponsored_link'],
+                table='site_stats_daily',
+            ),
             'newtab_stats': Keyset(
                 key_parts=['date', 'locale', 'country_code', 'os', 'browser', 'version', 'device', 'year',
                            'month', 'week'],
@@ -268,5 +317,32 @@ RULES = [
                    'browser', 'version', 'device'],
         value_parts=['count'],
         table='application_stats_daily',
+    ),
+    InfernoRule(
+        name='site_tuples',
+        source_tags=['incoming:impression'],
+
+        # process yesterday's data, today at 2am
+        day_offset=1,
+        day_range=1,
+        time_delta={'oclock', 2},
+
+        map_input_stream=chunk_json_stream,
+        map_init_function=impression_stats_init,
+        result_processor=None,
+        parts_preprocess=[clean_data, parse_ip, parse_urls],
+        geoip_file=GEOIP,
+        partitions=32,
+        sort_buffer_size='25%',
+        combiner_function=combiner,
+        key_parts=['date', 'locale', 'country_code', 'url_a', 'url_b'],
+        value_parts=['count'],
+
+        # note that this rule_cleanup will be obsolete after the PR https://github.com/chango/inferno/pull/23
+        # is merged and released, then only the 'result_tag' below will be required
+        # result_tag='incoming:site_tuples',
+        rule_cleanup=partial(tag_results, 'incoming:site_tuples:'),
+        save=True,
+        no_purge=True,
     ),
 ]

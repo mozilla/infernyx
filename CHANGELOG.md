@@ -8,3 +8,8 @@
 
 - adding rule for tracking application_stats, which include all 'fetch' events in Onyx including errors
 
+0.1.32
+======
+
+- this feature adds 'site' stats functionality, both as a keyset when analysing impression_stats, and as a separate 
+ daily job to process the combinations of sites that appear on the same screen (the 'site_tuples' rule)

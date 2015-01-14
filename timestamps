@@ -1,8 +1,0 @@
-
-
-
-console.log:2015-01-09 00:01:28.621 [warning] <0.31878.65>@node_mon:is_master:129 net_adm:names() failed for "ip-172-31-45-74": {badrpc,timeout}
-console.log:2015-01-09 00:02:25.366 [debug] <0.90.0>@disco_server:do_update_config_table:408 Adding new node "ip-172-31-45-74"
-
-console.log.0:2015-01-08 23:58:58.619 [warning] <0.31878.65>@node_mon:is_master:129 net_adm:names() failed for "ip-172-31-45-74": {badrpc,timeout}
-
