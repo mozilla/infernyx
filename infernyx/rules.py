@@ -171,7 +171,7 @@ def parse_tiles(parts, params):
                 cparts['enhanced'] = True
 
             tile_id = tile.get('id')
-            if tile_id is not None and tile_id < 1000000:
+            if tile_id is not None and isinstance(tile_id, int) and tile_id < 1000000:
                 cparts['tile_id'] = tile_id
                 if position <= view:
                     yield cparts
