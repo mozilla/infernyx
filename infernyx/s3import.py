@@ -57,8 +57,6 @@ def get_keys_for_pattern(bucket, pattern, tag_expr, prefix=''):
             raw_url = "raw://%s/%s/%s" % (tag, bucket.name, key.name)
             # print 'match: ' + raw_url
             urls.append(raw_url)
-        else:
-            print 'error: ' + key.name
     conn.close()
     return urls
 
