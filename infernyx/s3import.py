@@ -27,13 +27,13 @@ def s3_import_map(line, params):
         key.get_contents_to_file(tmpfile)
     except Exception as e:
         print ('Adding Failed: %s' % line)
-        yield ('_default', 'failed'), [1]
+        yield ('failed', line), [1]
     else:
         tmpfile.close()
         tags, blobs = params.ddfs.chunk(tag, [tmpfile.name])
         # print "Blobs created: %s %s" % (tags, blobs)
         os.unlink(tmpfile.name)
-        yield ('_default', 'good'), [1]
+        yield ('OK', ), [1]
 
 
 def get_keys_for_pattern(bucket, pattern, tag_expr, prefix=''):
@@ -66,8 +66,8 @@ RULES = [
         name='bulk_load',
         source_urls=partial(get_keys_for_pattern,
                             bucket='tiles-incoming-prod-us-west-2',
-                            pattern=r'.+-([^-]*)-2015.01.(05|06|07|08|09|10|11|12|13)',
-                            tag_expr=["processed:", 1, ":2015-01-", 2]),
+                            pattern=r'.+-([^-]*)-(2015\.01\.(05|06|07|08|09|10|11|12|13))',
+                            tag_expr=["processed:", 1, ":2015-01-", 3]),
         map_input_stream=(disco.schemes.scheme_raw.input_stream,),
         map_init_function=init,
         map_function=s3_import_map,
