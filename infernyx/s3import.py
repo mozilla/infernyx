@@ -88,7 +88,10 @@ def copy_tags_map(local_file, params):
     from disco.ddfs import DDFS
     try:
         ddfs = DDFS(params.target_disco_master)
-        ddfs.chunk(params.target_tag, [local_file])
+        if params.chunk:
+            ddfs.chunk(params.target_tag, [local_file])
+        else:
+            ddfs.push(params.target_tag, [local_file])
         # print local_file
         yield '["_default", "OK"]', [1]
     except Exception as e:
@@ -113,6 +116,7 @@ RULES = [
         source_tags=[],
         target_disco_master='disco://localhost',
         target_tag='',
+        chunk=False,
         map_input_stream=(task_input_stream, filename_input_stream),
         map_function=copy_tags_map,
     ),
