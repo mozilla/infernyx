@@ -1,3 +1,8 @@
+0.1.33
+======
+
+- bugfix for URL processing - only storing the netloc instead of entire url
+
 0.1.29
 ======
 
