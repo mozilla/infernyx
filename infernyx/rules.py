@@ -329,7 +329,7 @@ RULES = [
     #     # process yesterday's data, today at 2am
     #     day_offset=1,
     #     day_range=1,
-    #     time_delta={'oclock', 2},
+    #     time_delta={'oclock': 2},
     #
     #     map_input_stream=chunk_json_stream,
     #     map_init_function=impression_stats_init,
