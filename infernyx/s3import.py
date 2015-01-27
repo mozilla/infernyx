@@ -69,25 +69,25 @@ def filename_input_stream(fd, size, url, params):
 
     try:
         scheme, netloc, rest = util.urlsplit(url)
+        netloc = "%s:%s" % netloc if netloc[1] else netloc[0]
     except Exception as e:
         msg = "Error handling hustle_input_stream for %s. %s" % (url, e)
         raise util.DataError(msg, url)
 
     if scheme == 'file':
-        yield "%s:/%s" % (netloc, rest)
+        yield netloc, "/%s" % rest
     else:
         # print url, rest
         fle = util.localize(rest,
                             disco_data=worker.Task.disco_data,
                             ddfs_data=worker.Task.ddfs_data)
 
-        yield "%s:%s" % (netloc, fle)
+        yield netloc, fle
 
 
-def copy_tags_map(intup, params):
+def copy_tags_map((netloc, local_file), params):
     from disco.ddfs import DDFS
     from socket import gethostname
-    netloc, local_file = intup.split(":", 1)
     try:
         ddfs = DDFS(params.target_disco_master)
         if params.chunk:
@@ -96,8 +96,14 @@ def copy_tags_map(intup, params):
             ddfs.push(params.target_tag, [local_file])
         # print local_file
     except Exception as e:
-        yield '["_default", "%s", "%s", "%s"]' % (gethostname(), netloc, local_file), [1]
+        yield unicode('["_default", "%s", "%s", "%s"]' % (gethostname(), netloc, local_file)).encode('ascii', 'ignore'), \
+               [1]
 
+
+def get_copy_blobs(blob_file):
+    fd = file(blob_file)
+    failed_blobs = set([b.strip() for b in fd.readlines()])
+    pass
 
 RULES = [
     # this rule loads data into a cluster from s3
@@ -115,6 +121,16 @@ RULES = [
     InfernoRule(
         name='copy_tags',
         source_tags=[],
+        target_disco_master='disco://localhost',
+        target_tag='',
+        chunk=False,
+        map_input_stream=(task_input_stream, filename_input_stream),
+        map_function=copy_tags_map,
+    ),
+    InfernoRule(
+        name='copy_blobs',
+        source_urls=partial(get_copy_blobs,
+                            blob_file='failed_blobs'),
         target_disco_master='disco://localhost',
         target_tag='',
         chunk=False,
