@@ -75,7 +75,7 @@ def filename_input_stream(fd, size, url, params):
         raise util.DataError(msg, url)
 
     if scheme == 'file':
-        yield url, netloc, "/%s" % rest
+        yield url, "/%s" % rest
     else:
         # print url, rest
         fle = util.localize(rest,
