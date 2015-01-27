@@ -102,12 +102,7 @@ def copy_tags_map((url, local_file), params):
         try:
             blob_req = request('GET', url)
             with NamedTemporaryFile("w", delete=True) as fd:
-                while True:
-                    bites = blob_req.read(8192)
-                    if bites:
-                        fd.write(bites)
-                    else:
-                        break
+                fd.write(blob_req.read())
                 fd.flush()
                 ddfs = DDFS(params.target_disco_master)
                 if params.chunk:
