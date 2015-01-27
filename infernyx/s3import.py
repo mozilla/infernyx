@@ -96,7 +96,7 @@ def copy_tags_map(intup, params):
             ddfs.push(params.target_tag, [local_file])
         # print local_file
     except Exception as e:
-        yield '["_default", "%s", "%s", "%s"]' % (gethostname(), netloc, local_file)
+        yield '["_default", "%s", "%s", "%s"]' % (gethostname(), netloc, local_file), [1]
 
 
 RULES = [
