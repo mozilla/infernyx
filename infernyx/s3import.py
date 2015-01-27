@@ -74,18 +74,19 @@ def filename_input_stream(fd, size, url, params):
         raise util.DataError(msg, url)
 
     if scheme == 'file':
-        yield '/' + rest
+        yield netloc, '/' + rest
     else:
         # print url, rest
         fle = util.localize(rest,
                             disco_data=worker.Task.disco_data,
                             ddfs_data=worker.Task.ddfs_data)
 
-        yield fle
+        yield netloc, fle
 
 
-def copy_tags_map(local_file, params):
+def copy_tags_map((netloc, local_file), params):
     from disco.ddfs import DDFS
+    from socket import gethostname
     try:
         ddfs = DDFS(params.target_disco_master)
         if params.chunk:
@@ -93,9 +94,8 @@ def copy_tags_map(local_file, params):
         else:
             ddfs.push(params.target_tag, [local_file])
         # print local_file
-        yield '["_default", "OK"]', [1]
     except Exception as e:
-        yield '["_default", "Failed/' + local_file + '"]', [1]
+        yield '["_default", "%s", "%s", "%s"]' % (gethostname(), netloc, local_file)
 
 
 RULES = [
