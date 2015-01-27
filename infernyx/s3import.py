@@ -84,9 +84,10 @@ def filename_input_stream(fd, size, url, params):
         yield netloc, fle
 
 
-def copy_tags_map((netloc, local_file), params):
+def copy_tags_map(intup, params):
     from disco.ddfs import DDFS
     from socket import gethostname
+    netloc, local_file = intup
     try:
         ddfs = DDFS(params.target_disco_master)
         if params.chunk:
