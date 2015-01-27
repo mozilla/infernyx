@@ -116,7 +116,7 @@ def copy_tags_map((url, local_file), params):
                     ddfs.push(params.target_tag, [fd.name])
                 print "pushed remote: %s" % url
         except Exception as e:
-            print "failed: %s" % url
+            print "failed: %s %s" % (e, url)
             yield unicode('["_default", "%s", "%s", "%s"]' % (e, gethostname(), url)).encode('ascii', 'ignore'), [1]
 
 
