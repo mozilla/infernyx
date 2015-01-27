@@ -75,18 +75,20 @@ def filename_input_stream(fd, size, url, params):
         raise util.DataError(msg, url)
 
     if scheme == 'file':
-        yield netloc, "/%s" % rest
+        yield url, netloc, "/%s" % rest
     else:
         # print url, rest
         fle = util.localize(rest,
                             disco_data=worker.Task.disco_data,
                             ddfs_data=worker.Task.ddfs_data)
 
-        yield netloc, fle
+        yield url, fle
 
 
-def copy_tags_map((netloc, local_file), params):
+def copy_tags_map((url, local_file), params):
     from disco.ddfs import DDFS
+    from disco.comm import request
+    from tempfile import NamedTemporaryFile
     from socket import gethostname
     try:
         ddfs = DDFS(params.target_disco_master)
@@ -94,16 +96,29 @@ def copy_tags_map((netloc, local_file), params):
             ddfs.chunk(params.target_tag, [local_file])
         else:
             ddfs.push(params.target_tag, [local_file])
-        # print local_file
+        print "pushed local: %s" % local_file
     except Exception as e:
-        yield unicode('["_default", "%s", "%s", "%s"]' % (gethostname(), netloc, local_file)).encode('ascii', 'ignore'), \
-               [1]
+        # we couldn't push the local file for whatever reason, let's try downloading the URL, then pushing
+        try:
+            blob_req = request('GET', url)
+            with NamedTemporaryFile("w", delete=True) as fd:
+                while True:
+                    bites = blob_req.read(8192)
+                    if bites:
+                        fd.write(bites)
+                    else:
+                        break
+                fd.flush()
+                ddfs = DDFS(params.target_disco_master)
+                if params.chunk:
+                    ddfs.chunk(params.target_tag, [fd.name])
+                else:
+                    ddfs.push(params.target_tag, [fd.name])
+                print "pushed remote: %s" % url
+        except Exception as e:
+            print "failed: %s" % url
+            yield unicode('["_default", "%s", "%s", "%s"]' % (e, gethostname(), url)).encode('ascii', 'ignore'), [1]
 
-
-def get_copy_blobs(blob_file):
-    fd = file(blob_file)
-    failed_blobs = set([b.strip() for b in fd.readlines()])
-    pass
 
 RULES = [
     # this rule loads data into a cluster from s3
@@ -121,16 +136,6 @@ RULES = [
     InfernoRule(
         name='copy_tags',
         source_tags=[],
-        target_disco_master='disco://localhost',
-        target_tag='',
-        chunk=False,
-        map_input_stream=(task_input_stream, filename_input_stream),
-        map_function=copy_tags_map,
-    ),
-    InfernoRule(
-        name='copy_blobs',
-        source_urls=partial(get_copy_blobs,
-                            blob_file='failed_blobs'),
         target_disco_master='disco://localhost',
         target_tag='',
         chunk=False,
