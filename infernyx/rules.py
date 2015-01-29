@@ -322,31 +322,33 @@ RULES = [
         value_parts=['count'],
         table='application_stats_daily',
     ),
-    # InfernoRule(
-    #     name='site_tuples',
-    #     source_tags=['incoming:impression'],
-    #
-    #     # process yesterday's data, today at 2am
-    #     day_offset=1,
-    #     day_range=1,
-    #     time_delta={'oclock': 2},
-    #
-    #     map_input_stream=chunk_json_stream,
-    #     map_init_function=impression_stats_init,
-    #     result_processor=None,
-    #     parts_preprocess=[clean_data, parse_ip, parse_urls],
-    #     geoip_file=GEOIP,
-    #     partitions=32,
-    #     sort_buffer_size='25%',
-    #     combiner_function=combiner,
-    #     key_parts=['date', 'locale', 'country_code', 'url_a', 'url_b'],
-    #     value_parts=['count'],
-    #
-    #     # note that this rule_cleanup will be obsolete after the PR https://github.com/chango/inferno/pull/23
-    #     # is merged and released, then only the 'result_tag' below will be required
-    #     # result_tag='incoming:site_tuples',
-    #     rule_cleanup=partial(tag_results, 'incoming:site_tuples:'),
-    #     save=True,
-    #     no_purge=True,
-    # ),
+    InfernoRule(
+        name='site_tuples',
+        source_tags=['incoming:impression'],
+
+        run=False,
+
+        # process yesterday's data, today at 2am
+        day_offset=1,
+        day_range=1,
+        time_delta={'oclock': 2},
+
+        map_input_stream=chunk_json_stream,
+        map_init_function=impression_stats_init,
+        result_processor=None,
+        parts_preprocess=[clean_data, parse_ip, parse_urls],
+        geoip_file=GEOIP,
+        partitions=32,
+        sort_buffer_size='25%',
+        combiner_function=combiner,
+        key_parts=['date', 'locale', 'country_code', 'url_a', 'url_b'],
+        value_parts=['count'],
+
+        # note that this rule_cleanup will be obsolete after the PR https://github.com/chango/inferno/pull/23
+        # is merged and released, then only the 'result_tag' below will be required
+        # result_tag='incoming:site_tuples',
+        rule_cleanup=partial(tag_results, 'incoming:site_tuples:'),
+        save=True,
+        no_purge=True,
+    ),
 ]
