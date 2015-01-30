@@ -324,7 +324,7 @@ RULES = [
     ),
     InfernoRule(
         name='site_tuples',
-        source_tags=['incoming:impression'],
+        source_tags=['processed:impression'],
 
         run=False,
 
