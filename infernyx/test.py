@@ -1,14 +1,9 @@
-from statsd import StatsClient
 from inferno.lib.rule import chunk_json_stream
 from inferno.lib.rule import InfernoRule
 from inferno.lib.rule import Keyset
-from infernyx.database import insert_redshift
-from functools import partial
-import datetime
 import logging
 
 log = logging.getLogger(__name__)
-AUTORUN = True
 
 
 def combiner(key, value, buf, done, params):
@@ -182,69 +177,11 @@ def parse_tiles(parts, params):
         print "Error parsing tiles: %s" % str(tiles)
 
 
-def parse_urls(parts, params):
-    def combos(arr):
-        for i, ela in enumerate(arr):
-            rest = arr[i+1:]
-            for elb in rest:
-                if elb < ela:
-                    ela, elb = elb, ela
-                yield ela, elb
-
-    # only process 'impression' records
-    if "view" in parts:
-        tiles = parts.get('tiles')
-        date = parts.get('date')
-        locale = parts.get('locale')
-        country_code = parts.get('country_code')
-
-        urls = [tile.get('url') for tile in tiles if tile.get('url')]
-        for url_a, url_b in combos(urls):
-            # print date, locale, country_code, url_a, url_b
-            yield {'date': date, 'locale': locale, 'country_code': country_code, 'url_a': url_a, 'url_b': url_b,
-                   'count': 1}
-
-
-def report_rule_stats(job):
-    try:
-        job_id = job.job_name
-        rule_name = job.rule_name
-        blobs = len(job.archiver.job_blobs)
-        jobinfo = job.disco.jobinfo(job_id)
-        status = jobinfo['active']
-        timestamp = datetime.datetime.strptime(jobinfo['timestamp'], "%Y/%m/%d %H:%M:%S")
-        now = datetime.datetime.now()
-        diff = (now - timestamp).seconds * 1000
-        log.info("Wrote stats for: %s" % job_id)
-    except Exception as e:
-        log.error("Error writing stats %s" % e)
-
-
-def tag_results(suffix, job):
-    try:
-        job_id = job.job_name
-        date = job.archiver.tags[0].split(':')[-1]
-        ddfs = job.ddfs
-
-        # create tag name
-        result_tag = "disco:results:%s" % job_id
-        blobs = list(ddfs.blobs(result_tag))
-        tag_name = suffix + date
-        if len(blobs):
-            log.info("Tagging %d results of job %s with tag %s" % (len(blobs), job_id, tag_name))
-            ddfs.tag(tag_name, blobs)
-        else:
-            log.warn("No data to tag for job %s" % job_id)
-    except Exception as e:
-        log.error("Error tagging results %s" % e)
-
-
 RULES = [
     InfernoRule(
         name='impression_stats',
         source_tags=['incoming:impression'],
         archive=True,
-        rule_cleanup=report_rule_stats,
         map_input_stream=chunk_json_stream,
         map_init_function=impression_stats_init,
         parts_preprocess=[clean_data, parse_date, parse_locale, parse_ip, parse_ua, parse_tiles],
