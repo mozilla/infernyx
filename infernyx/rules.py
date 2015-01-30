@@ -1,16 +1,13 @@
-from statsd import StatsClient
 from inferno.lib.rule import chunk_json_stream
 from inferno.lib.rule import InfernoRule
 from inferno.lib.rule import Keyset
 from infernyx.database import insert_redshift
 from functools import partial
-from config_infernyx import *
 import datetime
 import logging
 
 log = logging.getLogger(__name__)
 AUTORUN = True
-statsd = StatsClient(**STATSD)
 
 
 def combiner(key, value, buf, done, params):
@@ -217,9 +214,6 @@ def report_rule_stats(job):
         timestamp = datetime.datetime.strptime(jobinfo['timestamp'], "%Y/%m/%d %H:%M:%S")
         now = datetime.datetime.now()
         diff = (now - timestamp).seconds * 1000
-        statsd.incr("%s.blobs_processed" % rule_name, blobs)
-        statsd.incr("%s.%s" % (rule_name, status))
-        statsd.timer("%s.execution_time" % rule_name, diff)
         log.info("Wrote stats for: %s" % job_id)
     except Exception as e:
         log.error("Error writing stats %s" % e)
@@ -253,7 +247,6 @@ RULES = [
         map_input_stream=chunk_json_stream,
         map_init_function=impression_stats_init,
         parts_preprocess=[clean_data, parse_date, parse_locale, parse_ip, parse_ua, parse_tiles],
-        geoip_file=GEOIP,
         partitions=32,
         sort_buffer_size='25%',
         max_blobs=1024,
@@ -266,13 +259,6 @@ RULES = [
                           'mr', 'ms', 'my', 'nb-no', 'nl', 'nn-no', 'oc', 'or', 'pa-in', 'pl', 'pt-br', 'pt-pt',
                           'rm', 'ro', 'ru', 'si', 'sk', 'sl', 'son', 'sq', 'sr', 'sv-se', 'sw', 'ta', 'te', 'th',
                           'tr', 'uk', 'ur', 'vi', 'xh', 'zh-cn', 'zh-tw', 'zu'},
-        result_processor=partial(insert_redshift,
-                                 host=RS_HOST,
-                                 port=5432,
-                                 database=RS_DB,
-                                 user=RS_USER,
-                                 password=RS_PASSWORD,
-                                 bucket_name=RS_BUCKET),
         combiner_function=combiner,
         keysets={
             'impression_stats': Keyset(
@@ -304,18 +290,10 @@ RULES = [
         map_init_function=impression_stats_init,
         parts_preprocess=[partial(clean_data, imps=False), parse_date,
                           parse_ip, parse_ua, count],
-        geoip_file=GEOIP,
         partitions=32,
         sort_buffer_size='25%',
         max_blobs=1024,
         min_blobs=32,
-        result_processor=partial(insert_redshift,
-                                 host=RS_HOST,
-                                 port=5432,
-                                 database=RS_DB,
-                                 user=RS_USER,
-                                 password=RS_PASSWORD,
-                                 bucket_name=RS_BUCKET),
         combiner_function=combiner,
         key_parts=['date', 'locale', 'ver', 'country_code', 'action', 'month', 'week', 'year', 'os',
                    'browser', 'version', 'device'],
@@ -324,7 +302,7 @@ RULES = [
     ),
     InfernoRule(
         name='site_tuples',
-        source_tags=['incoming:impression'],
+        source_tags=['processed:impression'],
 
         run=False,
 
@@ -337,7 +315,6 @@ RULES = [
         map_init_function=impression_stats_init,
         result_processor=None,
         parts_preprocess=[clean_data, parse_ip, parse_urls],
-        geoip_file=GEOIP,
         partitions=32,
         sort_buffer_size='25%',
         combiner_function=combiner,
