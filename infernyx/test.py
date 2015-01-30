@@ -177,7 +177,7 @@ def parse_tiles(parts, params):
         print "Error parsing tiles: %s" % str(tiles)
 
 
-RULES = [
+RULES = [ 
     InfernoRule(
         name='impression_stats',
         source_tags=['incoming:impression'],
