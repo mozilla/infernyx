@@ -187,11 +187,12 @@ def parse_tiles(parts, params):
 def parse_urls(parts, params):
     def combos(arr):
         for i, ela in enumerate(arr):
-            rest = arr[i+1:]
+            rest = arr[i:]
             for elb in rest:
                 if elb < ela:
-                    ela, elb = elb, ela
-                yield ela, elb
+                    yield elb, ela
+                else:
+                    yield ela, elb
 
     # only process 'impression' records
     if "view" in parts:
