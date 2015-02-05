@@ -201,11 +201,21 @@ def parse_urls(parts, params):
         locale = parts.get('locale')
         country_code = parts.get('country_code')
 
-        urls = [tile.get('url') for tile in tiles if tile.get('url')]
-        for url_a, url_b in combos(urls):
+        urls = set(tile.get('url') for tile in tiles if tile.get('url'))
+        for url_a, url_b in combos(list(urls)):
             # print date, locale, country_code, url_a, url_b
             yield {'date': date, 'locale': locale, 'country_code': country_code, 'url_a': url_a, 'url_b': url_b,
                    'count': 1}
+
+
+def parse_distinct(parts, params):
+    if "view" in parts:
+        tiles = parts.get('tiles')
+        date = parts.get('date')
+        locale = parts.get('locale')
+        country_code = parts.get('country_code')
+        urls = set(tile.get('url') for tile in tiles if tile.get('url'))
+        yield {'date': date, 'locale': locale, 'country_code': country_code, 'distinct_urls': len(urls), 'count': 1}
 
 
 def report_rule_stats(job):
@@ -335,13 +345,22 @@ RULES = [
         map_input_stream=chunk_json_stream,
         map_init_function=impression_stats_init,
         result_processor=None,
-        parts_preprocess=[clean_data, parse_ip, parse_urls],
+        parts_preprocess=[clean_data, parse_ip],
         geoip_file=GEOIP,
         partitions=32,
         sort_buffer_size='25%',
         combiner_function=combiner,
-        key_parts=['date', 'locale', 'country_code', 'url_a', 'url_b'],
-        value_parts=['count'],
+
+        keysets={
+            'tuples': Keyset(
+                key_parts=['date', 'locale', 'country_code', 'url_a', 'url_b'],
+                value_parts=['count'],
+                parts_preprocess=[parse_urls]),
+            'distinct': Keyset(
+                key_parts=['date', 'locale', 'country_code', 'distinct_urls'],
+                value_parts=['count'],
+                parts_preprocess=[parse_distinct])
+        },
 
         # note that this rule_cleanup will be obsolete after the PR https://github.com/chango/inferno/pull/23
         # is merged and released, then only the 'result_tag' below will be required
