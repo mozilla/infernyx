@@ -2,7 +2,7 @@ from inferno.lib.rule import chunk_json_stream
 from inferno.lib.rule import InfernoRule
 from disco.func import chain_stream
 from functools import partial
-from infernyx.utils import kv_reader
+from infernyx.utils import kv_reader, chunk_kv_stream
 import logging
 
 log = logging.getLogger(__name__)
@@ -33,6 +33,7 @@ RULES = [
         source_tags=['incoming:site_tuples'],
 
         map_input_stream=chain_stream + (partial(kv_reader,
+                                                 keyset='tuples',
                                                  keys=('keyset', 'date', 'locale', 'country_code', 'url_a', 'url_b'),
                                                  values=('count',)),),
 
