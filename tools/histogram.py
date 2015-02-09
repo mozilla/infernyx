@@ -8,12 +8,15 @@ stats = {'total': 0, 'keys':{}}
 
 def addKeyValue(keysIndex, valueIndex, lineItems):
   ## make a key
-  key = ",".join(lineItems[i] for i in keysIndex)
-  value = int(lineItems[valueIndex])
-  if key not in stats["keys"]:
-    stats["keys"][key] = 0
-  stats["keys"][key] += value
-  stats["total"] += value
+  try:
+    key = ",".join(lineItems[i] for i in keysIndex)
+    value = int(lineItems[valueIndex])
+    if key not in stats["keys"]:
+      stats["keys"][key] = 0
+    stats["keys"][key] += value
+    stats["total"] += value
+  except:
+    pass
 
 def readLines(keysIndex, valueIndex):
   line = sys.stdin.readline()
