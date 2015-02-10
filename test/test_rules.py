@@ -74,3 +74,5 @@ class TestPreprocess(unittest.TestCase):
                 self.assertEqual(item["distinct_urls"], expected)
                 self.assertEqual(item["count"], 1)
 
+    def test_parse_tiles(self):
+        pass
