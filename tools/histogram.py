@@ -10,7 +10,10 @@ options = None
 def addKeyValue(keysIndex, valueIndex, lineItems):
   ## make a key
   try:
-    key = ",".join(lineItems[i] for i in keysIndex)
+    keyItems = (lineItems[i] for i in keysIndex)
+    if (options.reorder):
+      keyItems = sorted(keyItems)
+    key = ",".join(keyItems)
     value = int(lineItems[valueIndex])
     if key not in stats["keys"]:
       stats["keys"][key] = 0
@@ -42,6 +45,7 @@ def readArgs():
   parser = OptionParser()
   parser.add_option("-k", "--key", dest="keys", help="coma separated key fields")
   parser.add_option("-v", "--value", dest="value", help="value field")
+  parser.add_option("-r", "--reorder", action="store_true", default=False, dest="reorder", help="reorder keys")
   parser.add_option("-d", "--debug", action="store_true", default=False, dest="debug", help="show extra verbose info")
   return parser.parse_args()
 
