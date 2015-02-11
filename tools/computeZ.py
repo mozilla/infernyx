@@ -67,13 +67,14 @@ def readLines():
   while (len(line) > 0):
     try:
       site1, site2, count = re.split(',', line)
-      mean, var = computeDistrib(site1, site2)
-      count = int(count)
-      Z = (count - mean) / sqrt(var)
-      print "%s,%s,%d,%.2f" % (site1, site2, count, Z)
-      mean, var = computeDistrib(site2, site1)
-      Z = (count - mean) / sqrt(var)
-      print "%s,%s,%d,%.2f" % (site2, site1, count, Z)
+      if (site1 in sites and site2 in sites):
+        mean, var = computeDistrib(site1, site2)
+        count = int(count)
+        Z = (count - mean) / sqrt(var)
+        print "%s,%s,%d,%.2f" % (site1, site2, count, Z)
+        mean, var = computeDistrib(site2, site1)
+        Z = (count - mean) / sqrt(var)
+        print "%s,%s,%d,%.2f" % (site2, site1, count, Z)
     except Exception as e:
       logging.error("Error processing line '%s': %s" % (line, e))
     line = sys.stdin.readline()
