@@ -16,5 +16,5 @@ cat "$locale.$country".tuple_count | awk -F"," '{if($1 != $2) print $0;}' > "$lo
 awk -F"," '{if ($2>=200) print $0}' < "$locale.$country".sites_count | sort -t"," -k2 -nr > "$locale.$country".sites_count.200
 
 # compute Zs
-cat "$locale.$country".sites_pairs | ./infernyx/tools/computeZ.py -s "$locale.$country".sites_count.200 -x "$locale.$country".hist > "$locale.$country".Z
+cat "$locale.$country".sites_pairs | ./infernyx/tools/compute_z.py -s "$locale.$country".sites_count.200 -x "$locale.$country".hist > "$locale.$country".Z
 
