@@ -4,38 +4,38 @@ import re
 import logging
 from optparse import OptionParser
 
-stats = {'total': 0, 'keys': {}}
 options = None
 
 
-def add_key_value(keys_index, value_index, line_items):
+def add_key_value(keys_index, value_index, line_items, stats):
     # make a key
     try:
         key_items = (line_items[i] for i in keys_index)
         if options.reorder:
             key_items = sorted(key_items)
         key = ",".join(key_items)
-        value = int(line_items[value_index])
+        val = int(line_items[value_index])
         if key not in stats["keys"]:
             stats["keys"][key] = 0
-        stats["keys"][key] += value
-        stats["total"] += value
+        stats["keys"][key] += val
+        stats["total"] += val
     except:
         pass
+    return stats
 
 
 def read_lines(keys_index, value_index):
-    line = sys.stdin.readline()
-    while len(line):
+    stats = {'total': 0, 'keys': {}}
+    for line in sys.stdin:
         try:
             items = re.split(',', line)
-            add_key_value(keys_index, value_index, items)
+            add_key_value(keys_index, value_index, items, stats)
         except Exception as e:
             logging.error("Error processing line '%s': %s" % (line, e))
-        line = sys.stdin.readline()
+    return stats
 
 
-def print_tats():
+def print_stats(stats):
     if options.debug:
         print "TOTAL: %d" % stats["total"]
     for key in sorted(stats["keys"].iterkeys()):
@@ -55,9 +55,10 @@ def read_args():
 
 
 if __name__ == '__main__':
+
     (options, args) = read_args()
     keys = [int(i) - 1 for i in re.split(',', options.keys)]
     value = int(options.value) - 1
-    read_lines(keys, value)
-    print_tats()
+    s = read_lines(keys, value)
+    print_stats(s)
 

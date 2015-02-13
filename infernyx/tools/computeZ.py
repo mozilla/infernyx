@@ -6,24 +6,20 @@ import logging
 from optparse import OptionParser
 from math import sqrt
 
-total = 0.0
-histogram = [0]
-sites = {}
-
 
 def read_hist(filename):
-    global total
+    total = 0.0
+    histogram = [0]
     f = open(filename, "r")
-    line = f.readline()
-    while len(line):
+    for line in f.readline():
         chunk = re.split(',', line)
         count = int(chunk[1]) * 1.0
         total += count
         histogram.append(count)
-        line = f.readline()
+    return total, histogram
 
 
-def compute_freq_mean(freq, site):
+def compute_freq_mean(freq, histogram):
     mean = 0
     for i in range(1, len(histogram)):
         mean += histogram[i] * (1 - (1 - freq) ** i)
@@ -44,7 +40,7 @@ def estimate_freq(site_count, site):
     return freq
 
 
-def compute_distrib(site1, site2):
+def compute_distrib(site1, site2, sites, histogram):
     freq1 = sites[site1]
     freq2 = sites[site2]
     var = 0
@@ -58,45 +54,43 @@ def compute_distrib(site1, site2):
 
 
 def read_sites(filename):
+    sites = {}
     f = open(filename, "r")
-    line = f.readline()
-    while len(line):
+    for line in f.readline():
         chunk = re.split(',', line)
         site = chunk[0]
         count = int(chunk[1]) * 1.0
         sites[site] = estimate_freq(count, site)
-        line = f.readline()
+    return sites
 
 
-def read_lines():
-    line = sys.stdin.readline()
-    while len(line):
+def read_lines(sites, histogram):
+    for line in sys.stdin:
         try:
             site1, site2, count = re.split(',', line)
             if site1 in sites and site2 in sites:
-                mean, var = compute_distrib(site1, site2)
+                mean, var = compute_distrib(site1, site2, sites, histogram)
                 count = int(count)
-                Z = (count - mean) / sqrt(var)
-                print "%s,%s,%d,%.2f" % (site1, site2, count, Z)
-                mean, var = compute_distrib(site2, site1)
-                Z = (count - mean) / sqrt(var)
-                print "%s,%s,%d,%.2f" % (site2, site1, count, Z)
+                z = (count - mean) / sqrt(var)
+                print "%s,%s,%d,%.2f" % (site1, site2, count, z)
+                mean, var = compute_distrib(site2, site1, sites, histogram)
+                z = (count - mean) / sqrt(var)
+                print "%s,%s,%d,%.2f" % (site2, site1, count, z)
         except Exception as e:
             logging.error("Error processing line '%s': %s" % (line, e))
-        line = sys.stdin.readline()
 
 
 def read_args():
     parser = OptionParser()
-    parser.add_option("-s", "--sites", dest="siteFile", help="site counts")
-    parser.add_option("-x", "--hist", dest="histFile", help="history size historgram")
+    parser.add_option("-s", "--sites", dest="site_file", help="site counts")
+    parser.add_option("-x", "--hist", dest="hist_file", help="history size historgram")
     return parser.parse_args()
 
 
 if __name__ == '__main__':
     (options, args) = read_args()
-    read_hist(options.histFile)
-    read_sites(options.siteFile)
-    read_lines()
+    tot, hist = read_hist(options.hist_file)
+    s = read_sites(options.site_file)
+    read_lines(s, hist)
     # read_lines(keys, value)
 
