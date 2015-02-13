@@ -118,13 +118,6 @@ def parse_tiles(parts, params):
     view = parts.get('view', sys.maxint)
 
     try:
-        cparts = parts.copy()
-        del cparts['tiles']
-        cparts.update(vals)
-        cparts['newtabs'] = 1
-        cparts['position'] = -1
-        cparts['tile_id'] = -1
-        yield cparts
 
         # now prepare values for emitting this particular event
         if parts.get('click') is not None:
@@ -149,6 +142,10 @@ def parse_tiles(parts, params):
             tiles = [tiles[position]]
         else:
             vals['impressions'] = 1
+            cparts = parts.copy()
+            del cparts['tiles']
+            cparts['newtabs'] = 1
+            yield cparts
 
         del parts['tiles']
 
@@ -171,13 +168,10 @@ def parse_tiles(parts, params):
             url = tile.get('url')
             if url:
                 cparts['enhanced'] = True
-                try:
-                    cparts['url'] = urlparse(url).netloc
-                except:
-                    pass
+                cparts['url'] = url
 
             tile_id = tile.get('id')
-            if tile_id is not None and isinstance(tile_id, int) and tile_id < 1000000 and position <= view:
+            if tile_id is not None and isinstance(tile_id, int) and tile_id < 1000000 and slot <= view:
                 cparts['tile_id'] = tile_id
             yield cparts
     except:
