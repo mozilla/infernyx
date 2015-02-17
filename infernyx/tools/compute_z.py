@@ -11,7 +11,7 @@ def read_hist(filename):
     total = 0.0
     histogram = [0]
     f = open(filename, "r")
-    for line in f.readline():
+    for line in f:
         chunk = re.split(',', line)
         count = int(chunk[1]) * 1.0
         total += count
@@ -26,12 +26,12 @@ def compute_freq_mean(freq, histogram):
     return mean
 
 
-def estimate_freq(site_count, site):
+def estimate_freq(site_count, site, histogram):
     freq = 0.5
     left = 0.0000001
     right = 0.9999999
     while (right - left) > 0.0000001:
-        mean = compute_freq_mean(freq, site)
+        mean = compute_freq_mean(freq, histogram)
         if mean < site_count:
             left = freq
         else:
@@ -53,14 +53,14 @@ def compute_distrib(site1, site2, sites, histogram):
     return mean, var
 
 
-def read_sites(filename):
+def read_sites(filename, histogram):
     sites = {}
     f = open(filename, "r")
-    for line in f.readline():
+    for line in f:
         chunk = re.split(',', line)
         site = chunk[0]
         count = int(chunk[1]) * 1.0
-        sites[site] = estimate_freq(count, site)
+        sites[site] = estimate_freq(count, site, histogram)
     return sites
 
 
@@ -90,7 +90,7 @@ def read_args():
 if __name__ == '__main__':
     (options, args) = read_args()
     tot, hist = read_hist(options.hist_file)
-    s = read_sites(options.site_file)
+    s = read_sites(options.site_file, hist)
     read_lines(s, hist)
     # read_lines(keys, value)
 
