@@ -10,7 +10,7 @@ class TestUtils(unittest.TestCase):
             ([u'_default', u'2015-01-07', u'en-US', u'US', u'www.dishanywhere.com', u'www.kohls.com'], [4]),
         ]
         for a_dict in kv_reader(insie, keys=['a', 'b'], values=['x']):
-            print "aDict = %s" % str(a_dict)
+            # print "aDict = %s" % str(a_dict)
             self.assertDictContainsSubset(
                 {'a': u'_default', 'b': u'2015-01-07', 'x': 4},
                 a_dict
@@ -25,7 +25,7 @@ class TestUtils(unittest.TestCase):
             ([u'three', u'2015-01-07', u'en-US', u'US', u'www.dishanywhere.com', u'www.kohls.com'], [7]),
         ]
         a_dict = list(kv_reader(input, keyset='two', keys=['a', 'b'], values=['x']))
-        print "aDict = %s" % str(a_dict)
+        # print "aDict = %s" % str(a_dict)
         self.assertDictContainsSubset(
             {'a': u'two', 'b': u'2015-01-07', 'x': 5},
             a_dict[0]
