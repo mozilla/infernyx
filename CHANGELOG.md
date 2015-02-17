@@ -1,3 +1,9 @@
+0.1.35
+======
+
+- contains unit test suite
+- bug fixes or parse_tiles and parse_urls
+
 0.1.33
 ======
 
