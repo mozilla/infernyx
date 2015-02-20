@@ -4,8 +4,8 @@ import tempfile
 import stat
 import os
 import sys
-import csv
 import boto
+import json
 from boto.s3.key import Key
 from boto.utils import compute_md5
 from boto.utils import get_instance_metadata
@@ -43,8 +43,8 @@ def _get_sts_credentials():
 
 def _build_datafiles(disco_iter, params, job_id):
     pivot = None
-    csvwriter = None
     datafiles = []
+    columns = ()
     total_lines = 0
     tmp = None
 
@@ -57,14 +57,13 @@ def _build_datafiles(disco_iter, params, job_id):
                 tmp.close()
             tmp = tempfile.NamedTemporaryFile(delete=False, prefix=pivot, dir='/tmp')
             os.chmod(tmp.name, stat.S_IROTH | stat.S_IRGRP | stat.S_IRUSR)
-            csvwriter = csv.writer(tmp, delimiter='|', escapechar='\\', quoting=csv.QUOTE_NONE)
-            datafiles.append(DataFile(tmp.name, (None, None), keyset['table'], _get_columns(keyset)))
+            columns = _get_columns(keyset)
+            datafiles.append(DataFile(tmp.name, (None, None), keyset['table'], columns))
             _log(job_id, "Saving %s data in %s" % (keyset['table'], tmp.name))
 
-        data = tuple(key[1:]) + tuple(value)
-        escaped = [unicode(x).encode('unicode_escape') for x in data]
+        data = dict(zip(columns, tuple(key[1:]) + tuple(value)))
         # _log(job_id, 'Debug.persist_results: %s' % escaped, logging.DEBUG)
-        csvwriter.writerow(escaped)
+        tmp.write(json.dumps(data) + '\n')
         total_lines += 1
 
     if tmp:
@@ -75,7 +74,7 @@ def _build_datafiles(disco_iter, params, job_id):
 def _insert_datafiles(host, port, database, user, password, datafiles, params, job_id, total_lines, extras=''):
     connection, cursor = _connect(host, port, database, user, password)
     try:
-        query = "COPY %s (%s) FROM '%s' WITH %s DELIMITER '|' TRUNCATECOLUMNS"
+        query = "COPY %s (%s) FROM '%s' WITH %s JSON 'auto' TRUNCATECOLUMNS"
         for tmpfile, (s3_bucket, s3_key), tablename, columns in datafiles:
 
             # Default delimiter is |, default escape is backslash
