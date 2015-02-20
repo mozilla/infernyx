@@ -28,7 +28,7 @@ def _log(jid, msg, severity=logging.INFO):
 def _get_columns(kset):
     keys = kset['key_parts']
     values = kset['value_parts']
-    return ','.join(keys[1:] + values)
+    return keys[1:] + values
 
 
 def _get_sts_credentials():
@@ -58,7 +58,7 @@ def _build_datafiles(disco_iter, params, job_id):
             tmp = tempfile.NamedTemporaryFile(delete=False, prefix=pivot, dir='/tmp')
             os.chmod(tmp.name, stat.S_IROTH | stat.S_IRGRP | stat.S_IRUSR)
             columns = _get_columns(keyset)
-            datafiles.append(DataFile(tmp.name, (None, None), keyset['table'], columns))
+            datafiles.append(DataFile(tmp.name, (None, None), keyset['table'], ','.join(columns)))
             _log(job_id, "Saving %s data in %s" % (keyset['table'], tmp.name))
 
         data = dict(zip(columns, tuple(key[1:]) + tuple(value)))
