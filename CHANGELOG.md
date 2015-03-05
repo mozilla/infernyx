@@ -1,3 +1,19 @@
+0.1.37
+======
+
+- added csdash.py - a nightly script to update the Metrics Dashboard
+
+**Note**
+this patch expects new variables defined in the config_infernyx module:
+
+RS_PORT = 5432
+DASH_USER = 'read_only'
+DASH_PASSWORD = <password for redshift user>
+DASH_BUCKET = 'net-mozaws-prod-metrics-data'
+DASH_KEY_ID = <access key for dashboard s3 bucket>
+DASH_ACCESS_KEY = <secret key for s3 bucket>
+
+
 0.1.35
 ======
 
