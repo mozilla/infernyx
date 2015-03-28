@@ -1,3 +1,4 @@
+#!/usr/bin/python
 from config_infernyx import *
 import psycopg2
 from psycopg2.extras import DictCursor
