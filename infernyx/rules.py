@@ -253,6 +253,7 @@ RULES = [
     InfernoRule(
         name='impression_stats',
         source_tags=['incoming:impression'],
+        max_blobs=300,
         archive=True,
         rule_cleanup=report_rule_stats,
         map_input_stream=chunk_json_stream,
@@ -302,6 +303,7 @@ RULES = [
     InfernoRule(
         name='application_stats',
         source_tags=['incoming:app'],
+        max_blobs=300,
         archive=True,
         rule_cleanup=report_rule_stats,
         map_input_stream=chunk_json_stream,
