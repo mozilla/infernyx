@@ -1,3 +1,8 @@
+0.1.40
+======
+
+fixed double IP address bug in data cleaner
+
 0.1.37
 ======
 
