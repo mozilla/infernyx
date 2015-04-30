@@ -38,13 +38,14 @@ def clean_data(parts, params, imps=True):
     try:
         if imps:
             assert parts['tiles'][0] is not None
-        assert params.ip_pattern.match(parts['ip'])
+        ip = parts['ip'].split(',')[0].strip()
+        assert params.ip_pattern.match(ip)
         assert datetime.datetime.fromtimestamp(parts['timestamp'] / 1000.0)
         parts['locale'] = parts['locale'][:12]
         if parts.get('action'):
             parts['action'] = parts['action'][:254]
         yield parts
-    except:
+    except Exception as e:
         pass
 
 
@@ -81,8 +82,8 @@ def parse_ip(parts, params):
         ip = ips.split(',')[0].strip()
         resp = params.geoip_db.country(ip)
         parts['country_code'] = resp.country.iso_code
-    except:
-        # print "Error parsing ip address: %s" % ips
+    except Exception as e:
+        # print "Error parsing ip address: %s %s" % (ips, e)
         parts['country_code'] = 'ERROR'
     yield parts
 
@@ -97,7 +98,7 @@ def parse_ua(parts, params):
         parts['browser'] = result_dict['user_agent']['family'][:64]
         parts['device'] = result_dict['device']['family'][:64]
     except:
-        print "Error parsing UA: %s" % ua
+        # print "Error parsing UA: %s" % ua
         parts.setdefault('os', 'n/a')
         parts.setdefault('version', 'n/a')
         parts.setdefault('browser', 'n/a')
