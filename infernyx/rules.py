@@ -1,4 +1,4 @@
-from statsd import StatsClient
+from datadog import statsd
 from inferno.lib.rule import chunk_json_stream
 from inferno.lib.rule import InfernoRule
 from inferno.lib.rule import Keyset
@@ -10,7 +10,6 @@ import logging
 
 log = logging.getLogger(__name__)
 AUTORUN = True
-statsd = StatsClient(**STATSD)
 
 
 def combiner(key, value, buf, done, params):
@@ -38,13 +37,15 @@ def clean_data(parts, params, imps=True):
     try:
         if imps:
             assert parts['tiles'][0] is not None
-        ip = parts['ip'].split(',')[0].strip()
-        assert params.ip_pattern.match(ip)
+        if getattr(params, 'ip_pattern', False):
+            ip = parts['ip'].split(',')[0].strip()
+            assert params.ip_pattern.match(ip)
         assert datetime.datetime.fromtimestamp(parts['timestamp'] / 1000.0)
         parts['locale'] = parts['locale'][:12]
         if parts.get('action'):
             parts['action'] = parts['action'][:254]
         yield parts
+
     except Exception as e:
         pass
 
@@ -231,6 +232,44 @@ def report_rule_stats(job):
         log.error("Error writing stats %s" % e)
 
 
+def report_suspicious_ips(it, params, job_id):
+    total_ips = 0
+    ips = []
+    for (_, ip), (total,) in it:
+        if total_ips >= 1000:
+            break
+        ips.append("%20s %d" % (ip, total))
+        total_ips += 1
+
+    if total_ips:
+        msg = '\n'.join(ips)
+        statsd.event("Suspicious IP report", msg)
+        log.debug(msg)
+
+
+def parse_ip_clicks(parts, params):
+    tiles = parts.get('tiles')
+
+    try:
+        # now prepare values for emitting this particular event
+        if parts.get('click') is not None:
+            position = parts['click']
+            tile = tiles[position]
+
+            del parts['tiles']
+
+            # print "Tile: %s" % str(tile)
+            cparts = parts.copy()
+            cparts['clicks'] = 1
+
+            tile_id = tile.get('id')
+            if tile_id is not None and isinstance(tile_id, int) and tile_id < 1000000:
+                cparts['tile_id'] = tile_id
+                yield cparts
+    except Exception as e:
+        print "Error parsing tiles: %s %s" % (e, str(tiles))
+
+
 def tag_results(suffix, job):
     try:
         job_id = job.job_name
@@ -248,6 +287,18 @@ def tag_results(suffix, job):
             log.warn("No data to tag for job %s" % job_id)
     except Exception as e:
         log.error("Error tagging results %s" % e)
+
+
+def filter_all(parts, params, **kwargs):
+    for col, val in kwargs.items():
+        if col and parts[col] != val:
+            return
+    yield parts
+
+
+def filter_clicks(keys, vals, params, threshold=20):
+    if vals[0] >= threshold:
+        yield keys, vals
 
 
 RULES = [
@@ -365,5 +416,24 @@ RULES = [
         rule_cleanup=partial(tag_results, 'incoming:site_tuples:'),
         save=True,
         no_purge=True,
+    ),
+    InfernoRule(
+        name='ip_click_counter',
+        source_tags=['incoming:impression'],
+
+        # run this job every day at 1am on yesterday's data
+        day_range=1,
+        day_offset=1,
+        time_delta={'oclock': 1},
+
+        map_input_stream=chunk_json_stream,
+        parts_preprocess=[clean_data, parse_ip_clicks, count],
+        parts_postprocess=[partial(filter_clicks, threshold=50)],
+        result_processor=report_suspicious_ips,
+        partitions=32,
+        sort_buffer_size='25%',
+        combiner_function=combiner,
+        key_parts=['ip'],
+        value_parts=['count'],
     ),
 ]
