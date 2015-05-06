@@ -289,13 +289,6 @@ def tag_results(suffix, job):
         log.error("Error tagging results %s" % e)
 
 
-def filter_all(parts, params, **kwargs):
-    for col, val in kwargs.items():
-        if col and parts[col] != val:
-            return
-    yield parts
-
-
 def filter_clicks(keys, vals, params, threshold=20):
     if vals[0] >= threshold:
         yield keys, vals
