@@ -88,3 +88,19 @@ class TestIPCounter(unittest.TestCase):
         report_suspicious_ips(vals, None, None)
         infernyx.rules.statsd.event = save
         self.assertEqual(self.totals[0], 1)
+
+    def test_dont_report_suspicious_ips(self):
+        import infernyx.rules
+        vals = [
+        ]
+
+        # this tests that statsd is called with all results
+        def mock_event(*args, **kwargs):
+            self.totals[0] += 1
+
+        self.totals = [0]
+        save = infernyx.rules.statsd.event
+        infernyx.rules.statsd.event = Mock(side_effect=mock_event)
+        report_suspicious_ips(vals, None, None)
+        infernyx.rules.statsd.event = save
+        self.assertEqual(self.totals[0], 0)
