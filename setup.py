@@ -9,7 +9,7 @@ setup(
     author='tspurway',
     author_email='tspurway@mozilla.com',
     description='Inferno rules for Tiles Project',
-    install_requires=['psycopg2', 'inferno', 'boto', 'geoip2', 'ua_parser', 'statsd', 'disco', 'datadog'],
+    install_requires=['psycopg2', 'inferno', 'boto', 'geoip2', 'ua_parser', 'statsd', 'datadog'],
     scripts=['scripts/csdash.py'],
     zip_safe=False,
 )
