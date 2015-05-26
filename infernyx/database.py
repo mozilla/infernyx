@@ -133,13 +133,14 @@ def _upload_s3(datafiles, job_id, bucket_name='infernyx'):
 def insert_postgres(disco_iter, params, job_id, host, database, user, password):
     datafiles, total_lines = _build_datafiles(disco_iter, params, job_id)
     _insert_datafiles(host, None, database, user, password, datafiles, params, job_id, total_lines)
+    return total_lines
 
 
-def insert_redshift(disco_iter, params, job_id, host, port, database, user,
-                    password, bucket_name):
+def insert_redshift(disco_iter, params, job_id, host, port, database, user, password, bucket_name):
     datafiles, total_lines = _build_datafiles(disco_iter, params, job_id)
     datafiles = _upload_s3(datafiles, job_id, bucket_name)
     credentials = _get_sts_credentials()
     _insert_datafiles(host, port, database, user, password, datafiles, params,
                       job_id, total_lines, extras=credentials)
+    return total_lines
 

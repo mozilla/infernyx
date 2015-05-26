@@ -7,6 +7,7 @@ from functools import partial
 from config_infernyx import *
 import datetime
 import logging
+import sys
 
 log = logging.getLogger(__name__)
 AUTORUN = True
@@ -114,6 +115,10 @@ def parse_tiles(parts, params):
         otherwise it's an impression, emit all of the records"""
     tiles = parts.get('tiles')
 
+    one = 1
+    if parts.get('blacklisted', False):
+        one = -1
+
     position = None
     vals = {'clicks': 0, 'impressions': 0, 'pinned': 0, 'blocked': 0,
             'sponsored': 0, 'sponsored_link': 0, 'newtabs': 0, 'enhanced': False}
@@ -124,29 +129,29 @@ def parse_tiles(parts, params):
         # now prepare values for emitting this particular event
         if parts.get('click') is not None:
             position = parts['click']
-            vals['clicks'] = 1
+            vals['clicks'] = one
             tiles = [tiles[position]]
         elif parts.get('pin') is not None:
             position = parts['pin']
-            vals['pinned'] = 1
+            vals['pinned'] = one
             tiles = [tiles[position]]
         elif parts.get('block') is not None:
             position = parts['block']
-            vals['blocked'] = 1
+            vals['blocked'] = one
             tiles = [tiles[position]]
         elif parts.get('sponsored') is not None:
             position = parts['sponsored']
-            vals['sponsored'] = 1
+            vals['sponsored'] = one
             tiles = [tiles[position]]
         elif parts.get('sponsored_link') is not None:
             position = parts['sponsored_link']
-            vals['sponsored_link'] = 1
+            vals['sponsored_link'] = one
             tiles = [tiles[position]]
         else:
-            vals['impressions'] = 1
+            vals['impressions'] = one
             cparts = parts.copy()
             del cparts['tiles']
-            cparts['newtabs'] = 1
+            cparts['newtabs'] = one
             yield cparts
 
         del parts['tiles']
@@ -232,18 +237,10 @@ def report_rule_stats(job):
         log.error("Error writing stats %s" % e)
 
 
-def report_suspicious_ips(it, params, job_id):
-    total_ips = 0
-    ips = []
-    for (_, ip), (total,) in it:
-        if total_ips >= 1000:
-            break
-        ips.append("%20s %d" % (ip, total))
-        total_ips += 1
-
-    if total_ips:
-        msg = '\n'.join(ips)
-        statsd.event("Suspicious IP report", msg)
+def report_suspicious_ips(disco_iter, params, job_id, host, port, database, user, password, bucket_name):
+    if insert_redshift(disco_iter, params, job_id, host, port, database, user, password, bucket_name) > 0:
+        msg = 'disco results %s | disco deref | ddfs xcat' % job_id
+        statsd.event("Suspicious IPs detected.  To view IPs, run: ", msg)
         log.debug(msg)
 
 
@@ -251,21 +248,16 @@ def parse_ip_clicks(parts, params):
     tiles = parts.get('tiles')
 
     try:
-        # now prepare values for emitting this particular event
-        if parts.get('click') is not None:
-            position = parts['click']
-            tile = tiles[position]
+        del parts['tiles']
+        cparts = parts.copy()
+        cparts['impressions'] = 1 if not any(ind in parts for ind in
+                                             ('click', 'pin', 'block', 'sponsored', 'sponsored_link')) else 0
+        cparts['clicks'] = 1 if 'click' in parts else 0
 
-            del parts['tiles']
+        # only count ips if there is an explicit tile_id
+        if any('id' in tile for tile in tiles):
+            yield cparts
 
-            # print "Tile: %s" % str(tile)
-            cparts = parts.copy()
-            cparts['clicks'] = 1
-
-            tile_id = tile.get('id')
-            if tile_id is not None and isinstance(tile_id, int) and tile_id < 1000000:
-                cparts['tile_id'] = tile_id
-                yield cparts
     except Exception as e:
         print "Error parsing tiles: %s %s" % (e, str(tiles))
 
@@ -289,25 +281,71 @@ def tag_results(suffix, job):
         log.error("Error tagging results %s" % e)
 
 
-def filter_clicks(keys, vals, params, threshold=20):
-    if vals[0] >= threshold:
-        yield keys, vals
+def filter_clicks(keys, (imps, clicks), params, click_threshold=20, impression_threshold=250):
+    if imps >= impression_threshold or clicks >= click_threshold:
+        yield keys, (imps, clicks)
 
 
-RULES = [
-    InfernoRule(
-        name='impression_stats',
+def impression_stats_rule(blacklisted=False):
+    keysets = {
+        'impression_stats': Keyset(
+            key_parts=['date', 'position', 'locale', 'tile_id', 'country_code', 'os', 'browser',
+                       'version', 'device', 'year', 'month', 'week', 'enhanced', 'blacklisted'],
+            value_parts=['impressions', 'clicks', 'pinned', 'blocked', 'sponsored', 'sponsored_link'],
+            table='impression_stats_daily')}
+
+    #
+    # the 'negative' case is a daily rule, where we repeal any impression by fraud
+    #
+    if blacklisted:
+        name = 'blacklisted_impression_stats'
+        min_blobs = 1
+        max_blobs = sys.maxint
+        archive = False
+        day_range = 1
+        day_offset = 1
+        time_delta = {'oclock': 4}
+    else:
+        #
+        # the normal case is an automatic rule for counting impression, site, and newtab stats
+        #
+        name = 'impression_stats'
+        min_blobs = IMPRESSION_MIN_BLOBS
+        max_blobs = IMPRESSION_MAX_BLOBS
+        archive = True
+        day_range = 0
+        day_offset = 0
+        time_delta = None
+        keysets.update({
+            'site_stats': Keyset(
+                key_parts=['date', 'locale', 'country_code', 'os', 'browser', 'version', 'device', 'year',
+                           'month', 'week', 'url'],
+                value_parts=['impressions', 'clicks', 'pinned', 'blocked', 'sponsored', 'sponsored_link'],
+                table='site_stats_daily',
+            ),
+            'newtab_stats': Keyset(
+                key_parts=['date', 'locale', 'country_code', 'os', 'browser', 'version', 'device', 'year',
+                           'month', 'week'],
+                value_parts=['newtabs'],
+                table='newtab_stats_daily')})
+
+    return InfernoRule(
+        name=name,
         source_tags=['incoming:impression'],
-        max_blobs=IMPRESSION_MAX_BLOBS,
-        archive=True,
+        max_blobs=max_blobs,
+        archive=archive,
+        day_range=day_range,
+        day_offset=day_offset,
+        time_delta=time_delta,
         rule_cleanup=report_rule_stats,
         map_input_stream=chunk_json_stream,
         map_init_function=impression_stats_init,
+        blacklisted=blacklisted,
         parts_preprocess=[clean_data, parse_date, parse_locale, parse_ip, parse_ua, parse_tiles],
         geoip_file=GEOIP,
         partitions=32,
         sort_buffer_size='25%',
-        min_blobs=IMPRESSION_MIN_BLOBS,
+        min_blobs=min_blobs,
         locale_whitelist={'ach', 'af', 'an', 'ar', 'as', 'ast', 'az', 'be', 'bg', 'bn-bd', 'bn-in', 'br', 'bs',
                           'ca', 'cs', 'csb', 'cy', 'da', 'de', 'el', 'en-gb', 'en-us', 'en-za', 'eo', 'es-ar',
                           'es-cl', 'es-es', 'es-mx', 'et', 'eu', 'fa', 'ff', 'fi', 'fr', 'fy-nl', 'ga-ie', 'gd',
@@ -324,27 +362,13 @@ RULES = [
                                  password=RS_PASSWORD,
                                  bucket_name=RS_BUCKET),
         combiner_function=combiner,
-        keysets={
-            'impression_stats': Keyset(
-                key_parts=['date', 'position', 'locale', 'tile_id', 'country_code', 'os', 'browser',
-                           'version', 'device', 'year', 'month', 'week', 'enhanced'],
-                value_parts=['impressions', 'clicks', 'pinned', 'blocked', 'sponsored', 'sponsored_link'],
-                table='impression_stats_daily',
-            ),
-            'site_stats': Keyset(
-                key_parts=['date', 'locale', 'country_code', 'os', 'browser', 'version', 'device', 'year',
-                           'month', 'week', 'url'],
-                value_parts=['impressions', 'clicks', 'pinned', 'blocked', 'sponsored', 'sponsored_link'],
-                table='site_stats_daily',
-            ),
-            'newtab_stats': Keyset(
-                key_parts=['date', 'locale', 'country_code', 'os', 'browser', 'version', 'device', 'year',
-                           'month', 'week'],
-                value_parts=['newtabs'],
-                table='newtab_stats_daily',
-            ),
-        },
-    ),
+        keysets=keysets
+    )
+
+
+RULES = [
+    impression_stats_rule(),
+    impression_stats_rule(blacklisted=True),
     InfernoRule(
         name='application_stats',
         source_tags=['incoming:app'],
@@ -403,30 +427,33 @@ RULES = [
                 parts_preprocess=[parse_distinct])
         },
 
-        # note that this rule_cleanup will be obsolete after the PR https://github.com/chango/inferno/pull/23
-        # is merged and released, then only the 'result_tag' below will be required
-        # result_tag='incoming:site_tuples',
-        rule_cleanup=partial(tag_results, 'incoming:site_tuples:'),
-        save=True,
-        no_purge=True,
+        result_tag='incoming:site_tuples',
     ),
     InfernoRule(
         name='ip_click_counter',
         source_tags=['incoming:impression'],
 
-        # run this job every day at 1am on yesterday's data
+        # run this job every day at 2am on yesterday's data
         day_range=1,
         day_offset=1,
-        time_delta={'oclock': 1},
+        time_delta={'oclock': 2},
 
         map_input_stream=chunk_json_stream,
-        parts_preprocess=[clean_data, parse_ip_clicks, count],
-        parts_postprocess=[partial(filter_clicks, threshold=50)],
-        result_processor=report_suspicious_ips,
+        parts_preprocess=[clean_data, parse_date, parse_ip_clicks],
+        parts_postprocess=[partial(filter_clicks, click_threshold=50, impression_threshold=750)],
+        result_processor=partial(report_suspicious_ips,
+                                 host=RS_HOST,
+                                 port=RS_PORT,
+                                 database=RS_DB,
+                                 user=RS_USER,
+                                 password=RS_PASSWORD,
+                                 bucket_name=RS_BUCKET),
         partitions=32,
         sort_buffer_size='25%',
         combiner_function=combiner,
-        key_parts=['ip'],
-        value_parts=['count'],
+        key_parts=['date', 'ip'],
+        value_parts=['impressions', 'clicks'],
+        column_mappings={'impressions': None, 'clicks': None},
+        table='blacklisted_ips'
     ),
 ]
