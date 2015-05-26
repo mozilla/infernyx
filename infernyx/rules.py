@@ -2,12 +2,11 @@ from datadog import statsd
 from inferno.lib.rule import chunk_json_stream
 from inferno.lib.rule import InfernoRule
 from inferno.lib.rule import Keyset
-from infernyx.database import insert_redshift
+from infernyx.database import insert_redshift, insert_postgres, get_blacklist_ips, delete_old_blacklist_ips
 from functools import partial
 from config_infernyx import *
 import datetime
 import logging
-import sys
 
 log = logging.getLogger(__name__)
 AUTORUN = True
@@ -21,13 +20,17 @@ def combiner(key, value, buf, done, params):
         return buf.iteritems()
 
 
+def negative_impression_rule_init(params, host, port, database, user, password):
+    delete_old_blacklist_ips(host, port, database, user, password)
+    params.blacklisted_ips = get_blacklist_ips(host, port, database, user, password)
+
+
 def impression_stats_init(input_iter, params):
     import geoip2.database
     import re
     try:
         geoip_file = params.geoip_file
     except Exception as e:
-        # print "GROOVY: %s" % e
         geoip_file = './GeoLite2-Country.mmdb'
     params.geoip_db = geoip2.database.Reader(geoip_file)
     params.ip_pattern = re.compile("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
@@ -36,6 +39,7 @@ def impression_stats_init(input_iter, params):
 def clean_data(parts, params, imps=True):
     import datetime
     try:
+        parts['blacklisted'] = getattr(params, 'blacklisted', False)
         if imps:
             assert parts['tiles'][0] is not None
         if getattr(params, 'ip_pattern', False):
@@ -110,7 +114,6 @@ def parse_ua(parts, params):
 
 def parse_tiles(parts, params):
     import sys
-    from urlparse import urlparse
     """If we have a 'click', 'block' or 'pin' action, just emit one record,
         otherwise it's an impression, emit all of the records"""
     tiles = parts.get('tiles')
@@ -237,8 +240,10 @@ def report_rule_stats(job):
         log.error("Error writing stats %s" % e)
 
 
-def report_suspicious_ips(disco_iter, params, job_id, host, port, database, user, password, bucket_name):
-    if insert_redshift(disco_iter, params, job_id, host, port, database, user, password, bucket_name) > 0:
+def report_suspicious_ips(disco_iter, params, job_id, host=None, port=None, database=None, user=None, password=None,
+                          bucket_name=None, db_insert_fn=insert_redshift):
+    if db_insert_fn(disco_iter, params, job_id, host=host, port=port, database=database,
+                    user=user, password=password, bucket_name=bucket_name) > 0:
         msg = 'disco results %s | disco deref | ddfs xcat' % job_id
         statsd.event("Suspicious IPs detected.  To view IPs, run: ", msg)
         log.debug(msg)
@@ -283,69 +288,29 @@ def tag_results(suffix, job):
 
 def filter_clicks(keys, (imps, clicks), params, click_threshold=20, impression_threshold=250):
     if imps >= impression_threshold or clicks >= click_threshold:
-        yield keys, (imps, clicks)
+        yield keys, [imps, clicks]
 
 
-def impression_stats_rule(blacklisted=False):
-    keysets = {
-        'impression_stats': Keyset(
-            key_parts=['date', 'position', 'locale', 'tile_id', 'country_code', 'os', 'browser',
-                       'version', 'device', 'year', 'month', 'week', 'enhanced', 'blacklisted'],
-            value_parts=['impressions', 'clicks', 'pinned', 'blocked', 'sponsored', 'sponsored_link'],
-            table='impression_stats_daily')}
+def filter_blacklist(parts, params):
+    ip = parts.get('ip', 'n/a')
+    if ip in params.blacklisted_ips:
+        yield parts
 
-    #
-    # the 'negative' case is a daily rule, where we repeal any impression by fraud
-    #
-    if blacklisted:
-        name = 'blacklisted_impression_stats'
-        min_blobs = 1
-        max_blobs = sys.maxint
-        archive = False
-        day_range = 1
-        day_offset = 1
-        time_delta = {'oclock': 4}
-    else:
-        #
-        # the normal case is an automatic rule for counting impression, site, and newtab stats
-        #
-        name = 'impression_stats'
-        min_blobs = IMPRESSION_MIN_BLOBS
-        max_blobs = IMPRESSION_MAX_BLOBS
-        archive = True
-        day_range = 0
-        day_offset = 0
-        time_delta = None
-        keysets.update({
-            'site_stats': Keyset(
-                key_parts=['date', 'locale', 'country_code', 'os', 'browser', 'version', 'device', 'year',
-                           'month', 'week', 'url'],
-                value_parts=['impressions', 'clicks', 'pinned', 'blocked', 'sponsored', 'sponsored_link'],
-                table='site_stats_daily',
-            ),
-            'newtab_stats': Keyset(
-                key_parts=['date', 'locale', 'country_code', 'os', 'browser', 'version', 'device', 'year',
-                           'month', 'week'],
-                value_parts=['newtabs'],
-                table='newtab_stats_daily')})
 
-    return InfernoRule(
-        name=name,
+RULES = [
+    InfernoRule(
+        name='impression_stats',
         source_tags=['incoming:impression'],
-        max_blobs=max_blobs,
-        archive=archive,
-        day_range=day_range,
-        day_offset=day_offset,
-        time_delta=time_delta,
+        min_blobs=IMPRESSION_MIN_BLOBS,
+        max_blobs=IMPRESSION_MAX_BLOBS,
+        archive=True,
         rule_cleanup=report_rule_stats,
         map_input_stream=chunk_json_stream,
         map_init_function=impression_stats_init,
-        blacklisted=blacklisted,
         parts_preprocess=[clean_data, parse_date, parse_locale, parse_ip, parse_ua, parse_tiles],
         geoip_file=GEOIP,
         partitions=32,
         sort_buffer_size='25%',
-        min_blobs=min_blobs,
         locale_whitelist={'ach', 'af', 'an', 'ar', 'as', 'ast', 'az', 'be', 'bg', 'bn-bd', 'bn-in', 'br', 'bs',
                           'ca', 'cs', 'csb', 'cy', 'da', 'de', 'el', 'en-gb', 'en-us', 'en-za', 'eo', 'es-ar',
                           'es-cl', 'es-es', 'es-mx', 'et', 'eu', 'fa', 'ff', 'fi', 'fr', 'fy-nl', 'ga-ie', 'gd',
@@ -362,13 +327,66 @@ def impression_stats_rule(blacklisted=False):
                                  password=RS_PASSWORD,
                                  bucket_name=RS_BUCKET),
         combiner_function=combiner,
-        keysets=keysets
-    )
-
-
-RULES = [
-    impression_stats_rule(),
-    impression_stats_rule(blacklisted=True),
+        keysets = {
+            'impression_stats': Keyset(
+                key_parts=['date', 'position', 'locale', 'tile_id', 'country_code', 'os', 'browser',
+                           'version', 'device', 'year', 'month', 'week', 'enhanced', 'blacklisted'],
+                value_parts=['impressions', 'clicks', 'pinned', 'blocked', 'sponsored', 'sponsored_link'],
+                table='impression_stats_daily'),
+            'site_stats': Keyset(
+                key_parts=['date', 'locale', 'country_code', 'os', 'browser', 'version', 'device', 'year',
+                           'month', 'week', 'url'],
+                value_parts=['impressions', 'clicks', 'pinned', 'blocked', 'sponsored', 'sponsored_link'],
+                table='site_stats_daily',
+            ),
+            'newtab_stats': Keyset(
+                key_parts=['date', 'locale', 'country_code', 'os', 'browser', 'version', 'device', 'year',
+                           'month', 'week'],
+                value_parts=['newtabs'],
+                table='newtab_stats_daily')
+        }
+    ),
+    InfernoRule(
+        name='blacklisted_impression_stats',
+        source_tags=['incoming:impression'],
+        day_range=1,
+        day_offset=1,
+        time_delta={'oclock': 4},
+        rule_cleanup=report_rule_stats,
+        map_input_stream=chunk_json_stream,
+        map_init_function=impression_stats_init,
+        blacklisted=True,
+        parts_preprocess=[clean_data, parse_date, parse_locale, parse_ip, filter_blacklist, parse_ua, parse_tiles],
+        geoip_file=GEOIP,
+        partitions=32,
+        sort_buffer_size='25%',
+        locale_whitelist={'ach', 'af', 'an', 'ar', 'as', 'ast', 'az', 'be', 'bg', 'bn-bd', 'bn-in', 'br', 'bs',
+                          'ca', 'cs', 'csb', 'cy', 'da', 'de', 'el', 'en-gb', 'en-us', 'en-za', 'eo', 'es-ar',
+                          'es-cl', 'es-es', 'es-mx', 'et', 'eu', 'fa', 'ff', 'fi', 'fr', 'fy-nl', 'ga-ie', 'gd',
+                          'gl', 'gu-in', 'he', 'hi-in', 'hr', 'hu', 'hsb', 'hy-am', 'id', 'is', 'it', 'ja',
+                          'ja-jp-mac', 'ka', 'kk', 'km', 'kn', 'ko', 'ku', 'lij', 'lt', 'lv', 'mai', 'mk', 'ml',
+                          'mr', 'ms', 'my', 'nb-no', 'nl', 'nn-no', 'oc', 'or', 'pa-in', 'pl', 'pt-br', 'pt-pt',
+                          'rm', 'ro', 'ru', 'si', 'sk', 'sl', 'son', 'sq', 'sr', 'sv-se', 'sw', 'ta', 'te', 'th',
+                          'tr', 'uk', 'ur', 'vi', 'xh', 'zh-cn', 'zh-tw', 'zu'},
+        rule_init_function=partial(negative_impression_rule_init,
+                                   host=RS_HOST,
+                                   port=RS_PORT,
+                                   database=RS_DB,
+                                   user=RS_USER,
+                                   password=RS_PASSWORD),
+        result_processor=partial(insert_redshift,
+                                 host=RS_HOST,
+                                 port=RS_PORT,
+                                 database=RS_DB,
+                                 user=RS_USER,
+                                 password=RS_PASSWORD,
+                                 bucket_name=RS_BUCKET),
+        combiner_function=combiner,
+        key_parts=['date', 'position', 'locale', 'tile_id', 'country_code', 'os', 'browser',
+                           'version', 'device', 'year', 'month', 'week', 'enhanced', 'blacklisted'],
+        value_parts=['impressions', 'clicks', 'pinned', 'blocked', 'sponsored', 'sponsored_link'],
+        table='impression_stats_daily'
+    ),
     InfernoRule(
         name='application_stats',
         source_tags=['incoming:app'],

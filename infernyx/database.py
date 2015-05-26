@@ -130,13 +130,13 @@ def _upload_s3(datafiles, job_id, bucket_name='infernyx'):
 
 
 # this function inserts disco job results to the database
-def insert_postgres(disco_iter, params, job_id, host, database, user, password):
+def insert_postgres(disco_iter, params, job_id, host, database, user, password, **kwargs):
     datafiles, total_lines = _build_datafiles(disco_iter, params, job_id)
     _insert_datafiles(host, None, database, user, password, datafiles, params, job_id, total_lines)
     return total_lines
 
 
-def insert_redshift(disco_iter, params, job_id, host, port, database, user, password, bucket_name):
+def insert_redshift(disco_iter, params, job_id, host, port, database, user, password, bucket_name, **kwargs):
     datafiles, total_lines = _build_datafiles(disco_iter, params, job_id)
     datafiles = _upload_s3(datafiles, job_id, bucket_name)
     credentials = _get_sts_credentials()
@@ -144,3 +144,24 @@ def insert_redshift(disco_iter, params, job_id, host, port, database, user, pass
                       job_id, total_lines, extras=credentials)
     return total_lines
 
+
+# return a list of blacklisted IP addresses
+def get_blacklist_ips(host, port, database, user, password):
+    connection, cursor = _connect(host, port, database, user, password)
+    try:
+        query = "select distinct ip from blacklisted_ips"
+        cursor.execute(query)
+        return set(row['ip'] for row in cursor)
+    except:
+        return {}
+    finally:
+        connection.close()
+
+
+def delete_old_blacklist_ips(host, port, database, user, password):
+    connection, cursor = _connect(host, port, database, user, password)
+    try:
+        query = "delete from blacklisted_ips where date < current_date - 7"
+        cursor.execute(query)
+    finally:
+        connection.close()
