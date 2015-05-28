@@ -11,6 +11,14 @@ import logging
 log = logging.getLogger(__name__)
 AUTORUN = True
 
+LOCALE_WHITELIST = {'ach', 'af', 'an', 'ar', 'as', 'ast', 'az', 'be', 'bg', 'bn-bd', 'bn-in', 'br', 'bs',
+                    'ca', 'cs', 'csb', 'cy', 'da', 'de', 'el', 'en-gb', 'en-us', 'en-za', 'eo', 'es-ar',
+                    'es-cl', 'es-es', 'es-mx', 'et', 'eu', 'fa', 'ff', 'fi', 'fr', 'fy-nl', 'ga-ie', 'gd',
+                    'gl', 'gu-in', 'he', 'hi-in', 'hr', 'hu', 'hsb', 'hy-am', 'id', 'is', 'it', 'ja',
+                    'ja-jp-mac', 'ka', 'kk', 'km', 'kn', 'ko', 'ku', 'lij', 'lt', 'lv', 'mai', 'mk', 'ml',
+                    'mr', 'ms', 'my', 'nb-no', 'nl', 'nn-no', 'oc', 'or', 'pa-in', 'pl', 'pt-br', 'pt-pt',
+                    'rm', 'ro', 'ru', 'si', 'sk', 'sl', 'son', 'sq', 'sr', 'sv-se', 'sw', 'ta', 'te', 'th',
+                    'tr', 'uk', 'ur', 'vi', 'xh', 'zh-cn', 'zh-tw', 'zu'}
 
 def combiner(key, value, buf, done, params):
     if not done:
@@ -311,14 +319,7 @@ RULES = [
         geoip_file=GEOIP,
         partitions=32,
         sort_buffer_size='25%',
-        locale_whitelist={'ach', 'af', 'an', 'ar', 'as', 'ast', 'az', 'be', 'bg', 'bn-bd', 'bn-in', 'br', 'bs',
-                          'ca', 'cs', 'csb', 'cy', 'da', 'de', 'el', 'en-gb', 'en-us', 'en-za', 'eo', 'es-ar',
-                          'es-cl', 'es-es', 'es-mx', 'et', 'eu', 'fa', 'ff', 'fi', 'fr', 'fy-nl', 'ga-ie', 'gd',
-                          'gl', 'gu-in', 'he', 'hi-in', 'hr', 'hu', 'hsb', 'hy-am', 'id', 'is', 'it', 'ja',
-                          'ja-jp-mac', 'ka', 'kk', 'km', 'kn', 'ko', 'ku', 'lij', 'lt', 'lv', 'mai', 'mk', 'ml',
-                          'mr', 'ms', 'my', 'nb-no', 'nl', 'nn-no', 'oc', 'or', 'pa-in', 'pl', 'pt-br', 'pt-pt',
-                          'rm', 'ro', 'ru', 'si', 'sk', 'sl', 'son', 'sq', 'sr', 'sv-se', 'sw', 'ta', 'te', 'th',
-                          'tr', 'uk', 'ur', 'vi', 'xh', 'zh-cn', 'zh-tw', 'zu'},
+        locale_whitelist=LOCALE_WHITELIST,
         result_processor=partial(insert_redshift,
                                  host=RS_HOST,
                                  port=RS_PORT,
@@ -327,7 +328,7 @@ RULES = [
                                  password=RS_PASSWORD,
                                  bucket_name=RS_BUCKET),
         combiner_function=combiner,
-        keysets = {
+        keysets={
             'impression_stats': Keyset(
                 key_parts=['date', 'position', 'locale', 'tile_id', 'country_code', 'os', 'browser',
                            'version', 'device', 'year', 'month', 'week', 'enhanced', 'blacklisted'],
@@ -360,14 +361,7 @@ RULES = [
         geoip_file=GEOIP,
         partitions=32,
         sort_buffer_size='25%',
-        locale_whitelist={'ach', 'af', 'an', 'ar', 'as', 'ast', 'az', 'be', 'bg', 'bn-bd', 'bn-in', 'br', 'bs',
-                          'ca', 'cs', 'csb', 'cy', 'da', 'de', 'el', 'en-gb', 'en-us', 'en-za', 'eo', 'es-ar',
-                          'es-cl', 'es-es', 'es-mx', 'et', 'eu', 'fa', 'ff', 'fi', 'fr', 'fy-nl', 'ga-ie', 'gd',
-                          'gl', 'gu-in', 'he', 'hi-in', 'hr', 'hu', 'hsb', 'hy-am', 'id', 'is', 'it', 'ja',
-                          'ja-jp-mac', 'ka', 'kk', 'km', 'kn', 'ko', 'ku', 'lij', 'lt', 'lv', 'mai', 'mk', 'ml',
-                          'mr', 'ms', 'my', 'nb-no', 'nl', 'nn-no', 'oc', 'or', 'pa-in', 'pl', 'pt-br', 'pt-pt',
-                          'rm', 'ro', 'ru', 'si', 'sk', 'sl', 'son', 'sq', 'sr', 'sv-se', 'sw', 'ta', 'te', 'th',
-                          'tr', 'uk', 'ur', 'vi', 'xh', 'zh-cn', 'zh-tw', 'zu'},
+        locale_whitelist=LOCALE_WHITELIST,
         rule_init_function=partial(negative_impression_rule_init,
                                    host=RS_HOST,
                                    port=RS_PORT,
@@ -382,8 +376,8 @@ RULES = [
                                  password=RS_PASSWORD,
                                  bucket_name=RS_BUCKET),
         combiner_function=combiner,
-        key_parts=['date', 'position', 'locale', 'tile_id', 'country_code', 'os', 'browser',
-                           'version', 'device', 'year', 'month', 'week', 'enhanced', 'blacklisted'],
+        key_parts=['ip', 'date', 'position', 'locale', 'tile_id', 'country_code', 'os', 'browser',
+                   'version', 'device', 'year', 'month', 'week', 'enhanced', 'blacklisted'],
         value_parts=['impressions', 'clicks', 'pinned', 'blocked', 'sponsored', 'sponsored_link'],
         table='impression_stats_daily'
     ),

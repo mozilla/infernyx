@@ -163,5 +163,10 @@ def delete_old_blacklist_ips(host, port, database, user, password):
     try:
         query = "delete from blacklisted_ips where date < current_date - 7"
         cursor.execute(query)
+    except Exception as e:
+        connection.rollback()
+        raise e
+    else:
+        connection.commit()
     finally:
         connection.close()
