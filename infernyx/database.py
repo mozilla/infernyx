@@ -25,10 +25,37 @@ def _log(jid, msg, severity=logging.INFO):
     logging.log(severity, '%s: %s', jid, msg)
 
 
-def _get_columns(kset):
-    keys = kset['key_parts']
-    values = kset['value_parts']
-    return keys[1:] + values
+# def _get_columns(kset):
+#     keys = kset['key_parts']
+#     values = kset['value_parts']
+#     return keys[1:] + values
+#
+#
+def _get_columns(keyset):
+    # if a column mapping is specified as 'attribute_name':None, then the
+    # attribute won't be mapped to the database use this technique to use a
+    # key or value for map/reduce, but dispose of it before persisting to db
+    if keyset.get('column_mappings', None):
+        key_columns = []
+        for keyp in keyset['key_parts']:
+            if keyp in keyset['column_mappings']:
+                if keyset['column_mappings'][keyp]:
+                    key_columns.append(keyset['column_mappings'][keyp])
+            else:
+                key_columns.append(keyp)
+
+        value_columns = []
+        for val in keyset['value_parts']:
+            if val in keyset['column_mappings']:
+                if keyset['column_mappings'][val]:
+                    value_columns.append(keyset['column_mappings'][val])
+            else:
+                value_columns.append(val)
+    else:
+        key_columns = keyset['key_parts']
+        value_columns = keyset['value_parts']
+
+    return key_columns[1:] + value_columns
 
 
 def _get_sts_credentials():
@@ -136,9 +163,9 @@ def insert_postgres(disco_iter, params, job_id, host, database, user, password, 
     return total_lines
 
 
-def insert_redshift(disco_iter, params, job_id, host, port, database, user, password, bucket_name, **kwargs):
+def insert_redshift(disco_iter, params, job_id, host, port, database, user, password, **kwargs):
     datafiles, total_lines = _build_datafiles(disco_iter, params, job_id)
-    datafiles = _upload_s3(datafiles, job_id, bucket_name)
+    datafiles = _upload_s3(datafiles, job_id, kwargs.get('bucket_name'))
     credentials = _get_sts_credentials()
     _insert_datafiles(host, port, database, user, password, datafiles, params,
                       job_id, total_lines, extras=credentials)
