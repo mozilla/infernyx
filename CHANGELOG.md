@@ -1,3 +1,10 @@
+0.1.41
+======
+
+* adding an ip_click_counter daily job to detect suspicious IP addresses
+* adding an blacklisted_impression_stats daily job to negate traffic from suspicious IPs
+* note that suspicious IPs are tracked for a maximum of 7 days
+
 0.1.40
 ======
 
