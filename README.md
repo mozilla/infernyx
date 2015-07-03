@@ -11,8 +11,6 @@ The payload it expects is:
       "ip": "103.242.154.10", # request originator's IPv4 address, injected by onyx
       "ua": "Mozilla/5.0 (Windows NT 5.1; rv:33.0) Gecko/20100101 Firefox/33.0", # request originator's UA, injected by onyx
       "locale": "en-US", # locale str, sent by client
-      "hll_index": 2754, # hyperloglog index parameter, sent by client
-      "hll_value": 8, # hyperloglog index parameter, sent by client
       "click": 2, # this denotes a click action, and the index of the tile click in the "tiles" array. other possible actions: "block", "pin", "unpin"
       "tiles": [
         {
