@@ -452,7 +452,7 @@ RULES = [
 
         map_input_stream=chunk_json_stream,
         parts_preprocess=[clean_data, parse_date, parse_ip_clicks],
-        parts_postprocess=[partial(filter_clicks, click_threshold=50, impression_threshold=750)],
+        parts_postprocess=[partial(filter_clicks, click_threshold=1000, impression_threshold=10000)],
         result_processor=partial(report_suspicious_ips,
                                  host=RS_HOST,
                                  port=RS_PORT,
