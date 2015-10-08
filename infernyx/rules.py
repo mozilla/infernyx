@@ -20,6 +20,7 @@ LOCALE_WHITELIST = {'ach', 'af', 'an', 'ar', 'as', 'ast', 'az', 'be', 'bg', 'bn-
                     'rm', 'ro', 'ru', 'si', 'sk', 'sl', 'son', 'sq', 'sr', 'sv-se', 'sw', 'ta', 'te', 'th',
                     'tr', 'uk', 'ur', 'vi', 'xh', 'zh-cn', 'zh-tw', 'zu'}
 
+
 def combiner(key, value, buf, done, params):
     if not done:
         i = len(value)
@@ -334,6 +335,11 @@ RULES = [
                            'version', 'device', 'year', 'month', 'week', 'enhanced', 'blacklisted'],
                 value_parts=['impressions', 'clicks', 'pinned', 'blocked', 'sponsored', 'sponsored_link'],
                 table='impression_stats_daily'),
+            'tile_stats': Keyset(
+                key_parts=['date', 'position', 'locale', 'country_code', 'os', 'browser',
+                           'version', 'device', 'year', 'month', 'week', 'enhanced', 'blacklisted'],
+                value_parts=['impressions', 'clicks', 'pinned', 'blocked', 'sponsored', 'sponsored_link'],
+                table='tile_stats_daily'),
             'site_stats': Keyset(
                 key_parts=['date', 'locale', 'country_code', 'os', 'browser', 'version', 'device', 'year',
                            'month', 'week', 'url'],
