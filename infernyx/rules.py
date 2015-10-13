@@ -307,7 +307,7 @@ def filter_blacklist(parts, params):
 
 
 def filter_dope(parts, params):
-    if parts['position'] <= 2 and parts['country_code'] == 'US' and parts['locale'] == 'en-US':
+    if parts.get('position', 3) <= 2 and parts['country_code'] == 'US' and parts['locale'] == 'en-US':
         yield parts
 
 
