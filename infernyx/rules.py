@@ -306,6 +306,11 @@ def filter_blacklist(parts, params):
         yield parts
 
 
+def filter_dope(parts, params):
+    if parts['position'] <= 2 and parts['country_code'] == 'US' and parts['locale'] == 'en-US':
+        yield parts
+
+
 RULES = [
     InfernoRule(
         name='impression_stats',
@@ -352,6 +357,20 @@ RULES = [
                 value_parts=['newtabs'],
                 table='newtab_stats_daily')
         }
+    ),
+    InfernoRule(
+        name='the_dopeness',
+        run=False,
+        source_tags=['incoming:impression'],
+        map_input_stream=chunk_json_stream,
+        map_init_function=impression_stats_init,
+        parts_preprocess=[clean_data, parse_ip, parse_tiles, filter_dope],
+        geoip_file=GEOIP,
+        partitions=32,
+        sort_buffer_size='25%',
+        combiner_function=combiner,
+        key_parts=['date', 'position'],
+        value_parts=['impressions', 'clicks', 'pinned', 'blocked'],
     ),
     InfernoRule(
         name='blacklisted_impression_stats',
