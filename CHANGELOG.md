@@ -1,3 +1,10 @@
+0.1.43
+======
+* added validation for the position field
+
+0.1.42
+======
+
 0.1.41
 ======
 
