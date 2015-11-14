@@ -181,6 +181,8 @@ def parse_tiles(parts, params):
             else:
                 slot = position
             assert position < 1024
+            assert isinstance(slot, (long, int)), "invalid postion %s, of type %s" % (slot, type(slot))
+            assert slot < 1024
             cparts['position'] = slot
 
             url = tile.get('url')
