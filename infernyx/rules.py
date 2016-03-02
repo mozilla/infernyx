@@ -314,11 +314,12 @@ def clean_activity_stream(parts, params):
     try:
         assert parts["client_id"], "invalid/missing client ID"
         assert parts["tab_id"] >= 0, "invalid/missing tab ID"
-        assert 0 <= (parts["top_site_click"] + parts["spotlight_click"] + parts["recent_item_click"]) <= 3
         assert 0 < parts["session_duration"] <= MAX_SESSION_DURATION
+        assert 0 <= parts["total_bookmarks"]
+        assert 0 <= parts["total_history_size"]
         yield parts
     except Exception as e:
-        log.error("Fail to clean up activity stream data: %s" % e)
+        log.error("Error cleaning up activity stream data: %s" % e)
 
 
 def application_stats_filter(parts, params):
@@ -438,8 +439,7 @@ RULES = [
             ),
             'activity_stream_stats': Keyset(
                 key_parts=['client_id', 'tab_id', 'load_reason', 'source', 'search',
-                           'top_site_click', 'click_position', 'spotlight_click',
-                           'recent_item_click', 'unload_reason', 'addon_version',
+                           'click_position', 'unload_reason', 'addon_version',
                            'max_scroll_depth', 'total_bookmarks', 'total_history_size',
                            'date', 'month', 'week', 'year', 'os', 'browser', 'version', 'device'],
                 value_parts=['session_duration'],
