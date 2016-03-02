@@ -307,6 +307,30 @@ def filter_blacklist(parts, params):
         yield parts
 
 
+MAX_SESSION_DURATION = 20 * 60 * 1000  # 20 minutes? (in millisecond)
+
+
+def clean_activity_stream(parts, params):
+    try:
+        assert parts["client_id"], "invalid/missing client ID"
+        assert parts["tab_id"] >= 0, "invalid/missing tab ID"
+        assert 0 <= (parts["top_site_click"] + parts["spotlight_click"] + parts["recent_item_click"]) <= 3
+        assert 0 < parts["session_duration"] <= MAX_SESSION_DURATION
+        yield parts
+    except Exception as e:
+        log.error("Fail to clean up activity stream data: %s" % e)
+
+
+def application_stats_filter(parts, params):
+    if "activity_stream" != parts.get("action", ""):
+        yield parts
+
+
+def activity_stream_filter(parts, params):
+    if "activity_stream" == parts.get("action", ""):
+        yield
+
+
 RULES = [
     InfernoRule(
         name='impression_stats',
@@ -387,16 +411,15 @@ RULES = [
         name='application_stats',
         source_tags=['incoming:app'],
         max_blobs=APP_MAX_BLOBS,
+        min_blobs=APP_MIN_BLOBS,
         archive=True,
         rule_cleanup=report_rule_stats,
         map_input_stream=chunk_json_stream,
         map_init_function=impression_stats_init,
-        parts_preprocess=[partial(clean_data, imps=False), parse_date,
-                          parse_ip, parse_ua, count],
+        parts_preprocess=[partial(clean_data, imps=False), parse_date, parse_ip, parse_ua],
         geoip_file=GEOIP,
         partitions=32,
         sort_buffer_size='25%',
-        min_blobs=APP_MIN_BLOBS,
         result_processor=partial(insert_redshift,
                                  host=RS_HOST,
                                  port=RS_PORT,
@@ -405,10 +428,25 @@ RULES = [
                                  password=RS_PASSWORD,
                                  bucket_name=RS_BUCKET),
         combiner_function=combiner,
-        key_parts=['date', 'locale', 'ver', 'country_code', 'action', 'month', 'week', 'year', 'os',
-                   'browser', 'version', 'device'],
-        value_parts=['count'],
-        table='application_stats_daily',
+        keysets={
+            'application_stats': Keyset(
+                key_parts=['date', 'locale', 'ver', 'country_code', 'action', 'month',
+                           'week', 'year', 'os', 'browser', 'version', 'device'],
+                value_parts=['count'],
+                parts_preprocess=[application_stats_filter, count],
+                table='application_stats_daily',
+            ),
+            'activity_stream_stats': Keyset(
+                key_parts=['client_id', 'tab_id', 'load_reason', 'source', 'search',
+                           'top_site_click', 'click_position', 'spotlight_click',
+                           'recent_item_click', 'unload_reason', 'addon_version',
+                           'max_scroll_depth', 'total_bookmarks', 'total_history_size',
+                           'date', 'month', 'week', 'year', 'os', 'browser', 'version', 'device'],
+                value_parts=['session_duration'],
+                parts_preprocess=[activity_stream_filter, clean_activity_stream],
+                table='activity_stream_stats_daily',
+            )
+        }
     ),
     InfernoRule(
         name='site_tuples',
