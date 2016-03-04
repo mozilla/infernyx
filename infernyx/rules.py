@@ -95,9 +95,9 @@ def parse_ip(parts, params):
     try:
         ip = ips.split(',')[0].strip()
         resp = params.geoip_db.country(ip)
-        parts['country_code'] = resp.country.iso_code
+        parts['country_code'] = resp.country.iso_code or "ERROR"  # Note: resp might return None
     except Exception as e:
-        # print "Error parsing ip address: %s %s" % (ips, e)
+        #  print "Error parsing ip address: %s %s" % (ips, e)
         parts['country_code'] = 'ERROR'
     yield parts
 
@@ -307,19 +307,17 @@ def filter_blacklist(parts, params):
         yield parts
 
 
-MAX_SESSION_DURATION = 20 * 60 * 1000  # 20 minutes? (in millisecond)
-
-
 def clean_activity_stream(parts, params):
     try:
         assert parts["client_id"], "invalid/missing client ID"
         assert parts["tab_id"] >= 0, "invalid/missing tab ID"
+        MAX_SESSION_DURATION = 20 * 60 * 1000  # 20 minutes? (in millisecond)
         assert 0 < parts["session_duration"] <= MAX_SESSION_DURATION
         assert 0 <= parts["total_bookmarks"]
         assert 0 <= parts["total_history_size"]
         yield parts
-    except Exception as e:
-        log.error("Error cleaning up activity stream data: %s" % e)
+    except Exception:
+        pass
 
 
 def application_stats_filter(parts, params):
@@ -329,7 +327,7 @@ def application_stats_filter(parts, params):
 
 def activity_stream_filter(parts, params):
     if "activity_stream" == parts.get("action", ""):
-        yield
+        yield parts
 
 
 RULES = [
@@ -439,7 +437,7 @@ RULES = [
             ),
             'activity_stream_stats': Keyset(
                 key_parts=['client_id', 'tab_id', 'load_reason', 'source', 'search',
-                           'click_position', 'unload_reason', 'addon_version',
+                           'click_position', 'unload_reason', 'addon_version', 'locale',
                            'max_scroll_depth', 'total_bookmarks', 'total_history_size',
                            'date', 'month', 'week', 'year', 'os', 'browser', 'version', 'device'],
                 value_parts=['session_duration'],
