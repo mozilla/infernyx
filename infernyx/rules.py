@@ -323,6 +323,17 @@ def clean_activity_stream(parts, params):
         pass
 
 
+def create_timestamp_str(parts, params):
+    import datetime
+
+    try:
+        ts = datetime.datetime.fromtimestamp(parts["timestamp"] / 1000.0)
+        parts['receive_at'] = ts.strftime('%Y-%m-%d %H:%M:%S')
+        yield parts
+    except Exception:
+        pass
+
+
 def application_stats_filter(parts, params):
     if "activity_stream" != parts.get("action", ""):
         yield parts
@@ -442,9 +453,9 @@ RULES = [
                 key_parts=['client_id', 'tab_id', 'load_reason', 'source',
                            'click_position', 'unload_reason', 'addon_version', 'locale',
                            'max_scroll_depth', 'total_bookmarks', 'total_history_size',
-                           'date', 'month', 'week', 'year', 'os', 'browser', 'version', 'device'],
+                           'receive_at', 'os', 'browser', 'version', 'device'],
                 value_parts=['session_duration'],
-                parts_preprocess=[activity_stream_filter, clean_activity_stream],
+                parts_preprocess=[activity_stream_filter, clean_activity_stream, create_timestamp_str],
                 table='activity_stream_stats_daily',
             )
         }
