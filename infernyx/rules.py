@@ -323,19 +323,6 @@ def clean_activity_stream(parts, params):
         pass
 
 
-def trim_to(val, n):
-    if val is not None:
-        return val[:n]
-    else:
-        return None
-
-
-# define the frequently used trimmers
-trim_to_64 = partial(trim_to, n=64)
-trim_to_14 = partial(trim_to, n=14)
-trim_to_16 = partial(trim_to, n=16)
-
-
 def application_stats_filter(parts, params):
     if "activity_stream" != parts.get("action", ""):
         yield parts
@@ -431,12 +418,6 @@ RULES = [
         rule_cleanup=report_rule_stats,
         map_input_stream=chunk_json_stream,
         map_init_function=impression_stats_init,
-        field_transforms={
-            "client_id": trim_to_64, "addon_version": trim_to_16,
-            "load_reason": trim_to_64, "unload_reason": trim_to_64,
-            "source": trim_to_64, "click_position": trim_to_16,
-            "locale": trim_to_14
-        },
         parts_preprocess=[partial(clean_data, imps=False), parse_date, parse_ip, parse_ua],
         geoip_file=GEOIP,
         partitions=32,
