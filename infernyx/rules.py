@@ -309,15 +309,31 @@ def filter_blacklist(parts, params):
 
 def clean_activity_stream(parts, params):
     try:
-        assert parts["client_id"], "invalid/missing client ID"
-        assert parts["tab_id"] >= 0, "invalid/missing tab ID"
-        MAX_SESSION_DURATION = 20 * 60 * 1000  # 20 minutes? (in millisecond)
-        assert 0 < parts["session_duration"] <= MAX_SESSION_DURATION
+        assert parts["client_id"]
+        assert parts["addon_version"]
+        assert parts["load_reason"]
+        assert parts["source"]
+        assert parts["unload_reason"]
+        assert 0 <= parts["tab_id"]
+        assert 0 < parts["session_duration"]
         assert 0 <= parts["total_bookmarks"]
         assert 0 <= parts["total_history_size"]
         yield parts
     except Exception:
         pass
+
+
+def trim_to(val, n):
+    if val is not None:
+        return val[:n]
+    else:
+        return None
+
+
+# define the frequently used trimmers
+trim_to_64 = partial(trim_to, n=64)
+trim_to_14 = partial(trim_to, n=14)
+trim_to_16 = partial(trim_to, n=16)
 
 
 def application_stats_filter(parts, params):
@@ -415,6 +431,12 @@ RULES = [
         rule_cleanup=report_rule_stats,
         map_input_stream=chunk_json_stream,
         map_init_function=impression_stats_init,
+        field_transforms={
+            "client_id": trim_to_64, "addon_version": trim_to_16,
+            "load_reason": trim_to_64, "unload_reason": trim_to_64,
+            "source": trim_to_64, "click_position": trim_to_16,
+            "locale": trim_to_14
+        },
         parts_preprocess=[partial(clean_data, imps=False), parse_date, parse_ip, parse_ua],
         geoip_file=GEOIP,
         partitions=32,
@@ -436,7 +458,7 @@ RULES = [
                 table='application_stats_daily',
             ),
             'activity_stream_stats': Keyset(
-                key_parts=['client_id', 'tab_id', 'load_reason', 'source', 'search',
+                key_parts=['client_id', 'tab_id', 'load_reason', 'source',
                            'click_position', 'unload_reason', 'addon_version', 'locale',
                            'max_scroll_depth', 'total_bookmarks', 'total_history_size',
                            'date', 'month', 'week', 'year', 'os', 'browser', 'version', 'device'],
