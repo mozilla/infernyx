@@ -95,9 +95,9 @@ def parse_ip(parts, params):
     try:
         ip = ips.split(',')[0].strip()
         resp = params.geoip_db.country(ip)
-        parts['country_code'] = resp.country.iso_code
+        parts['country_code'] = resp.country.iso_code or "ERROR"  # Note: resp might return None
     except Exception as e:
-        # print "Error parsing ip address: %s %s" % (ips, e)
+        #  print "Error parsing ip address: %s %s" % (ips, e)
         parts['country_code'] = 'ERROR'
     yield parts
 
@@ -307,6 +307,43 @@ def filter_blacklist(parts, params):
         yield parts
 
 
+def clean_activity_stream(parts, params):
+    try:
+        assert parts["client_id"]
+        assert parts["addon_version"]
+        assert parts["load_reason"]
+        assert parts["source"]
+        assert parts["unload_reason"]
+        assert 0 <= parts["tab_id"]
+        assert 0 < parts["session_duration"]
+        assert 0 <= parts["total_bookmarks"]
+        assert 0 <= parts["total_history_size"]
+        yield parts
+    except Exception:
+        pass
+
+
+def create_timestamp_str(parts, params):
+    import datetime
+
+    try:
+        ts = datetime.datetime.fromtimestamp(parts["timestamp"] / 1000.0)
+        parts['receive_at'] = ts.strftime('%Y-%m-%d %H:%M:%S')
+        yield parts
+    except Exception:
+        pass
+
+
+def application_stats_filter(parts, params):
+    if "activity_stream" != parts.get("action", ""):
+        yield parts
+
+
+def activity_stream_filter(parts, params):
+    if "activity_stream" == parts.get("action", ""):
+        yield parts
+
+
 RULES = [
     InfernoRule(
         name='impression_stats',
@@ -387,16 +424,15 @@ RULES = [
         name='application_stats',
         source_tags=['incoming:app'],
         max_blobs=APP_MAX_BLOBS,
+        min_blobs=APP_MIN_BLOBS,
         archive=True,
         rule_cleanup=report_rule_stats,
         map_input_stream=chunk_json_stream,
         map_init_function=impression_stats_init,
-        parts_preprocess=[partial(clean_data, imps=False), parse_date,
-                          parse_ip, parse_ua, count],
+        parts_preprocess=[partial(clean_data, imps=False), parse_date, parse_ip, parse_ua],
         geoip_file=GEOIP,
         partitions=32,
         sort_buffer_size='25%',
-        min_blobs=APP_MIN_BLOBS,
         result_processor=partial(insert_redshift,
                                  host=RS_HOST,
                                  port=RS_PORT,
@@ -405,10 +441,24 @@ RULES = [
                                  password=RS_PASSWORD,
                                  bucket_name=RS_BUCKET),
         combiner_function=combiner,
-        key_parts=['date', 'locale', 'ver', 'country_code', 'action', 'month', 'week', 'year', 'os',
-                   'browser', 'version', 'device'],
-        value_parts=['count'],
-        table='application_stats_daily',
+        keysets={
+            'application_stats': Keyset(
+                key_parts=['date', 'locale', 'ver', 'country_code', 'action', 'month',
+                           'week', 'year', 'os', 'browser', 'version', 'device'],
+                value_parts=['count'],
+                parts_preprocess=[application_stats_filter, count],
+                table='application_stats_daily',
+            ),
+            'activity_stream_stats': Keyset(
+                key_parts=['client_id', 'tab_id', 'load_reason', 'source',
+                           'click_position', 'unload_reason', 'addon_version', 'locale',
+                           'max_scroll_depth', 'total_bookmarks', 'total_history_size',
+                           'receive_at', 'os', 'browser', 'version', 'device'],
+                value_parts=['session_duration'],
+                parts_preprocess=[activity_stream_filter, clean_activity_stream, create_timestamp_str],
+                table='activity_stream_stats_daily',
+            )
+        }
     ),
     InfernoRule(
         name='site_tuples',
