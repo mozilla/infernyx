@@ -1,3 +1,7 @@
+0.1.45
+======
+* moved the session_duration to key_parts for activity_stream_stats
+
 0.1.44
 ======
 * added a keyset for Activity Stream in rule application_stats
