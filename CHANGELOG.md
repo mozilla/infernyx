@@ -1,3 +1,7 @@
+0.1.44
+======
+* added a keyset for Activity Stream in rule application_stats
+
 0.1.43
 ======
 * added validation for the position field
