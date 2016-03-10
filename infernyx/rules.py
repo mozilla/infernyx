@@ -453,7 +453,7 @@ RULES = [
                 key_parts=['client_id', 'tab_id', 'load_reason', 'source', 'session_duration',
                            'click_position', 'unload_reason', 'addon_version', 'locale',
                            'max_scroll_depth', 'total_bookmarks', 'total_history_size',
-                           'receive_at', 'os', 'browser', 'version', 'device'],
+                           'receive_at', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
                 parts_preprocess=[activity_stream_filter, clean_activity_stream, create_timestamp_str],
                 table='activity_stream_stats_daily',
