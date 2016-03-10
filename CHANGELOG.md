@@ -1,3 +1,7 @@
+0.1.46
+======
+* fix the missing country_code in activity_stream_stats
+
 0.1.45
 ======
 * moved the session_duration to key_parts for activity_stream_stats
