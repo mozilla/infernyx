@@ -1,6 +1,9 @@
 0.1.46
 ======
 * fix the missing country_code in activity_stream_stats
+* add load_latency to activity_stream_stats
+* change tab_id type from str to int
+* change click_position from str to int
 
 0.1.45
 ======
