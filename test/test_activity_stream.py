@@ -61,11 +61,11 @@ class TestActivityStream(unittest.TestCase):
         self.assertRaises(StopIteration, ret.next)
 
         line = FIXTURE[0].copy()
-        line["total_bookmarks"] = -1
+        line["total_bookmarks"] = -1000
         ret = clean_activity_stream(line, self.params)
         self.assertRaises(StopIteration, ret.next)
 
         line = FIXTURE[0].copy()
-        line["total_history_size"] = -1
+        line["total_history_size"] = -1000
         ret = clean_activity_stream(line, self.params)
         self.assertRaises(StopIteration, ret.next)

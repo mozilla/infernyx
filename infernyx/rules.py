@@ -309,15 +309,24 @@ def filter_blacklist(parts, params):
 
 def clean_activity_stream(parts, params):
     try:
+        # check those required fields
         assert parts["client_id"]
         assert parts["addon_version"]
         assert parts["load_reason"]
         assert parts["source"]
         assert parts["unload_reason"]
-        assert 0 <= parts["tab_id"]
-        assert 0 < parts["session_duration"]
-        assert 0 <= parts["total_bookmarks"]
-        assert 0 <= parts["total_history_size"]
+        assert parts["tab_id"]
+        assert parts["session_duration"] >= 0
+
+        # check those optional fields
+        for f in ['max_scroll_depth', 'load_latency', 'click_position',
+                  'total_history_size', 'total_bookmarks']:
+            # populate the optional fields with default values if they are missing
+            if f not in parts:
+                parts[f] = -1
+            else:
+                assert parts[f] >= -1  # -1 is valid as it's the default for the integer type fields
+
         yield parts
     except Exception:
         pass
@@ -452,7 +461,7 @@ RULES = [
             'activity_stream_stats': Keyset(
                 key_parts=['client_id', 'tab_id', 'load_reason', 'source', 'session_duration',
                            'click_position', 'unload_reason', 'addon_version', 'locale',
-                           'max_scroll_depth', 'total_bookmarks', 'total_history_size',
+                           'max_scroll_depth', 'total_bookmarks', 'total_history_size', 'load_latency',
                            'receive_at', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
                 parts_preprocess=[activity_stream_filter, clean_activity_stream, create_timestamp_str],
