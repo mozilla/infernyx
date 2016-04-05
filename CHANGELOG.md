@@ -1,3 +1,8 @@
+0.1.47
+======
+* add a new keyset "activity_stream_event" for rule application_stats
+* rename the keyset "activity_stream_stats" to "activity_stream_session"
+
 0.1.46
 ======
 * fix the missing country_code in activity_stream_stats
