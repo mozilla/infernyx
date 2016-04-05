@@ -307,26 +307,47 @@ def filter_blacklist(parts, params):
         yield parts
 
 
-def clean_activity_stream(parts, params):
+def check_activity_stream_common(parts):
+    assert parts["client_id"]
+    assert parts["addon_version"]
+    assert parts["page"]
+    assert parts["tab_id"]
+
+
+def clean_activity_stream_session(parts, params):
     try:
+        check_activity_stream_common(parts)
+
         # check those required fields
-        assert parts["client_id"]
-        assert parts["addon_version"]
         assert parts["load_reason"]
-        assert parts["source"]
         assert parts["unload_reason"]
-        assert parts["tab_id"]
         assert parts["session_duration"] >= 0
 
         # check those optional fields
-        for f in ['max_scroll_depth', 'load_latency', 'click_position',
+        for f in ['max_scroll_depth', 'load_latency',
                   'total_history_size', 'total_bookmarks']:
             # populate the optional fields with default values if they are missing
             if f not in parts:
                 parts[f] = -1
             else:
                 assert parts[f] >= -1  # -1 is valid as it's the default for the integer type fields
+        yield parts
+    except Exception:
+        pass
 
+
+def clean_activity_stream_event(parts, params):
+    try:
+        check_activity_stream_common(parts)
+
+        # check those required fields
+        assert parts["event"]
+
+        # check those optional fields
+        for f in ['action_position', 'source']:
+            # populate the optional fields with default values if they are missing
+            if f not in parts:
+                parts[f] = "n/a"
         yield parts
     except Exception:
         pass
@@ -344,12 +365,17 @@ def create_timestamp_str(parts, params):
 
 
 def application_stats_filter(parts, params):
-    if "activity_stream" != parts.get("action", ""):
+    if not parts.get("action", "").startswith("activity_stream"):
         yield parts
 
 
-def activity_stream_filter(parts, params):
-    if "activity_stream" == parts.get("action", ""):
+def activity_stream_session_filter(parts, params):
+    if "activity_stream_session" == parts.get("action", ""):
+        yield parts
+
+
+def activity_stream_event_filter(parts, params):
+    if "activity_stream_event" == parts.get("action", ""):
         yield parts
 
 
@@ -458,14 +484,22 @@ RULES = [
                 parts_preprocess=[application_stats_filter, count],
                 table='application_stats_daily',
             ),
-            'activity_stream_stats': Keyset(
-                key_parts=['client_id', 'tab_id', 'load_reason', 'source', 'session_duration',
-                           'click_position', 'unload_reason', 'addon_version', 'locale',
-                           'max_scroll_depth', 'total_bookmarks', 'total_history_size', 'load_latency',
-                           'receive_at', 'country_code', 'os', 'browser', 'version', 'device'],
+            'activity_stream_session_stats': Keyset(
+                key_parts=['client_id', 'tab_id', 'load_reason', 'session_duration',
+                           'unload_reason', 'addon_version', 'locale', 'max_scroll_depth',
+                           'total_bookmarks', 'total_history_size', 'load_latency', 'page',
+                           'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
-                parts_preprocess=[activity_stream_filter, clean_activity_stream, create_timestamp_str],
+                parts_preprocess=[activity_stream_session_filter, clean_activity_stream_session, create_timestamp_str],
                 table='activity_stream_stats_daily',
+            ),
+            'activity_stream_event_stats': Keyset(
+                key_parts=['client_id', 'tab_id', 'source', 'action_position',
+                           'addon_version', 'locale', 'page', 'event',
+                           'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
+                value_parts=[],  # no value_parts for this keyset
+                parts_preprocess=[activity_stream_event_filter, clean_activity_stream_event, create_timestamp_str],
+                table='activity_stream_events_daily',
             )
         }
     ),
