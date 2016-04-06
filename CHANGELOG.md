@@ -1,3 +1,7 @@
+0.1.48
+======
+* hotfix: wrap module level funcitons into filters
+
 0.1.47
 ======
 * add a new keyset "activity_stream_event" for rule application_stats
