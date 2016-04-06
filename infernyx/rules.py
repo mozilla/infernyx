@@ -307,16 +307,12 @@ def filter_blacklist(parts, params):
         yield parts
 
 
-def check_activity_stream_common(parts):
-    assert parts["client_id"]
-    assert parts["addon_version"]
-    assert parts["page"]
-    assert parts["tab_id"]
-
-
 def clean_activity_stream_session(parts, params):
     try:
-        check_activity_stream_common(parts)
+        assert parts["client_id"]
+        assert parts["addon_version"]
+        assert parts["page"]
+        assert parts["tab_id"]
 
         # check those required fields
         assert parts["load_reason"]
@@ -338,7 +334,10 @@ def clean_activity_stream_session(parts, params):
 
 def clean_activity_stream_event(parts, params):
     try:
-        check_activity_stream_common(parts)
+        assert parts["client_id"]
+        assert parts["addon_version"]
+        assert parts["page"]
+        assert parts["tab_id"]
 
         # check those required fields
         assert parts["event"]
