@@ -1,3 +1,7 @@
+0.1.49
+======
+* add a script to expire data in ddfs
+
 0.1.48
 ======
 * hotfix: wrap module level funcitons into filters
