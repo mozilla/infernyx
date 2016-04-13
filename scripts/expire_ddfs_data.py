@@ -12,6 +12,9 @@ USAGE = """Usage:
 
         # print all the tags that are more than 30 days old
         %prog -n 30 -d
+
+        # delete with specific tags
+        %prog -n 30 -t incoming:error -t incoming:info
         """
 
 
@@ -23,14 +26,18 @@ def main():
     parser.add_option("-d", "--dryrun",
                       action="store_true", dest="dryrun", default=False,
                       help="print the to-be-deleted tags")
+    parser.add_option("-t", "--tag", default=[],
+                      action="append", dest="tags",
+                      help="specify extra tags")
     options, _ = parser.parse_args()
-    expire_data(options.days, options.dryrun)
+    expire_data(options.days, options.dryrun, options.tags)
 
 
-def expire_data(days, dryrun):
+def expire_data(days, dryrun, extra_tags):
     settings = InfernoSettings()
     _, ddfs = get_disco_handle(settings["server"])
     tags = extract_tags_from_infernyx()
+    tags += extra_tags
     to_delete = []
     date_lower = date.today() + timedelta(days=-days)
     try:
