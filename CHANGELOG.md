@@ -1,3 +1,7 @@
+0.1.50
+======
+* include the expire_ddfs_da.py into the shipping script
+
 0.1.49
 ======
 * add a script to expire data in ddfs
