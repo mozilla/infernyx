@@ -37,7 +37,7 @@ def expire_data(days, dryrun, extra_tags):
     settings = InfernoSettings()
     _, ddfs = get_disco_handle(settings["server"])
     tags = extract_tags_from_infernyx()
-    tags += extra_tags
+    tags = tags.union(extra_tags)
     to_delete = []
     date_lower = date.today() + timedelta(days=-days)
     try:
