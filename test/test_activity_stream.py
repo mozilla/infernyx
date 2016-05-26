@@ -106,3 +106,7 @@ class TestActivityStream(unittest.TestCase):
         line = FIXTURE[5].copy()
         del line["action_position"]
         self.assertIsNotNone(clean_activity_stream_event(line, self.params).next())
+
+        line = FIXTURE[5].copy()
+        del line["experiment_id"]
+        self.assertIsNotNone(clean_activity_stream_event(line, self.params).next())
