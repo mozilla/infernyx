@@ -327,6 +327,10 @@ def clean_activity_stream_session(parts, params):
                 parts[f] = -1
             else:
                 assert parts[f] >= -1  # -1 is valid as it's the default for the integer type fields
+        for f in ['experiment_id']:
+            # populate the optional fields with default values if they are missing
+            if f not in parts:
+                parts[f] = "n/a"
         yield parts
     except Exception:
         pass
@@ -343,7 +347,7 @@ def clean_activity_stream_event(parts, params):
         assert parts["event"]
 
         # check those optional fields
-        for f in ['action_position', 'source']:
+        for f in ['action_position', 'source', 'experiment_id']:
             # populate the optional fields with default values if they are missing
             if f not in parts:
                 parts[f] = "n/a"
@@ -484,7 +488,7 @@ RULES = [
                 table='application_stats_daily',
             ),
             'activity_stream_session_stats': Keyset(
-                key_parts=['client_id', 'tab_id', 'load_reason', 'session_duration',
+                key_parts=['client_id', 'tab_id', 'load_reason', 'session_duration', 'experiment_id',
                            'unload_reason', 'addon_version', 'locale', 'max_scroll_depth',
                            'total_bookmarks', 'total_history_size', 'load_latency', 'page',
                            'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
@@ -494,7 +498,7 @@ RULES = [
             ),
             'activity_stream_event_stats': Keyset(
                 key_parts=['client_id', 'tab_id', 'source', 'action_position',
-                           'addon_version', 'locale', 'page', 'event',
+                           'addon_version', 'locale', 'page', 'event', 'experiment_id',
                            'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
                 parts_preprocess=[activity_stream_event_filter, clean_activity_stream_event, create_timestamp_str],
