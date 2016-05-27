@@ -76,6 +76,10 @@ class TestActivityStream(unittest.TestCase):
         del line["load_latency"]
         self.assertIsNotNone(clean_activity_stream_session(line, self.params).next())
 
+        line = FIXTURE[5].copy()
+        del line["experiment_id"]
+        self.assertIsNotNone(clean_activity_stream_event(line, self.params).next())
+
         line = FIXTURE[0].copy()
         line["session_duration"] = -1000
         ret = clean_activity_stream_session(line, self.params)
