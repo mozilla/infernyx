@@ -2,7 +2,8 @@ import unittest
 from itertools import combinations
 
 from infernyx.rules import activity_stream_session_filter, activity_stream_event_filter,\
-    application_stats_filter, clean_activity_stream_session, clean_activity_stream_event
+    application_stats_filter, clean_activity_stream_session, clean_activity_stream_event,\
+    activity_stream_performance_filter, clean_activity_stream_performance
 
 
 FIXTURE = [
@@ -16,6 +17,11 @@ FIXTURE = [
     {"locale": "en-US", "ip": "10.192.171.13", "client_id": "7cfd94f1-880d-40bc-b881-23dbde3560db", "date": "2016-04-04", "event": "search", "addon_version": "1.0.5", "ver": "3", "source": "top_sites", "timestamp": 1459810810000, "action": "activity_stream_event", "tab_id": "9", "ua": "python-requests\/2.9.1", "page": "newtab"},
     {"locale": "en-US", "ip": "10.192.171.13", "client_id": "4fe8f425-7414-4d83-972a-49104ed7deee", "date": "2016-04-04", "event": "delete", "addon_version": "1.0.5", "ver": "3", "source": "recent_bookmarks", "timestamp": 1459810810000, "action": "activity_stream_event", "tab_id": "7", "ua": "python-requests\/2.9.1", "page": "timeline"},
     {"locale": "en-US", "ip": "15.211.153.0", "client_id": "04828dba-89ac-444a-ad26-53778b4c2440", "date": "2016-04-04", "event": "click", "addon_version": "1.0.5", "ver": "3", "source": "recent_links", "timestamp": 1459810810000, "action": "activity_stream_event", "tab_id": "5", "ua": "python-requests\/2.9.1", "page": "newtab"},
+    {"locale": "en-US", "ip": "15.211.153.0", "client_id": "1249e986-b53f-4851-8f77-a9c87f8f6646", "date": "2016-04-04", "event": "previewCacheHit", "event_id": "fd12fda24xd15", "addon_version": "1.0.5", "ver": "3", "source": "recent_links", "timestamp": 1459810810000, "action": "activity_stream_performance", "tab_id": "4", "ua": "python-requests\/2.9.1", "value": 10},
+    {"locale": "en-US", "ip": "15.211.153.0", "client_id": "1249e986-b53f-4851-8f77-a9c87f8f6646", "date": "2016-04-04", "event": "previewCacheMiss", "event_id": "fd12fda24xd15", "addon_version": "1.0.5", "ver": "3", "source": "recent_links", "timestamp": 1459810810000, "action": "activity_stream_performance", "tab_id": "4", "ua": "python-requests\/2.9.1", "value": 130},
+    {"locale": "en-US", "ip": "15.211.153.0", "client_id": "1249e986-b53f-4851-8f77-a9c87f8f6646", "date": "2016-04-04", "event": "previewCacheMiss", "event_id": "fd12fda24xd15", "addon_version": "1.0.5", "ver": "3", "source": "recent_links", "timestamp": 1459810810000, "action": "activity_stream_performance", "tab_id": "4", "ua": "python-requests\/2.9.1", "value": 14},
+    {"locale": "en-US", "ip": "15.211.153.0", "client_id": "1249e986-b53f-4851-8f77-a9c87f8f6646", "date": "2016-04-04", "event": "previewCacheHit", "event_id": "fd12fda24xd15", "addon_version": "1.0.5", "ver": "3", "source": "recent_links", "timestamp": 1459810810000, "action": "activity_stream_performance", "tab_id": "4", "ua": "python-requests\/2.9.1", "value": 110},
+    {"locale": "en-US", "ip": "15.211.153.0", "client_id": "1249e986-b53f-4851-8f77-a9c87f8f6646", "date": "2016-04-04", "event": "previewCacheFetch", "event_id": "fd12fda24xd15", "addon_version": "1.0.5", "ver": "3", "source": "recent_links", "timestamp": 1459810810000, "action": "activity_stream_performance", "tab_id": "4", "ua": "python-requests\/2.9.1", "value": 120},
     {"ver": "3", "locale": "zu", "ip": "15.211.153.0", "date": "2016-02-18", "timestamp": 1455837962657, "action": "fetch_served", "ua": "python-requests/2.9.1", "channel": "hello"},
     {"ver": "3", "locale": "es-CL", "ip": "15.211.153.0", "date": "2016-02-18", "timestamp": 1455837962658, "action": "fetch_served", "ua": "python-requests/2.9.1", "channel": "aurora"},
     {"ver": "3", "locale": "ru", "ip": "15.211.153.0", "date": "2016-02-18", "timestamp": 1455837962661, "action": "fetch_served", "ua": "python-requests/2.9.1", "channel": "aurora"},
@@ -33,6 +39,7 @@ class TestActivityStream(unittest.TestCase):
         n_app_logs = 0
         n_session_logs = 0
         n_event_logs = 0
+        n_performance_logs = 0
         for line in FIXTURE:
             for _ in application_stats_filter(line, self.params):
                 n_app_logs += 1
@@ -43,9 +50,13 @@ class TestActivityStream(unittest.TestCase):
             for _ in activity_stream_event_filter(line, self.params):
                 n_event_logs += 1
 
+            for _ in activity_stream_performance_filter(line, self.params):
+                n_performance_logs += 1
+
         self.assertEqual(n_app_logs, 5)
         self.assertEqual(n_session_logs, 5)
         self.assertEqual(n_event_logs, 5)
+        self.assertEqual(n_performance_logs, 5)
 
         # test filters are mutually orthogonal
         n_total = 0
@@ -95,6 +106,14 @@ class TestActivityStream(unittest.TestCase):
         ret = clean_activity_stream_session(line, self.params)
         self.assertRaises(StopIteration, ret.next)
 
+        line = FIXTURE[0].copy()
+        del line["experiment_id"]
+        self.assertIsNotNone(clean_activity_stream_session(line, self.params).next())
+
+        line = FIXTURE[0].copy()
+        del line["session_id"]
+        self.assertIsNotNone(clean_activity_stream_session(line, self.params).next())
+
     def test_clean_activity_stream_event(self):
         self.assertIsNotNone(clean_activity_stream_event(FIXTURE[5], self.params).next())
 
@@ -114,3 +133,38 @@ class TestActivityStream(unittest.TestCase):
         line = FIXTURE[5].copy()
         del line["experiment_id"]
         self.assertIsNotNone(clean_activity_stream_event(line, self.params).next())
+
+        line = FIXTURE[5].copy()
+        del line["session_id"]
+        self.assertIsNotNone(clean_activity_stream_event(line, self.params).next())
+
+    def test_clean_activity_stream_performance(self):
+        self.assertIsNotNone(clean_activity_stream_performance(FIXTURE[10], self.params).next())
+
+        line = FIXTURE[10].copy()
+        del line["event"]
+        ret = clean_activity_stream_performance(line, self.params)
+        self.assertRaises(StopIteration, ret.next)
+
+        line = FIXTURE[10].copy()
+        del line["event_id"]
+        ret = clean_activity_stream_performance(line, self.params)
+        self.assertRaises(StopIteration, ret.next)
+
+        line = FIXTURE[10].copy()
+        del line["source"]
+        ret = clean_activity_stream_performance(line, self.params)
+        self.assertRaises(StopIteration, ret.next)
+
+        line = FIXTURE[10].copy()
+        del line["value"]
+        ret = clean_activity_stream_performance(line, self.params)
+        self.assertRaises(StopIteration, ret.next)
+
+        line = FIXTURE[10].copy()
+        del line["session_id"]
+        self.assertIsNotNone(clean_activity_stream_performance(line, self.params).next())
+
+        line = FIXTURE[10].copy()
+        del line["experiment_id"]
+        self.assertIsNotNone(clean_activity_stream_performance(line, self.params).next())
