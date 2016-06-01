@@ -1,3 +1,7 @@
+0.1.51
+======
+* add a keyset for application_stats to process activity_stream_performance pings
+
 0.1.50
 ======
 * include the expire_ddfs_da.py into the shipping script
