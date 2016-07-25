@@ -1,3 +1,7 @@
+0.1.52
+======
+* process and persist the recommendation ping for activity stream
+
 0.1.51
 ======
 * add a keyset for application_stats to process activity_stream_performance pings
