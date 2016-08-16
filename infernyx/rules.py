@@ -348,10 +348,15 @@ def clean_activity_stream_event(parts, params):
 
         # check those optional fields
         for f in ['action_position', 'source', 'experiment_id', 'session_id',
-                  'url', 'recommender_type']:
+                  'url', 'recommender_type', 'highlight_type', 'provider']:
             # populate the optional fields with default values if they are missing
             if f not in parts:
                 parts[f] = "n/a"
+        # A hotfix for issue 1034 of activity stream version 1.1.1
+        # The addon will send keys with null values for fields 'recommender_type' and 'highlight_type'
+        # we need to replace those nulls as Inferno doesn't allow nulls in the key parts
+        for f in ['recommender_type', 'highlight_type']:
+            parts[f] = parts[f] or "n/a"
         yield parts
     except Exception:
         pass
@@ -525,11 +530,11 @@ RULES = [
                 table='activity_stream_stats_daily',
             ),
             'activity_stream_event_stats': Keyset(
-                key_parts=['client_id', 'tab_id', 'source', 'action_position', 'session_id',
+                key_parts=['client_id', 'tab_id', 'source', 'action_position', 'session_id', 'highlight_type', 'provider',
                            'addon_version', 'locale', 'page', 'event', 'experiment_id', 'url', 'recommender_type',
                            'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
-                column_mappings={'url': 'recommendation_url'},  # rename the 'url' field to be more specific
+                column_mappings={'url': 'recommendation_url', 'provider': 'share_provider'},
                 parts_preprocess=[activity_stream_event_filter, clean_activity_stream_event, create_timestamp_str],
                 table='activity_stream_events_daily',
             ),
