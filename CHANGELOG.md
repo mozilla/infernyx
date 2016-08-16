@@ -1,3 +1,7 @@
+0.1.53
+======
+* process and persist the share_provider and highlight_type for activity stream
+
 0.1.52
 ======
 * process and persist the recommendation ping for activity stream
