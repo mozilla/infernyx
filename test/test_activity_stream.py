@@ -13,11 +13,11 @@ FIXTURE = [
     {"session_duration": 1257, "locale": "en-US", "ip": "15.211.153.0", "date": "2016-04-04", "unload_reason": "close", "client_id": "9b57e4af-d96c-4ee2-8918-211a6248fcfc", "max_scroll_depth": 692, "addon_version": "1.0.5", "total_history_size": 359, "ver": "3", "ua": "python-requests\/2.9.1", "load_latency": 212, "click_position": 19, "timestamp": 1459810810000, "action": "activity_stream_session", "tab_id": "9", "load_reason": "focus", "page": "timeline", "total_bookmarks": 5},
     {"session_duration": 548, "locale": "en-US", "ip": "15.211.153.0", "date": "2016-04-04", "unload_reason": "close", "client_id": "93a7579d-c986-4e33-809e-e4101bf523f9", "max_scroll_depth": 61, "addon_version": "1.0.5", "total_history_size": 460, "ver": "3", "ua": "python-requests\/2.9.1", "load_latency": 216, "click_position": 19, "timestamp": 1459810810000, "action": "activity_stream_session", "tab_id": "5", "load_reason": "focus", "page": "timeline", "total_bookmarks": 3},
     {"locale": "en-US", "ip": "15.211.153.0", "client_id": "1249e986-b53f-4851-8f77-a9c87f8f6646", "date": "2016-04-04", "event": "search", "addon_version": "1.0.5", "ver": "3", "source": "recent_links", "timestamp": 1459810810000, "action": "activity_stream_event", "tab_id": "4", "ua": "python-requests\/2.9.1", "page": "timeline", "url": "www.test.com", "recommender_type": "recommener_1", "highlight_type": "bookmarks", "provider": "yahoo-mail"},
-    {"locale": "en-US", "ip": "15.211.153.0", "client_id": "f172d443-2434-49c2-b91c-fc8fd4ef9eaf", "date": "2016-04-04", "event": "click", "addon_version": "1.0.5", "ver": "3", "source": "recent_links", "timestamp": 1459810810000, "action": "activity_stream_event", "tab_id": "9", "ua": "python-requests\/2.9.1", "page": "timeline", "url": "www.test.com", "recommender_type": "recommener_2", "highlight_type": "recommendations"},
+    {"locale": "en-US", "ip": "15.211.153.0", "client_id": "f172d443-2434-49c2-b91c-fc8fd4ef9eaf", "date": "2016-04-04", "event": "click", "addon_version": "1.0.5", "ver": "3", "source": "recent_links", "timestamp": 1459810810000, "action": "activity_stream_event", "tab_id": "9", "ua": "python-requests\/2.9.1", "page": "timeline", "url": "www.test.com", "recommender_type": "recommener_2", "highlight_type": "recommendations", "metadata_source": "Embedly"},
     {"locale": "en-US", "ip": "10.192.171.13", "client_id": "7cfd94f1-880d-40bc-b881-23dbde3560db", "date": "2016-04-04", "event": "search", "addon_version": "1.0.5", "ver": "3", "source": "top_sites", "timestamp": 1459810810000, "action": "activity_stream_event", "tab_id": "9", "ua": "python-requests\/2.9.1", "page": "newtab", "url": "www.test.com", "recommender_type": "recommener_3", "highlight_type": "history"},
     {"locale": "en-US", "ip": "10.192.171.13", "client_id": "4fe8f425-7414-4d83-972a-49104ed7deee", "date": "2016-04-04", "event": "delete", "addon_version": "1.0.5", "ver": "3", "source": "recent_bookmarks", "timestamp": 1459810810000, "action": "activity_stream_event", "tab_id": "7", "ua": "python-requests\/2.9.1", "page": "timeline"},
     {"locale": "en-US", "ip": "15.211.153.0", "client_id": "04828dba-89ac-444a-ad26-53778b4c2440", "date": "2016-04-04", "event": "click", "addon_version": "1.0.5", "ver": "3", "source": "recent_links", "timestamp": 1459810810000, "action": "activity_stream_event", "tab_id": "5", "ua": "python-requests\/2.9.1", "page": "newtab"},
-    {"locale": "en-US", "ip": "15.211.153.0", "client_id": "1249e986-b53f-4851-8f77-a9c87f8f6646", "date": "2016-04-04", "event": "previewCacheHit", "event_id": "fd12fda24xd15", "addon_version": "1.0.5", "ver": "3", "source": "recent_links", "timestamp": 1459810810000, "action": "activity_stream_performance", "tab_id": "4", "ua": "python-requests\/2.9.1", "value": 10},
+    {"locale": "en-US", "ip": "15.211.153.0", "client_id": "1249e986-b53f-4851-8f77-a9c87f8f6646", "date": "2016-04-04", "event": "previewCacheHit", "event_id": "fd12fda24xd15", "addon_version": "1.0.5", "ver": "3", "source": "recent_links", "timestamp": 1459810810000, "action": "activity_stream_performance", "tab_id": "4", "ua": "python-requests\/2.9.1", "value": 10, "metadata_source": "Embedly"},
     {"locale": "en-US", "ip": "15.211.153.0", "client_id": "1249e986-b53f-4851-8f77-a9c87f8f6646", "date": "2016-04-04", "event": "previewCacheMiss", "event_id": "fd12fda24xd15", "addon_version": "1.0.5", "ver": "3", "source": "recent_links", "timestamp": 1459810810000, "action": "activity_stream_performance", "tab_id": "4", "ua": "python-requests\/2.9.1", "value": 130},
     {"locale": "en-US", "ip": "15.211.153.0", "client_id": "1249e986-b53f-4851-8f77-a9c87f8f6646", "date": "2016-04-04", "event": "previewCacheMiss", "event_id": "fd12fda24xd15", "addon_version": "1.0.5", "ver": "3", "source": "recent_links", "timestamp": 1459810810000, "action": "activity_stream_performance", "tab_id": "4", "ua": "python-requests\/2.9.1", "value": 14},
     {"locale": "en-US", "ip": "15.211.153.0", "client_id": "1249e986-b53f-4851-8f77-a9c87f8f6646", "date": "2016-04-04", "event": "previewCacheHit", "event_id": "fd12fda24xd15", "addon_version": "1.0.5", "ver": "3", "source": "recent_links", "timestamp": 1459810810000, "action": "activity_stream_performance", "tab_id": "4", "ua": "python-requests\/2.9.1", "value": 110},
@@ -154,6 +154,10 @@ class TestActivityStream(unittest.TestCase):
         del line["provider"]
         self.assertIsNotNone(clean_activity_stream_event(line, self.params).next())
 
+        line = FIXTURE[5].copy()
+        del line["metadata_source"]
+        self.assertIsNotNone(clean_activity_stream_event(line, self.params).next())
+
     def test_clean_activity_stream_performance(self):
         self.assertIsNotNone(clean_activity_stream_performance(FIXTURE[10], self.params).next())
 
@@ -183,4 +187,8 @@ class TestActivityStream(unittest.TestCase):
 
         line = FIXTURE[10].copy()
         del line["experiment_id"]
+        self.assertIsNotNone(clean_activity_stream_performance(line, self.params).next())
+
+        line = FIXTURE[10].copy()
+        del line["metadata_source"]
         self.assertIsNotNone(clean_activity_stream_performance(line, self.params).next())

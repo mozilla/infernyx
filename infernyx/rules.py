@@ -348,7 +348,7 @@ def clean_activity_stream_event(parts, params):
 
         # check those optional fields
         for f in ['action_position', 'source', 'experiment_id', 'session_id',
-                  'url', 'recommender_type', 'highlight_type', 'provider']:
+                  'url', 'recommender_type', 'highlight_type', 'provider', 'metadata_source']:
             # populate the optional fields with default values if they are missing
             if f not in parts:
                 parts[f] = "n/a"
@@ -375,7 +375,7 @@ def clean_activity_stream_performance(parts, params):
         assert "value" in parts
 
         # check those optional fields
-        for f in ['experiment_id', 'session_id']:
+        for f in ['experiment_id', 'session_id', 'metadata_source']:
             # populate the optional fields with default values if they are missing
             if f not in parts:
                 parts[f] = "n/a"
@@ -532,7 +532,7 @@ RULES = [
             'activity_stream_event_stats': Keyset(
                 key_parts=['client_id', 'tab_id', 'source', 'action_position', 'session_id', 'highlight_type', 'provider',
                            'addon_version', 'locale', 'page', 'event', 'experiment_id', 'url', 'recommender_type',
-                           'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
+                           'metadata_source', 'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
                 column_mappings={'url': 'recommendation_url', 'provider': 'share_provider'},
                 parts_preprocess=[activity_stream_event_filter, clean_activity_stream_event, create_timestamp_str],
@@ -540,7 +540,7 @@ RULES = [
             ),
             'activity_stream_performance_stats': Keyset(
                 key_parts=['client_id', 'tab_id', 'addon_version', 'session_id', 'locale',
-                           'source', 'event', 'event_id', 'experiment_id', 'value',
+                           'source', 'event', 'event_id', 'experiment_id', 'value', 'metadata_source',
                            'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
                 parts_preprocess=[activity_stream_performance_filter, clean_activity_stream_performance, create_timestamp_str],
