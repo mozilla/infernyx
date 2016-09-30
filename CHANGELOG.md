@@ -1,3 +1,7 @@
+0.1.55
+======
+* add integer overflow cleaning to activity stream 
+
 0.1.54
 ======
 * process and persist the metadata_source for activity stream
