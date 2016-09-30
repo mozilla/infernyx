@@ -317,7 +317,7 @@ def clean_activity_stream_session(parts, params):
         # check those required fields
         assert parts["load_reason"]
         assert parts["unload_reason"]
-        assert parts["session_duration"] >= 0
+        assert 0 <= parts["session_duration"] < 2 ** 32
 
         # check those optional fields
         for f in ['max_scroll_depth', 'load_latency',
@@ -372,7 +372,7 @@ def clean_activity_stream_performance(parts, params):
         assert parts["event"]
         assert parts['event_id']
         assert parts['source']
-        assert "value" in parts
+        assert 0 <= parts["value"] < 2 ** 32
 
         # check those optional fields
         for f in ['experiment_id', 'session_id', 'metadata_source']:

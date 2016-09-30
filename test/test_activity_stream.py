@@ -26,7 +26,9 @@ FIXTURE = [
     {"ver": "3", "locale": "es-CL", "ip": "15.211.153.0", "date": "2016-02-18", "timestamp": 1455837962658, "action": "fetch_served", "ua": "python-requests/2.9.1", "channel": "aurora"},
     {"ver": "3", "locale": "ru", "ip": "15.211.153.0", "date": "2016-02-18", "timestamp": 1455837962661, "action": "fetch_served", "ua": "python-requests/2.9.1", "channel": "aurora"},
     {"ver": "2", "locale": "en-US", "ip": "15.211.153.0", "date": "2016-02-18", "timestamp": 1455837962662, "action": "fetch_served", "ua": "python-requests/2.9.1"},
-    {"ver": "3", "locale": "es-MX", "ip": "15.211.153.0", "date": "2016-02-18", "timestamp": 1455837962665, "action": "fetch_served", "ua": "python-requests/2.9.1", "channel": "esr"}
+    {"ver": "3", "locale": "es-MX", "ip": "15.211.153.0", "date": "2016-02-18", "timestamp": 1455837962665, "action": "fetch_served", "ua": "python-requests/2.9.1", "channel": "esr"},
+    {"session_duration": (2 ** 33), "locale": "en-US", "ip": "15.211.153.0", "date": "2016-04-04", "unload_reason": "close", "client_id": "93a7579d-c986-4e33-809e-e4101bf523f9", "max_scroll_depth": 61, "addon_version": "1.0.5", "total_history_size": 460, "ver": "3", "ua": "python-requests\/2.9.1", "load_latency": 216, "click_position": 19, "timestamp": 1459810810000, "action": "activity_stream_session", "tab_id": "5", "load_reason": "focus", "page": "timeline", "total_bookmarks": 3},
+    {"locale": "en-US", "ip": "15.211.153.0", "client_id": "1249e986-b53f-4851-8f77-a9c87f8f6646", "date": "2016-04-04", "event": "previewCacheFetch", "event_id": "fd12fda24xd15", "addon_version": "1.0.5", "ver": "3", "source": "recent_links", "timestamp": 1459810810000, "action": "activity_stream_performance", "tab_id": "4", "ua": "python-requests\/2.9.1", "value": 2 ** 33},
 ]
 
 
@@ -54,9 +56,9 @@ class TestActivityStream(unittest.TestCase):
                 n_performance_logs += 1
 
         self.assertEqual(n_app_logs, 5)
-        self.assertEqual(n_session_logs, 5)
+        self.assertEqual(n_session_logs, 6)
         self.assertEqual(n_event_logs, 5)
-        self.assertEqual(n_performance_logs, 5)
+        self.assertEqual(n_performance_logs, 6)
 
         # test filters are mutually orthogonal
         n_total = 0
@@ -71,6 +73,9 @@ class TestActivityStream(unittest.TestCase):
 
     def test_clean_activity_stream_session(self):
         self.assertIsNotNone(clean_activity_stream_session(FIXTURE[0], self.params).next())
+
+        ret = clean_activity_stream_session(FIXTURE[-2], self.params)
+        self.assertRaises(StopIteration, ret.next)
 
         line = FIXTURE[0].copy()
         del line["client_id"]
@@ -160,6 +165,9 @@ class TestActivityStream(unittest.TestCase):
 
     def test_clean_activity_stream_performance(self):
         self.assertIsNotNone(clean_activity_stream_performance(FIXTURE[10], self.params).next())
+
+        ret = clean_activity_stream_session(FIXTURE[-1], self.params)
+        self.assertRaises(StopIteration, ret.next)
 
         line = FIXTURE[10].copy()
         del line["event"]
