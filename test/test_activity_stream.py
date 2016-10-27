@@ -83,6 +83,7 @@ class TestActivityStream(unittest.TestCase):
         n_total = 0
         for f1, f2 in combinations([activity_stream_event_filter,
                                     activity_stream_session_filter,
+                                    activity_stream_performance_filter,
                                     application_stats_filter,
                                     ss_activity_stream_session_filter,
                                     ss_activity_stream_event_filter,
