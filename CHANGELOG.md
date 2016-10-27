@@ -1,3 +1,7 @@
+0.1.56
+======
+* process shield study pings for activity stream
+
 0.1.55
 ======
 * add integer overflow cleaning to activity stream 
