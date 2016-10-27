@@ -3,7 +3,8 @@ from itertools import combinations
 
 from infernyx.rules import activity_stream_session_filter, activity_stream_event_filter,\
     application_stats_filter, clean_activity_stream_session, clean_activity_stream_event,\
-    activity_stream_performance_filter, clean_activity_stream_performance
+    activity_stream_performance_filter, clean_activity_stream_performance, ss_activity_stream_session_filter,\
+    ss_activity_stream_event_filter, ss_activity_stream_performance_filter
 
 
 FIXTURE = [
@@ -42,6 +43,10 @@ class TestActivityStream(unittest.TestCase):
         n_session_logs = 0
         n_event_logs = 0
         n_performance_logs = 0
+        n_ss_session_logs = 0
+        n_ss_event_logs = 0
+        n_ss_performance_logs = 0
+
         for line in FIXTURE:
             for _ in application_stats_filter(line, self.params):
                 n_app_logs += 1
@@ -55,16 +60,33 @@ class TestActivityStream(unittest.TestCase):
             for _ in activity_stream_performance_filter(line, self.params):
                 n_performance_logs += 1
 
+            # test the shield study filters
+            line["shield_variant"] = "test"
+            for _ in ss_activity_stream_session_filter(line, self.params):
+                n_ss_session_logs += 1
+
+            for _ in ss_activity_stream_event_filter(line, self.params):
+                n_ss_event_logs += 1
+
+            for _ in ss_activity_stream_performance_filter(line, self.params):
+                n_ss_performance_logs += 1
+
         self.assertEqual(n_app_logs, 5)
         self.assertEqual(n_session_logs, 6)
         self.assertEqual(n_event_logs, 5)
         self.assertEqual(n_performance_logs, 6)
+        self.assertEqual(n_ss_session_logs, 6)
+        self.assertEqual(n_ss_event_logs, 5)
+        self.assertEqual(n_ss_performance_logs, 6)
 
         # test filters are mutually orthogonal
         n_total = 0
         for f1, f2 in combinations([activity_stream_event_filter,
                                     activity_stream_session_filter,
-                                    application_stats_filter], 2):
+                                    application_stats_filter,
+                                    ss_activity_stream_session_filter,
+                                    ss_activity_stream_event_filter,
+                                    ss_activity_stream_performance_filter], 2):
             for line in FIXTURE:
                 for item in f1(line, self.params):
                         for _ in f2(item, self.params):
