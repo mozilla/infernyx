@@ -384,6 +384,14 @@ def clean_activity_stream_performance(parts, params):
         pass
 
 
+def clean_shield_study_fields(parts, params):
+    for f in ['tp_version']:
+        # populate the optional fields with default values if they are missing
+        if f not in parts:
+            parts[f] = "n/a"
+    yield parts
+
+
 def create_timestamp_str(parts, params):
     import datetime
 
@@ -565,27 +573,29 @@ RULES = [
                 key_parts=['client_id', 'tab_id', 'load_reason', 'session_duration', 'session_id',
                            'experiment_id', 'unload_reason', 'addon_version', 'locale', 'max_scroll_depth',
                            'total_bookmarks', 'total_history_size', 'load_latency', 'page',
-                           'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device', 'shield_variant'],
+                           'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device', 'shield_variant',
+                           'tp_version'],
                 value_parts=[],  # no value_parts for this keyset
-                parts_preprocess=[ss_activity_stream_session_filter, clean_activity_stream_session, create_timestamp_str],
+                parts_preprocess=[ss_activity_stream_session_filter, clean_activity_stream_session, clean_shield_study_fields, create_timestamp_str],
                 table='ss_session',
             ),
             'ss_activity_stream_event_stats': Keyset(
                 key_parts=['client_id', 'tab_id', 'source', 'action_position', 'session_id', 'highlight_type', 'provider',
                            'addon_version', 'locale', 'page', 'event', 'experiment_id', 'url', 'recommender_type',
                            'metadata_source', 'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device',
-                           'shield_variant'],
+                           'shield_variant', 'tp_version'],
                 value_parts=[],  # no value_parts for this keyset
                 column_mappings={'url': 'recommendation_url', 'provider': 'share_provider'},
-                parts_preprocess=[ss_activity_stream_event_filter, clean_activity_stream_event, create_timestamp_str],
+                parts_preprocess=[ss_activity_stream_event_filter, clean_activity_stream_event, clean_shield_study_fields, create_timestamp_str],
                 table='ss_event',
             ),
             'ss_activity_stream_performance_stats': Keyset(
                 key_parts=['client_id', 'tab_id', 'addon_version', 'session_id', 'locale',
                            'source', 'event', 'event_id', 'experiment_id', 'value', 'metadata_source',
-                           'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device', 'shield_variant'],
+                           'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device', 'shield_variant',
+                           'tp_version'],
                 value_parts=[],  # no value_parts for this keyset
-                parts_preprocess=[ss_activity_stream_performance_filter, clean_activity_stream_performance, create_timestamp_str],
+                parts_preprocess=[ss_activity_stream_performance_filter, clean_activity_stream_performance, clean_shield_study_fields, create_timestamp_str],
                 table='ss_performance',
             )
         }

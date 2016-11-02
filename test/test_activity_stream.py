@@ -4,7 +4,7 @@ from itertools import combinations
 from infernyx.rules import activity_stream_session_filter, activity_stream_event_filter,\
     application_stats_filter, clean_activity_stream_session, clean_activity_stream_event,\
     activity_stream_performance_filter, clean_activity_stream_performance, ss_activity_stream_session_filter,\
-    ss_activity_stream_event_filter, ss_activity_stream_performance_filter
+    ss_activity_stream_event_filter, ss_activity_stream_performance_filter, clean_shield_study_fields
 
 
 FIXTURE = [
@@ -223,3 +223,10 @@ class TestActivityStream(unittest.TestCase):
         line = FIXTURE[10].copy()
         del line["metadata_source"]
         self.assertIsNotNone(clean_activity_stream_performance(line, self.params).next())
+
+    def test_clean_shield_study_fields(self):
+        self.assertIsNotNone(clean_shield_study_fields(FIXTURE[0], self.params).next())
+
+        line = FIXTURE[0].copy()
+        line["tp_version"] = "1.0.0"
+        self.assertIsNotNone(clean_shield_study_fields(line, self.params).next())
