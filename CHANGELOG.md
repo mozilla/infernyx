@@ -1,3 +1,7 @@
+0.1.57
+======
+* process tp_version for activity stream shield study
+
 0.1.56
 ======
 * process shield study pings for activity stream
