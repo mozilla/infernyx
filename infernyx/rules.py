@@ -320,7 +320,7 @@ def clean_activity_stream_session(parts, params):
         assert 0 <= parts["session_duration"] < 2 ** 32
 
         # check those optional fields
-        for f in ['max_scroll_depth', 'load_latency',
+        for f in ['max_scroll_depth', 'load_latency', 'highlights_size',
                   'total_history_size', 'total_bookmarks']:
             # populate the optional fields with default values if they are missing
             if f not in parts:
@@ -546,7 +546,7 @@ RULES = [
             'activity_stream_session_stats': Keyset(
                 key_parts=['client_id', 'tab_id', 'load_reason', 'session_duration', 'session_id',
                            'experiment_id', 'unload_reason', 'addon_version', 'locale', 'max_scroll_depth',
-                           'total_bookmarks', 'total_history_size', 'load_latency', 'page',
+                           'total_bookmarks', 'total_history_size', 'load_latency', 'page', 'highlights_size',
                            'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
                 parts_preprocess=[activity_stream_session_filter, clean_activity_stream_session, create_timestamp_str],
@@ -572,7 +572,7 @@ RULES = [
             'ss_activity_stream_session_stats': Keyset(
                 key_parts=['client_id', 'tab_id', 'load_reason', 'session_duration', 'session_id',
                            'experiment_id', 'unload_reason', 'addon_version', 'locale', 'max_scroll_depth',
-                           'total_bookmarks', 'total_history_size', 'load_latency', 'page',
+                           'total_bookmarks', 'total_history_size', 'load_latency', 'page', 'highlights_size',
                            'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device', 'shield_variant',
                            'tp_version'],
                 value_parts=[],  # no value_parts for this keyset
