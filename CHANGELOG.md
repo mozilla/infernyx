@@ -1,3 +1,8 @@
+0.1.58
+======
+* process highlights_size for activity stream session pings
+* process undesired states pings for activity stream
+
 0.1.57
 ======
 * process tp_version for activity stream shield study
