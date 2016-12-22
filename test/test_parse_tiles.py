@@ -1,8 +1,6 @@
 import unittest
 from mock import Mock
-from infernyx.rules import parse_tiles
-from infernyx.rules import parse_ip
-from infernyx.rules import clean_data
+from infernyx.rule_helpers import parse_tiles, parse_ip, clean_data
 import re
 
 
