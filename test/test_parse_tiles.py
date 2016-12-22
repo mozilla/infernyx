@@ -1,9 +1,10 @@
 import unittest
-from disco.worker import Params
+from mock import Mock
 from infernyx.rules import parse_tiles
 from infernyx.rules import parse_ip
 from infernyx.rules import clean_data
 import re
+
 
 class TestParseTiles(unittest.TestCase):
     def setUp(self):
@@ -128,14 +129,14 @@ class TestParseTiles(unittest.TestCase):
                         {u'url': u'sufijhelumi.wordpress.com'}, {u'url': u'www.vidtomp3.com'}, {u'url': u''},
                         {u'url': u''}, {u'url': u'tune.pk'}], u'locale': u'en-US', u'ip': u'39.32.221.176',
              u'timestamp': 1420648371342, u'date': u'2015-01-07',
-             u'ua': u'Mozilla/5.0 (Windows NT 5.1; rv:35.0) Gecko/20100101 Firefox/35.0', u'view': 4},]
+             u'ua': u'Mozilla/5.0 (Windows NT 5.1; rv:35.0) Gecko/20100101 Firefox/35.0', u'view': 4}]
 
         for rec in records:
             new_rec = parse_ip(rec, None).next()
             self.assertIn('country_code', new_rec)
 
     def test_clean_data_double_ip(self):
-        params = Params()
+        params = Mock()
         params.ip_pattern = re.compile("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
         records = [
             {u'tiles': [{u'url': u'www.google.com.pk', u'score': 2}, {u'url': u'www.zalmos.com', u'score': 1},
@@ -151,11 +152,7 @@ class TestParseTiles(unittest.TestCase):
                         {u'url': u'sufijhelumi.wordpress.com'}, {u'url': u'www.vidtomp3.com'}, {u'url': u''},
                         {u'url': u''}, {u'url': u'tune.pk'}], u'locale': u'en-US', u'ip': u'39.32.221.176',
              u'timestamp': 1420648371342, u'date': u'2015-01-07',
-             u'ua': u'Mozilla/5.0 (Windows NT 5.1; rv:35.0) Gecko/20100101 Firefox/35.0', u'view': 4},]
+             u'ua': u'Mozilla/5.0 (Windows NT 5.1; rv:35.0) Gecko/20100101 Firefox/35.0', u'view': 4}]
         for rec in records:
             new_rec = clean_data(rec, params).next()
             self.assertIn('ip', new_rec)
-
-
-
-

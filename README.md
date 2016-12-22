@@ -1,3 +1,7 @@
+# Infernyx
+
+[![Build Status](https://travis-ci.org/mozilla/infernyx.svg?branch=master)](https://travis-ci.org/mozilla/infernyx)
+
 This project contains data processing rules for the Disco and Inferno mapreduce rules for the Mozilla Tiles project.dd
 
 Infernix Input Payloads
