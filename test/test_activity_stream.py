@@ -1,7 +1,7 @@
 import unittest
 from itertools import combinations
 
-from infernyx.rules import activity_stream_session_filter, activity_stream_event_filter,\
+from infernyx.rule_helpers import activity_stream_session_filter, activity_stream_event_filter,\
     application_stats_filter, clean_activity_stream_session, clean_activity_stream_event,\
     activity_stream_performance_filter, clean_activity_stream_performance, ss_activity_stream_session_filter,\
     ss_activity_stream_event_filter, ss_activity_stream_performance_filter, clean_shield_study_fields,\

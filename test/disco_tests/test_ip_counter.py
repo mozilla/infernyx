@@ -1,8 +1,8 @@
 import unittest
 from mock import Mock
-from infernyx.rules import parse_ip_clicks
-from infernyx.rules import filter_clicks
+from infernyx.rule_helpers import parse_ip_clicks, filter_clicks
 from infernyx.rules import report_suspicious_ips
+
 
 def mocksert(disco_iter, params, job_id, **kwargs):
     return len(disco_iter)
