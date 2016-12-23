@@ -398,7 +398,7 @@ def clean_activity_stream_masga(parts, params):
             parts["value"] = -1
 
         # check those optional fields
-        for f in ['experiment_id', 'session_id']:
+        for f in ['experiment_id', 'session_id', 'event_id']:
             # populate the optional fields with default values if they are missing
             if f not in parts:
                 parts[f] = "n/a"
@@ -604,7 +604,7 @@ RULES = [
             ),
             'activity_stream_masga_stats': Keyset(
                 key_parts=['client_id', 'tab_id', 'addon_version', 'session_id', 'locale',
-                           'source', 'event', 'experiment_id', 'value', 'receive_at', 'date',
+                           'source', 'event', 'event_id', 'experiment_id', 'value', 'receive_at', 'date',
                            'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
                 parts_preprocess=[activity_stream_masga_filter, clean_activity_stream_masga, create_timestamp_str],
