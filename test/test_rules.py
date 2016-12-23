@@ -1,5 +1,5 @@
 import unittest
-from infernyx.rules import parse_urls, parse_distinct
+from infernyx.rule_helpers import parse_urls, parse_distinct
 
 
 class TestPreprocess(unittest.TestCase):
