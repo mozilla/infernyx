@@ -244,6 +244,35 @@ def clean_activity_stream_session(parts, params):
         pass
 
 
+def clean_activity_stream_mobile_sessiond(parts, params):
+    try:
+        assert parts["client_id"]
+        assert parts["addon_version"]
+        assert parts["page"]
+        assert parts["tab_id"]
+
+        # check those required fields
+        assert parts["load_reason"]
+        assert parts["unload_reason"]
+        assert 0 <= parts["session_duration"] < 2 ** 32
+
+        # check those optional fields
+        for f in ['max_scroll_depth', 'load_latency', 'highlights_size',
+                  'total_history_size', 'total_bookmarks']:
+            # populate the optional fields with default values if they are missing
+            if f not in parts:
+                parts[f] = -1
+            else:
+                assert parts[f] >= -1  # -1 is valid as it's the default for the integer type fields
+        for f in ['experiment_id', 'session_id']:
+            # populate the optional fields with default values if they are missing
+            if f not in parts:
+                parts[f] = "n/a"
+        yield parts
+    except Exception:
+        pass
+
+
 def clean_activity_stream_event(parts, params):
     try:
         assert parts["client_id"]
@@ -336,6 +365,11 @@ def create_timestamp_str(parts, params):
 
 def application_stats_filter(parts, params):
     if not parts.get("action", "").startswith("activity_stream"):
+        yield parts
+
+
+def activity_stream_mobile_session_filter(parts, params):
+    if "activity_stream_session" == parts.get("action", "") and "shield_variant" not in parts:
         yield parts
 
 

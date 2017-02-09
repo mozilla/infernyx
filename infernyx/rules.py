@@ -281,6 +281,48 @@ RULES = [
         }
     ),
     InfernoRule(
+        name='ping_centre_stats',
+        source_tags=['incoming:ping_centre'],
+        max_blobs=APP_MAX_BLOBS,
+        min_blobs=APP_MIN_BLOBS,
+        archive=True,
+        rule_cleanup=report_rule_stats,
+        map_input_stream=chunk_json_stream,
+        map_init_function=impression_stats_init,
+        parts_preprocess=[partial(clean_data, imps=False), parse_date, parse_ip, parse_ua],
+        geoip_file=GEOIP,
+        partitions=32,
+        sort_buffer_size='25%',
+        result_processor=partial(insert_redshift,
+                                 host=RS_HOST,
+                                 port=RS_PORT,
+                                 database=RS_DB,
+                                 user=RS_USER,
+                                 password=RS_PASSWORD,
+                                 bucket_name=RS_BUCKET),
+        combiner_function=combiner,
+        keysets={
+            'activity_stream_mobile_session_stats': Keyset(
+                key_parts=['client_id', 'build', 'app_version', 'session_duration',
+                           'locale', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
+                value_parts=[],  # no value_parts for this keyset
+                parts_preprocess=[activity_stream_mobile_session_filter, clean_activity_stream_mobile_session],
+                table='ping_centre_stats_daily',
+            ),
+            'ping_centre_event_stats': Keyset(
+                key_parts=['client_id', 'tab_id', 'source', 'action_position', 'session_id', 'highlight_type',
+                           'provider',
+                           'addon_version', 'locale', 'page', 'event', 'experiment_id', 'url', 'recommender_type',
+                           'metadata_source', 'receive_at', 'date', 'country_code', 'os', 'browser', 'version',
+                           'device'],
+                value_parts=[],  # no value_parts for this keyset
+                column_mappings={'url': 'recommendation_url', 'provider': 'share_provider'},
+                parts_preprocess=[activity_stream_event_filter, clean_activity_stream_event, create_timestamp_str],
+                table='activity_stream_events_daily',
+            ),
+        },
+    ),
+    InfernoRule(
         name='site_tuples',
         source_tags=['processed:impression'],
 
@@ -344,6 +386,4 @@ RULES = [
 
 # Attache the dependent modules for each rule
 for rule in RULES:
-    rule.required_modules = [
-        ('infernyx.rule_helpers', infernyx.rule_helpers.__file__)
-    ]
+    rule.required_modules = [('infernyx.rule_helpers', infernyx.rule_helpers.__file__)]
