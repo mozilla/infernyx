@@ -225,7 +225,7 @@ def clean_activity_stream_session(parts, params):
         # check those required fields
         assert parts["load_reason"]
         assert parts["unload_reason"]
-        assert 0 <= parts["session_duration"] < 2 ** 32
+        assert 0 <= parts["session_duration"] < 2 ** 31
 
         # check those optional fields
         for f in ['max_scroll_depth', 'load_latency', 'highlights_size',
@@ -309,7 +309,7 @@ def clean_activity_stream_performance(parts, params):
         assert parts["event"]
         assert parts['event_id']
         assert parts['source']
-        assert 0 <= parts["value"] < 2 ** 32
+        assert 0 <= parts["value"] < 2 ** 31
 
         # check those optional fields
         for f in ['experiment_id', 'session_id', 'metadata_source']:
@@ -331,7 +331,7 @@ def clean_activity_stream_masga(parts, params):
         assert parts["event"]
         assert parts['source']
         # the client might send a unix timestamp sometimes, flag it as invalid by using a negetive number
-        if parts["value"] > 2 ** 32:
+        if parts["value"] >= 2 ** 31:
             parts["value"] = -1
 
         # check those optional fields
