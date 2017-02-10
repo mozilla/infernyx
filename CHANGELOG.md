@@ -1,10 +1,15 @@
-0.1.59
+0.1.62
 ======
-* populate the default value for the `event_id` field in `masga`
+* fix import logic for required_modules
 
 0.1.61
 ======
 * bugfix for 2^31 maximums for signed ints in redshift
+
+
+0.1.59
+======
+* populate the default value for the `event_id` field in `masga`
 
 0.1.58
 ======
