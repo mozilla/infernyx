@@ -2,6 +2,10 @@
 ======
 * populate the default value for the `event_id` field in `masga`
 
+0.1.61
+======
+* bugfix for 2^31 maximums for signed ints in redshift
+
 0.1.58
 ======
 * process highlights_size for activity stream session pings
