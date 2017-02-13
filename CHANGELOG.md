@@ -1,3 +1,7 @@
+0.1.63
+======
+* fix float values in the performance ping of activity stream
+
 0.1.62
 ======
 * fix import logic for required_modules
