@@ -187,6 +187,13 @@ class TestActivityStream(unittest.TestCase):
             ret = clean_activity_stream_performance(line, self.params)
             self.assertRaises(StopIteration, ret.next)
 
+        # test the filter on the numeric fields with float
+        for field_name in ["value"]:
+            line = FIXTURE[10].copy()
+            line[field_name] = 100.4
+            ret = clean_activity_stream_performance(line, self.params)
+            self.assertEquals(ret.next()["value"], 100)
+
     def test_clean_activity_stream_masga(self):
         self.assertIsNotNone(clean_activity_stream_masga(FIXTURE[20], self.params).next())
 
