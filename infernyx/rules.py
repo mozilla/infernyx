@@ -386,4 +386,7 @@ RULES = [
 
 # Attache the dependent modules for each rule
 for rule in RULES:
-    rule.required_modules = [('infernyx.rule_helpers', infernyx.rule_helpers.__file__)]
+    rule.required_modules = [
+        ('infernyx', infernyx.__file__),
+        ('infernyx.rule_helpers', infernyx.rule_helpers.__file__)
+    ]

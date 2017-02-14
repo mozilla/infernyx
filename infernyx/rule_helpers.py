@@ -309,6 +309,8 @@ def clean_activity_stream_performance(parts, params):
         assert parts["event"]
         assert parts['event_id']
         assert parts['source']
+        # some addon versions might send floating point values by mistake, we do the conversion here
+        parts["value"] = int(round(parts["value"]))
         assert 0 <= parts["value"] < 2 ** 31
 
         # check those optional fields
@@ -330,6 +332,8 @@ def clean_activity_stream_masga(parts, params):
         # check those required fields
         assert parts["event"]
         assert parts['source']
+        # some addon versions might send floating point values by mistake, we do the conversion here
+        parts["value"] = int(round(parts["value"]))
         # the client might send a unix timestamp sometimes, flag it as invalid by using a negetive number
         if parts["value"] >= 2 ** 31:
             parts["value"] = -1

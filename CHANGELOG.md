@@ -1,3 +1,16 @@
+0.1.63
+======
+* fix float values in the performance ping of activity stream
+
+0.1.62
+======
+* fix import logic for required_modules
+
+0.1.61
+======
+* bugfix for 2^31 maximums for signed ints in redshift
+
+
 0.1.59
 ======
 * populate the default value for the `event_id` field in `masga`
