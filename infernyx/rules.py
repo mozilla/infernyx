@@ -15,9 +15,10 @@ from infernyx.rule_helpers import clean_data, parse_date, parse_locale, parse_ip
     application_stats_filter, clean_activity_stream_session, clean_activity_stream_event,\
     activity_stream_performance_filter, clean_activity_stream_performance, ss_activity_stream_session_filter,\
     ss_activity_stream_event_filter, ss_activity_stream_performance_filter, clean_shield_study_fields,\
-    activity_stream_masga_filter, ss_activity_stream_masga_filter, clean_activity_stream_masga, \
-    activity_stream_mobile_session_filter, clean_activity_stream_mobile_session, \
-    activity_stream_mobile_event_filter, clean_activity_stream_mobile_event
+    activity_stream_masga_filter, ss_activity_stream_masga_filter, clean_activity_stream_masga,\
+    activity_stream_mobile_session_filter, clean_activity_stream_mobile_session,\
+    activity_stream_mobile_event_filter, clean_activity_stream_mobile_event,\
+    ping_centre_test_pilot_filter, clean_ping_centre_test_pilot
 
 
 log = logging.getLogger(__name__)
@@ -316,6 +317,14 @@ RULES = [
                 value_parts=[],  # no value_parts for this keyset
                 parts_preprocess=[activity_stream_mobile_event_filter, clean_activity_stream_mobile_event],
                 table='activity_stream_mobile_events_daily',
+            ),
+            'ping_centre_test_pilot_stats': Keyset(
+                key_parts=["client_id", "addon_id", "addon_version", "firefox_version", "client_time",
+                           "event_type", "object", "variants", "receive_at", "date", "os_name",
+                           "os_version", "locale", "raw"],
+                value_parts=[],  # no value_parts for this keyset
+                parts_preprocess=[ping_centre_test_pilot_filter, clean_ping_centre_test_pilot],
+                table='ping_centre_test_pilot',
             ),
         },
     ),
