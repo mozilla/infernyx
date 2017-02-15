@@ -15,7 +15,9 @@ from infernyx.rule_helpers import clean_data, parse_date, parse_locale, parse_ip
     application_stats_filter, clean_activity_stream_session, clean_activity_stream_event,\
     activity_stream_performance_filter, clean_activity_stream_performance, ss_activity_stream_session_filter,\
     ss_activity_stream_event_filter, ss_activity_stream_performance_filter, clean_shield_study_fields,\
-    activity_stream_masga_filter, ss_activity_stream_masga_filter, clean_activity_stream_masga
+    activity_stream_masga_filter, ss_activity_stream_masga_filter, clean_activity_stream_masga, \
+    activity_stream_mobile_session_filter, clean_activity_stream_mobile_session, \
+    activity_stream_mobile_event_filter, clean_activity_stream_mobile_event
 
 
 log = logging.getLogger(__name__)
@@ -279,6 +281,43 @@ RULES = [
                 table='ss_masga',
             ),
         }
+    ),
+    InfernoRule(
+        name='ping_centre_stats',
+        source_tags=['incoming:ping_centre'],
+        max_blobs=APP_MAX_BLOBS,
+        min_blobs=APP_MIN_BLOBS,
+        archive=True,
+        rule_cleanup=report_rule_stats,
+        map_input_stream=chunk_json_stream,
+        map_init_function=impression_stats_init,
+        parts_preprocess=[partial(clean_data, imps=False), parse_date, parse_ip, parse_ua, create_timestamp_str],
+        geoip_file=GEOIP,
+        partitions=32,
+        sort_buffer_size='25%',
+        result_processor=partial(insert_redshift,
+                                 host=RS_HOST,
+                                 port=RS_PORT,
+                                 database=RS_DB,
+                                 user=RS_USER,
+                                 password=RS_PASSWORD,
+                                 bucket_name=RS_BUCKET),
+        keysets={
+            'activity_stream_mobile_session_stats': Keyset(
+                key_parts=['client_id', 'build', 'app_version', 'session_duration', 'receive_at',
+                           'locale', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
+                value_parts=[],  # no value_parts for this keyset
+                parts_preprocess=[activity_stream_mobile_session_filter, clean_activity_stream_mobile_session],
+                table='activity_stream_mobile_stats_daily',
+            ),
+            'activity_stream_mobile_event_stats': Keyset(
+                key_parts=['action_position', 'date', 'event', 'source', 'build', 'client_id', 'receive_at',
+                           'app_version', 'locale', 'page', 'country_code', 'os', 'browser', 'version', 'device'],
+                value_parts=[],  # no value_parts for this keyset
+                parts_preprocess=[activity_stream_mobile_event_filter, clean_activity_stream_mobile_event],
+                table='activity_stream_mobile_events_daily',
+            ),
+        },
     ),
     InfernoRule(
         name='site_tuples',
