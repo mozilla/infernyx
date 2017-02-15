@@ -1,3 +1,8 @@
+0.1.64
+======
+* process testpilots pings from Ping-Centre
+* process Activity Stream Mobile pings from Ping-Centre
+
 0.1.63
 ======
 * fix float values in the performance ping of activity stream
