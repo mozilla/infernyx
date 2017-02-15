@@ -291,7 +291,7 @@ RULES = [
         rule_cleanup=report_rule_stats,
         map_input_stream=chunk_json_stream,
         map_init_function=impression_stats_init,
-        parts_preprocess=[partial(clean_data, imps=False), parse_date, parse_ip, parse_ua],
+        parts_preprocess=[partial(clean_data, imps=False), parse_date, parse_ip, parse_ua, create_timestamp_str],
         geoip_file=GEOIP,
         partitions=32,
         sort_buffer_size='25%',
@@ -302,22 +302,16 @@ RULES = [
                                  user=RS_USER,
                                  password=RS_PASSWORD,
                                  bucket_name=RS_BUCKET),
-        combiner_function=combiner,
         keysets={
             'activity_stream_mobile_session_stats': Keyset(
-                key_parts=['client_id', 'build', 'app_version', 'session_duration',
+                key_parts=['client_id', 'build', 'app_version', 'session_duration', 'receive_at',
                            'locale', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
                 parts_preprocess=[activity_stream_mobile_session_filter, clean_activity_stream_mobile_session],
                 table='activity_stream_mobile_stats_daily',
             ),
-            # {"action_position":0,"date":"2017-02-14","locale":"en_US","ip":"24.244.32.226","event":"DISMISS",
-            # "topic":"activity-stream-mobile-events","source":"TOP_SITES","build":"1",
-            # "client_id":"1DAFDC15-F200-4CB2-8799-F3EC88432828","timestamp":1487030980535,
-            # "action":"ping_centre","app_version":"7.0",
-            # "ua":"Client\/1 CFNetwork\/808.2.16 Darwin\/16.4.0","page":"NEW_TAB"}
             'activity_stream_mobile_event_stats': Keyset(
-                key_parts=['action_position', 'date', 'event', 'source', 'build', 'client_id',
+                key_parts=['action_position', 'date', 'event', 'source', 'build', 'client_id', 'receive_at',
                            'app_version', 'locale', 'page', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
                 parts_preprocess=[activity_stream_mobile_event_filter, clean_activity_stream_mobile_event],
