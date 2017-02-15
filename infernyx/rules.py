@@ -15,7 +15,9 @@ from infernyx.rule_helpers import clean_data, parse_date, parse_locale, parse_ip
     application_stats_filter, clean_activity_stream_session, clean_activity_stream_event,\
     activity_stream_performance_filter, clean_activity_stream_performance, ss_activity_stream_session_filter,\
     ss_activity_stream_event_filter, ss_activity_stream_performance_filter, clean_shield_study_fields,\
-    activity_stream_masga_filter, ss_activity_stream_masga_filter, clean_activity_stream_masga
+    activity_stream_masga_filter, ss_activity_stream_masga_filter, clean_activity_stream_masga, \
+    activity_stream_mobile_session_filter, clean_activity_stream_mobile_session, \
+    activity_stream_mobile_event_filter, clean_activity_stream_mobile_event
 
 
 log = logging.getLogger(__name__)
@@ -307,18 +309,19 @@ RULES = [
                            'locale', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
                 parts_preprocess=[activity_stream_mobile_session_filter, clean_activity_stream_mobile_session],
-                table='ping_centre_stats_daily',
+                table='activity_stream_mobile_stats_daily',
             ),
-            'ping_centre_event_stats': Keyset(
-                key_parts=['client_id', 'tab_id', 'source', 'action_position', 'session_id', 'highlight_type',
-                           'provider',
-                           'addon_version', 'locale', 'page', 'event', 'experiment_id', 'url', 'recommender_type',
-                           'metadata_source', 'receive_at', 'date', 'country_code', 'os', 'browser', 'version',
-                           'device'],
+            # {"action_position":0,"date":"2017-02-14","locale":"en_US","ip":"24.244.32.226","event":"DISMISS",
+            # "topic":"activity-stream-mobile-events","source":"TOP_SITES","build":"1",
+            # "client_id":"1DAFDC15-F200-4CB2-8799-F3EC88432828","timestamp":1487030980535,
+            # "action":"ping_centre","app_version":"7.0",
+            # "ua":"Client\/1 CFNetwork\/808.2.16 Darwin\/16.4.0","page":"NEW_TAB"}
+            'activity_stream_mobile_event_stats': Keyset(
+                key_parts=['action_position', 'date', 'event', 'source', 'build', 'client_id',
+                           'app_version', 'locale', 'page', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
-                column_mappings={'url': 'recommendation_url', 'provider': 'share_provider'},
-                parts_preprocess=[activity_stream_event_filter, clean_activity_stream_event, create_timestamp_str],
-                table='activity_stream_events_daily',
+                parts_preprocess=[activity_stream_mobile_event_filter, clean_activity_stream_mobile_event],
+                table='activity_stream_mobile_events_daily',
             ),
         },
     ),

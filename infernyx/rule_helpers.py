@@ -244,30 +244,15 @@ def clean_activity_stream_session(parts, params):
         pass
 
 
-def clean_activity_stream_mobile_sessiond(parts, params):
+def clean_activity_stream_mobile_session(parts, params):
     try:
         assert parts["client_id"]
-        assert parts["addon_version"]
-        assert parts["page"]
-        assert parts["tab_id"]
+        assert parts["app_version"]
+        assert parts["build"]
 
         # check those required fields
-        assert parts["load_reason"]
-        assert parts["unload_reason"]
-        assert 0 <= parts["session_duration"] < 2 ** 32
+        assert 0 <= parts["session_duration"] < 2 ** 31
 
-        # check those optional fields
-        for f in ['max_scroll_depth', 'load_latency', 'highlights_size',
-                  'total_history_size', 'total_bookmarks']:
-            # populate the optional fields with default values if they are missing
-            if f not in parts:
-                parts[f] = -1
-            else:
-                assert parts[f] >= -1  # -1 is valid as it's the default for the integer type fields
-        for f in ['experiment_id', 'session_id']:
-            # populate the optional fields with default values if they are missing
-            if f not in parts:
-                parts[f] = "n/a"
         yield parts
     except Exception:
         pass
@@ -294,6 +279,25 @@ def clean_activity_stream_event(parts, params):
         # we need to replace those nulls as Inferno doesn't allow nulls in the key parts
         for f in ['recommender_type', 'highlight_type']:
             parts[f] = parts[f] or "n/a"
+        yield parts
+    except Exception:
+        pass
+
+
+def clean_activity_stream_mobile_event(parts, params):
+    try:
+        assert parts["client_id"]
+        assert parts["app_version"]
+        assert parts["page"]
+
+        # check those required fields
+        assert parts["event"]
+
+        # check those optional fields
+        for f in ['action_position', 'source']:
+            # populate the optional fields with default values if they are missing
+            if f not in parts:
+                parts[f] = "n/a"
         yield parts
     except Exception:
         pass
@@ -373,7 +377,12 @@ def application_stats_filter(parts, params):
 
 
 def activity_stream_mobile_session_filter(parts, params):
-    if "activity_stream_session" == parts.get("action", "") and "shield_variant" not in parts:
+    if "activity-stream-mobile-sessions" == parts.get("topic", ""):
+        yield parts
+
+
+def activity_stream_mobile_event_filter(parts, params):
+    if "activity-stream-mobile-events" == parts.get("topic", ""):
         yield parts
 
 
