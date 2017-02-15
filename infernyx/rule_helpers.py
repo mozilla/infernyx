@@ -352,6 +352,30 @@ def clean_activity_stream_masga(parts, params):
         pass
 
 
+def clean_ping_centre_test_pilot(parts, params):
+    try:
+        # check those required fields
+        for field in ["client_id", "event_type", "client_time", "addon_id", "addon_version",
+                      "firefox_version", "os_name", "os_version", "locale", "raw"]:
+            assert field in parts
+
+        assert 0 <= parts["client_time"] < 2 ** 31
+
+        # Check the size of the raw field, drop it if it's over the limit
+        # Reference the schema in Splice: https://github.com/mozilla/splice/blob/master/splice/models.py
+        if len(parts["raw"]) > 16 * 1024:
+            parts["raw"] = "{}"
+
+        # check those optional fields
+        for f in ['object', 'variants']:
+            # populate the optional fields with default values if they are missing
+            if f not in parts:
+                parts[f] = "n/a"
+        yield parts
+    except Exception:
+        pass
+
+
 def clean_shield_study_fields(parts, params):
     for f in ['tp_version']:
         # populate the optional fields with default values if they are missing
@@ -423,4 +447,9 @@ def ss_activity_stream_performance_filter(parts, params):
 
 def ss_activity_stream_masga_filter(parts, params):
     if "activity_stream_masga_event" == parts.get("action", "") and "shield_variant" in parts:
+        yield parts
+
+
+def ping_centre_test_pilot_filter(parts, params):
+    if "testpilot" == parts.get("topic", ""):
         yield parts
