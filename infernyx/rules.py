@@ -306,14 +306,16 @@ RULES = [
         keysets={
             'activity_stream_mobile_session_stats': Keyset(
                 key_parts=['client_id', 'build', 'app_version', 'session_duration', 'receive_at',
-                           'locale', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
+                           'locale', 'date', 'country_code', 'os', 'browser', 'version', 'device',
+                           'release_channel'],
                 value_parts=[],  # no value_parts for this keyset
                 parts_preprocess=[activity_stream_mobile_session_filter, clean_activity_stream_mobile_session],
                 table='activity_stream_mobile_stats_daily',
             ),
             'activity_stream_mobile_event_stats': Keyset(
                 key_parts=['action_position', 'date', 'event', 'source', 'build', 'client_id', 'receive_at',
-                           'app_version', 'locale', 'page', 'country_code', 'os', 'browser', 'version', 'device'],
+                           'app_version', 'locale', 'page', 'country_code', 'os', 'browser', 'version', 'device',
+                           'release_channel'],
                 value_parts=[],  # no value_parts for this keyset
                 parts_preprocess=[activity_stream_mobile_event_filter, clean_activity_stream_mobile_event],
                 table='activity_stream_mobile_events_daily',
@@ -322,6 +324,7 @@ RULES = [
                 key_parts=["client_id", "addon_id", "addon_version", "firefox_version", "client_time",
                            "event_type", "object", "variants", "receive_at", "date", "os_name",
                            "os_version", "locale", "raw"],
+                column_mappings={'raw': 'raw_ping'},  # raw is a reversed keyword in Redshift
                 value_parts=[],  # no value_parts for this keyset
                 parts_preprocess=[ping_centre_test_pilot_filter, clean_ping_centre_test_pilot],
                 table='ping_centre_test_pilot',
