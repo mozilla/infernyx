@@ -1,3 +1,8 @@
+0.1.65
+======
+* rename "raw" to "raw_ping" for Test Pilot pings
+* add "release_channel" to Activity Stream mobile
+
 0.1.64
 ======
 * process testpilots pings from Ping-Centre
