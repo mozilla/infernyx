@@ -253,6 +253,11 @@ def clean_activity_stream_mobile_session(parts, params):
         # check those required fields
         assert 0 <= parts["session_duration"] < 2 ** 31
 
+        # check those optional fields
+        for f in ['release_channel']:
+            # populate the optional fields with default values if they are missing
+            if f not in parts:
+                parts[f] = "n/a"
         yield parts
     except Exception:
         pass
@@ -294,7 +299,7 @@ def clean_activity_stream_mobile_event(parts, params):
         assert parts["event"]
 
         # check those optional fields
-        for f in ['action_position', 'source']:
+        for f in ['action_position', 'source', 'release_channel']:
             # populate the optional fields with default values if they are missing
             if f not in parts:
                 parts[f] = "n/a"
