@@ -1,3 +1,7 @@
+0.1.66
+======
+* fix the "raw" filed for Test Pilot pings
+
 0.1.65
 ======
 * rename "raw" to "raw_ping" for Test Pilot pings
