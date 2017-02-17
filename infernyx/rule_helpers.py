@@ -368,7 +368,9 @@ def clean_ping_centre_test_pilot(parts, params):
 
         # Check the size of the raw field, drop it if it's over the limit
         # Reference the schema in Splice: https://github.com/mozilla/splice/blob/master/splice/models.py
-        if len(parts["raw"]) > 16 * 1024:
+        # Note: Disco has a non-configurable 8192 buffer size, if either the key or the value size is
+        # more than 8K bytes, it'll report an "Could not parse the sorted file" error and kill the job
+        if len(parts["raw"]) > 7 * 1024:  # leave 1024 bytes for the key
             parts["raw"] = "{}"
 
         # check those optional fields
