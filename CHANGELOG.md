@@ -1,3 +1,7 @@
+0.1.67
+======
+* fix the "null" values in the optional fields
+
 0.1.66
 ======
 * fix the "raw" filed for Test Pilot pings
