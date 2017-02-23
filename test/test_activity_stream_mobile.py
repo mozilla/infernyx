@@ -63,6 +63,11 @@ class TestActivityStreamMobile(unittest.TestCase):
             del line[field_name]
             self.assertIsNotNone(clean_activity_stream_mobile_session(line, self.params).next())
 
+            # test on "null" values on optional key
+            line[field_name] = None
+            parts = clean_activity_stream_mobile_session(line, self.params).next()
+            self.assertEqual(parts[field_name], "n/a")
+
         # test the filter on the numeric fields with invalid values
         for field_name in ["session_duration"]:
             line = FIXTURE[0].copy()
@@ -85,3 +90,8 @@ class TestActivityStreamMobile(unittest.TestCase):
             line = FIXTURE[-1].copy()
             del line[field_name]
             self.assertIsNotNone(clean_activity_stream_mobile_event(line, self.params).next())
+
+            # test on "null" values on optional key
+            line[field_name] = None
+            parts = clean_activity_stream_mobile_event(line, self.params).next()
+            self.assertEqual(parts[field_name], "n/a")

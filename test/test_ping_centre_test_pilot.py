@@ -53,3 +53,8 @@ class TestPingCentreTestPilot(unittest.TestCase):
             line = FIXTURE[0].copy()
             del line[field_name]
             self.assertIsNotNone(helpers.clean_ping_centre_test_pilot(line, self.params).next())
+
+            # test on "null" values on optional key
+            line[field_name] = None
+            parts = helpers.clean_ping_centre_test_pilot(line, self.params).next()
+            self.assertEqual(parts[field_name], "n/a")

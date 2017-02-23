@@ -134,6 +134,14 @@ class TestActivityStream(unittest.TestCase):
             del line[field_name]
             self.assertIsNotNone(clean_activity_stream_session(line, self.params).next())
 
+            # test on "null" values on optional key
+            line[field_name] = None
+            parts = clean_activity_stream_session(line, self.params).next()
+            if field_name in ["session_id", "experiment_id"]:
+                self.assertEqual(parts[field_name], "n/a")
+            else:
+                self.assertEqual(parts[field_name], -1)
+
         # test the filter on the numeric fields with invalid values
         for field_name in ["session_duration", "total_bookmarks", "total_history_size",
                            "highlights_size", "max_scroll_depth"]:
@@ -160,6 +168,11 @@ class TestActivityStream(unittest.TestCase):
             del line[field_name]
             self.assertIsNotNone(clean_activity_stream_event(line, self.params).next())
 
+            # test on "null" values on optional key
+            line[field_name] = None
+            parts = clean_activity_stream_event(line, self.params).next()
+            self.assertEqual(parts[field_name], "n/a")
+
     def test_clean_activity_stream_performance(self):
         self.assertIsNotNone(clean_activity_stream_performance(FIXTURE[10], self.params).next())
 
@@ -179,6 +192,11 @@ class TestActivityStream(unittest.TestCase):
             line = FIXTURE[10].copy()
             del line[field_name]
             self.assertIsNotNone(clean_activity_stream_performance(line, self.params).next())
+
+            # test on "null" values on optional key
+            line[field_name] = None
+            parts = clean_activity_stream_performance(line, self.params).next()
+            self.assertEqual(parts[field_name], "n/a")
 
         # test the filter on the numeric fields with invalid values
         for field_name in ["value"]:
@@ -210,6 +228,11 @@ class TestActivityStream(unittest.TestCase):
             line = FIXTURE[20].copy()
             del line[field_name]
             self.assertIsNotNone(clean_activity_stream_masga(line, self.params).next())
+
+            # test on "null" values on optional key
+            line[field_name] = None
+            parts = clean_activity_stream_masga(line, self.params).next()
+            self.assertEqual(parts[field_name], "n/a")
 
         # test the filter on the numeric fields with invalid values
         for field_name in ["value"]:
