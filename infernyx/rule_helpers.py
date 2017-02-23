@@ -231,13 +231,14 @@ def clean_activity_stream_session(parts, params):
         for f in ['max_scroll_depth', 'load_latency', 'highlights_size',
                   'total_history_size', 'total_bookmarks']:
             # populate the optional fields with default values if they are missing
-            if f not in parts:
+            if parts.get(f, None) is None:
                 parts[f] = -1
             else:
                 assert parts[f] >= -1  # -1 is valid as it's the default for the integer type fields
         for f in ['experiment_id', 'session_id']:
-            # populate the optional fields with default values if they are missing
-            if f not in parts:
+            # Populate the optional fields with default values if they are missing or with value "null"
+            # This is necessary as Disco doesn't support "null"/"None" in the key part
+            if parts.get(f, None) is None:
                 parts[f] = "n/a"
         yield parts
     except Exception:
@@ -255,8 +256,9 @@ def clean_activity_stream_mobile_session(parts, params):
 
         # check those optional fields
         for f in ['release_channel']:
-            # populate the optional fields with default values if they are missing
-            if f not in parts:
+            # Populate the optional fields with default values if they are missing or with value "null"
+            # This is necessary as Disco doesn't support "null"/"None" in the key part
+            if parts.get(f, None) is None:
                 parts[f] = "n/a"
         yield parts
     except Exception:
@@ -276,14 +278,10 @@ def clean_activity_stream_event(parts, params):
         # check those optional fields
         for f in ['action_position', 'source', 'experiment_id', 'session_id',
                   'url', 'recommender_type', 'highlight_type', 'provider', 'metadata_source']:
-            # populate the optional fields with default values if they are missing
-            if f not in parts:
+            # Populate the optional fields with default values if they are missing or with value "null"
+            # This is necessary as Disco doesn't support "null"/"None" in the key part
+            if parts.get(f, None) is None:
                 parts[f] = "n/a"
-        # A hotfix for issue 1034 of activity stream version 1.1.1
-        # The addon will send keys with null values for fields 'recommender_type' and 'highlight_type'
-        # we need to replace those nulls as Inferno doesn't allow nulls in the key parts
-        for f in ['recommender_type', 'highlight_type']:
-            parts[f] = parts[f] or "n/a"
         yield parts
     except Exception:
         pass
@@ -300,8 +298,9 @@ def clean_activity_stream_mobile_event(parts, params):
 
         # check those optional fields
         for f in ['action_position', 'source', 'release_channel']:
-            # populate the optional fields with default values if they are missing
-            if f not in parts:
+            # Populate the optional fields with default values if they are missing or with value "null"
+            # This is necessary as Disco doesn't support "null"/"None" in the key part
+            if parts.get(f, None) is None:
                 parts[f] = "n/a"
         yield parts
     except Exception:
@@ -324,8 +323,9 @@ def clean_activity_stream_performance(parts, params):
 
         # check those optional fields
         for f in ['experiment_id', 'session_id', 'metadata_source']:
-            # populate the optional fields with default values if they are missing
-            if f not in parts:
+            # Populate the optional fields with default values if they are missing or with value "null"
+            # This is necessary as Disco doesn't support "null"/"None" in the key part
+            if parts.get(f, None) is None:
                 parts[f] = "n/a"
         yield parts
     except Exception:
@@ -349,8 +349,9 @@ def clean_activity_stream_masga(parts, params):
 
         # check those optional fields
         for f in ['experiment_id', 'session_id']:
-            # populate the optional fields with default values if they are missing
-            if f not in parts:
+            # Populate the optional fields with default values if they are missing or with value "null"
+            # This is necessary as Disco doesn't support "null"/"None" in the key part
+            if parts.get(f, None) is None:
                 parts[f] = "n/a"
         yield parts
     except Exception:
@@ -375,8 +376,9 @@ def clean_ping_centre_test_pilot(parts, params):
 
         # check those optional fields
         for f in ['object', 'variants']:
-            # populate the optional fields with default values if they are missing
-            if f not in parts:
+            # Populate the optional fields with default values if they are missing or with value "null"
+            # This is necessary as Disco doesn't support "null"/"None" in the key part
+            if parts.get(f, None) is None:
                 parts[f] = "n/a"
         yield parts
     except Exception:
@@ -385,8 +387,9 @@ def clean_ping_centre_test_pilot(parts, params):
 
 def clean_shield_study_fields(parts, params):
     for f in ['tp_version']:
-        # populate the optional fields with default values if they are missing
-        if f not in parts:
+        # Populate the optional fields with default values if they are missing or with value "null"
+        # This is necessary as Disco doesn't support "null"/"None" in the key part
+        if parts.get(f, None) is None:
             parts[f] = "n/a"
     yield parts
 
