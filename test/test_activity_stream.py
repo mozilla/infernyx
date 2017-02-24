@@ -224,7 +224,7 @@ class TestActivityStream(unittest.TestCase):
             self.assertRaises(StopIteration, ret.next)
 
         # test the filter on the optional fields
-        for field_name in ["session_id", "experiment_id"]:
+        for field_name in ["session_id", "experiment_id", "event_id"]:
             line = FIXTURE[20].copy()
             del line[field_name]
             self.assertIsNotNone(clean_activity_stream_masga(line, self.params).next())
