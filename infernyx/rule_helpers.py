@@ -348,7 +348,7 @@ def clean_activity_stream_masga(parts, params):
             parts["value"] = -1
 
         # check those optional fields
-        for f in ['experiment_id', 'session_id']:
+        for f in ['experiment_id', 'session_id', 'event_id']:
             # Populate the optional fields with default values if they are missing or with value "null"
             # This is necessary as Disco doesn't support "null"/"None" in the key part
             if parts.get(f, None) is None:
