@@ -1,3 +1,7 @@
+0.1.69
+======
+* treat the "raw" field as optional in Test Pilot pings
+
 0.1.68
 ======
 * fix the missing "event_id" in the masga ping
