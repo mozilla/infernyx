@@ -323,9 +323,9 @@ RULES = [
             'ping_centre_test_pilot_stats': Keyset(
                 key_parts=["client_id", "addon_id", "addon_version", "firefox_version", "client_time",
                            "event_type", "object", "variants", "receive_at", "date", "os_name",
-                           "os_version", "locale"],
+                           "os_version", "locale", "raw"],
                 column_mappings={'raw': 'raw_ping'},  # raw is a reversed keyword in Redshift
-                value_parts=["raw"],  # raw is a JSON blob, could be very long and unsortable
+                value_parts=[],  # no value_parts for this keyset
                 parts_preprocess=[ping_centre_test_pilot_filter, clean_ping_centre_test_pilot],
                 table='ping_centre_test_pilot',
             ),

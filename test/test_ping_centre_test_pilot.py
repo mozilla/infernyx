@@ -27,7 +27,7 @@ class TestPingCentreTestPilot(unittest.TestCase):
 
         # test the filter on the required fields
         for field_name in ["client_id", "event_type", "client_time", "addon_id", "addon_version",
-                           "firefox_version", "os_name", "os_version", "locale", "raw"]:
+                           "firefox_version", "os_name", "os_version", "locale"]:
             line = FIXTURE[0].copy()
             del line[field_name]
             ret = helpers.clean_ping_centre_test_pilot(line, self.params)
@@ -40,16 +40,8 @@ class TestPingCentreTestPilot(unittest.TestCase):
             ret = helpers.clean_ping_centre_test_pilot(line, self.params)
             self.assertRaises(StopIteration, ret.next)
 
-        # test the out-of-space "raw" field
-        for field_name in ["raw"]:
-            line = FIXTURE[0].copy()
-            line[field_name] = "A really long raw string" * 10000
-            ret = helpers.clean_ping_centre_test_pilot(line, self.params).next()
-            self.assertIsNotNone(ret)
-            self.assertEquals(ret[field_name], "{}")
-
         # test the filter on the optional fields
-        for field_name in ['object', 'variants']:
+        for field_name in ['object', 'variants', 'raw']:
             line = FIXTURE[0].copy()
             del line[field_name]
             self.assertIsNotNone(helpers.clean_ping_centre_test_pilot(line, self.params).next())
