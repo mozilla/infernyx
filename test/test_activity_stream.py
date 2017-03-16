@@ -13,17 +13,17 @@ FIXTURE = [
     {"session_duration": 2775, "locale": "en-US", "ip": "15.211.153.0", "date": "2016-04-04", "unload_reason": "search", "client_id": "f172d443-2434-49c2-b91c-fc8fd4ef9eaf", "max_scroll_depth": 365, "addon_version": "1.0.5", "total_history_size": 191, "ver": "3", "ua": "python-requests\/2.9.1", "load_latency": 196, "click_position": 18, "timestamp": 1459810810000, "action": "activity_stream_session", "tab_id": "2", "load_reason": "restore", "page": "timeline", "total_bookmarks": 17, "highlights_size": 0},
     {"session_duration": 3095, "locale": "en-US", "ip": "15.211.153.0", "date": "2016-04-04", "unload_reason": "unfocus", "client_id": "1249e986-b53f-4851-8f77-a9c87f8f6646", "max_scroll_depth": 429, "addon_version": "1.0.5", "total_history_size": 324, "ver": "3", "ua": "python-requests\/2.9.1", "load_latency": 198, "click_position": 5, "timestamp": 1459810810000, "action": "activity_stream_session", "tab_id": "8", "load_reason": "restore", "page": "timeline", "total_bookmarks": 0, "highlights_size": 5},
     {"session_duration": 1257, "locale": "en-US", "ip": "15.211.153.0", "date": "2016-04-04", "unload_reason": "close", "client_id": "9b57e4af-d96c-4ee2-8918-211a6248fcfc", "max_scroll_depth": 692, "addon_version": "1.0.5", "total_history_size": 359, "ver": "3", "ua": "python-requests\/2.9.1", "load_latency": 212, "click_position": 19, "timestamp": 1459810810000, "action": "activity_stream_session", "tab_id": "9", "load_reason": "focus", "page": "timeline", "total_bookmarks": 5, "highlights_size": 9},
-    {"session_duration": 548, "locale": "en-US", "ip": "15.211.153.0", "date": "2016-04-04", "unload_reason": "close", "client_id": "93a7579d-c986-4e33-809e-e4101bf523f9", "max_scroll_depth": 61, "addon_version": "1.0.5", "total_history_size": 460, "ver": "3", "ua": "python-requests\/2.9.1", "load_latency": 216, "click_position": 19, "timestamp": 1459810810000, "action": "activity_stream_session", "tab_id": "5", "load_reason": "focus", "page": "timeline", "total_bookmarks": 3, "highlights_size": 6},
+    {"session_duration": 548, "locale": "en-US", "ip": "15.211.153.0", "date": "2016-04-04", "unload_reason": "close", "client_id": "93a7579d-c986-4e33-809e-e4101bf523f9", "max_scroll_depth": 61, "addon_version": "1.0.5", "total_history_size": 460, "ver": "3", "ua": "python-requests\/2.9.1", "load_latency": 216, "click_position": 19, "timestamp": 1459810810000, "action": "activity_stream_session", "tab_id": "5", "load_reason": "focus", "page": "timeline", "total_bookmarks": 3, "highlights_size": 6, "topsites_size": 12, "topsites_tippytop": 6, "topsites_screenshot": 3, "user_prefs": 7},
     {"locale": "en-US", "ip": "15.211.153.0", "client_id": "1249e986-b53f-4851-8f77-a9c87f8f6646", "date": "2016-04-04", "event": "search", "addon_version": "1.0.5", "ver": "3", "source": "recent_links", "timestamp": 1459810810000, "action": "activity_stream_event", "tab_id": "4", "ua": "python-requests\/2.9.1", "page": "timeline", "url": "www.test.com", "recommender_type": "recommener_1", "highlight_type": "bookmarks", "provider": "yahoo-mail"},
     {"locale": "en-US", "ip": "15.211.153.0", "client_id": "f172d443-2434-49c2-b91c-fc8fd4ef9eaf", "date": "2016-04-04", "event": "click", "addon_version": "1.0.5", "ver": "3", "source": "recent_links", "timestamp": 1459810810000, "action": "activity_stream_event", "tab_id": "9", "ua": "python-requests\/2.9.1", "page": "timeline", "url": "www.test.com", "recommender_type": "recommener_2", "highlight_type": "recommendations", "metadata_source": "Embedly"},
     {"locale": "en-US", "ip": "10.192.171.13", "client_id": "7cfd94f1-880d-40bc-b881-23dbde3560db", "date": "2016-04-04", "event": "search", "addon_version": "1.0.5", "ver": "3", "source": "top_sites", "timestamp": 1459810810000, "action": "activity_stream_event", "tab_id": "9", "ua": "python-requests\/2.9.1", "page": "newtab", "url": "www.test.com", "recommender_type": "recommener_3", "highlight_type": "history"},
     {"locale": "en-US", "ip": "10.192.171.13", "client_id": "4fe8f425-7414-4d83-972a-49104ed7deee", "date": "2016-04-04", "event": "delete", "addon_version": "1.0.5", "ver": "3", "source": "recent_bookmarks", "timestamp": 1459810810000, "action": "activity_stream_event", "tab_id": "7", "ua": "python-requests\/2.9.1", "page": "timeline"},
-    {"locale": "en-US", "ip": "15.211.153.0", "client_id": "04828dba-89ac-444a-ad26-53778b4c2440", "date": "2016-04-04", "event": "click", "addon_version": "1.0.5", "ver": "3", "source": "recent_links", "timestamp": 1459810810000, "action": "activity_stream_event", "tab_id": "5", "ua": "python-requests\/2.9.1", "page": "newtab"},
+    {"locale": "en-US", "ip": "15.211.153.0", "client_id": "04828dba-89ac-444a-ad26-53778b4c2440", "date": "2016-04-04", "event": "click", "addon_version": "1.0.5", "ver": "3", "source": "recent_links", "timestamp": 1459810810000, "action": "activity_stream_event", "tab_id": "5", "ua": "python-requests\/2.9.1", "page": "newtab", "user_prefs": 7},
     {"locale": "en-US", "ip": "15.211.153.0", "client_id": "1249e986-b53f-4851-8f77-a9c87f8f6646", "date": "2016-04-04", "event": "previewCacheHit", "event_id": "fd12fda24xd15", "addon_version": "1.0.5", "ver": "3", "source": "recent_links", "timestamp": 1459810810000, "action": "activity_stream_performance", "tab_id": "4", "ua": "python-requests\/2.9.1", "value": 10, "metadata_source": "Embedly"},
     {"locale": "en-US", "ip": "15.211.153.0", "client_id": "1249e986-b53f-4851-8f77-a9c87f8f6646", "date": "2016-04-04", "event": "previewCacheMiss", "event_id": "fd12fda24xd15", "addon_version": "1.0.5", "ver": "3", "source": "recent_links", "timestamp": 1459810810000, "action": "activity_stream_performance", "tab_id": "4", "ua": "python-requests\/2.9.1", "value": 130},
     {"locale": "en-US", "ip": "15.211.153.0", "client_id": "1249e986-b53f-4851-8f77-a9c87f8f6646", "date": "2016-04-04", "event": "previewCacheMiss", "event_id": "fd12fda24xd15", "addon_version": "1.0.5", "ver": "3", "source": "recent_links", "timestamp": 1459810810000, "action": "activity_stream_performance", "tab_id": "4", "ua": "python-requests\/2.9.1", "value": 14},
     {"locale": "en-US", "ip": "15.211.153.0", "client_id": "1249e986-b53f-4851-8f77-a9c87f8f6646", "date": "2016-04-04", "event": "previewCacheHit", "event_id": "fd12fda24xd15", "addon_version": "1.0.5", "ver": "3", "source": "recent_links", "timestamp": 1459810810000, "action": "activity_stream_performance", "tab_id": "4", "ua": "python-requests\/2.9.1", "value": 110},
-    {"locale": "en-US", "ip": "15.211.153.0", "client_id": "1249e986-b53f-4851-8f77-a9c87f8f6646", "date": "2016-04-04", "event": "previewCacheFetch", "event_id": "fd12fda24xd15", "addon_version": "1.0.5", "ver": "3", "source": "recent_links", "timestamp": 1459810810000, "action": "activity_stream_performance", "tab_id": "4", "ua": "python-requests\/2.9.1", "value": 120},
+    {"locale": "en-US", "ip": "15.211.153.0", "client_id": "1249e986-b53f-4851-8f77-a9c87f8f6646", "date": "2016-04-04", "event": "previewCacheFetch", "event_id": "fd12fda24xd15", "addon_version": "1.0.5", "ver": "3", "source": "recent_links", "timestamp": 1459810810000, "action": "activity_stream_performance", "tab_id": "4", "ua": "python-requests\/2.9.1", "value": 120, "user_prefs": 7},
     {"ver": "3", "locale": "zu", "ip": "15.211.153.0", "date": "2016-02-18", "timestamp": 1455837962657, "action": "fetch_served", "ua": "python-requests/2.9.1", "channel": "hello"},
     {"ver": "3", "locale": "es-CL", "ip": "15.211.153.0", "date": "2016-02-18", "timestamp": 1455837962658, "action": "fetch_served", "ua": "python-requests/2.9.1", "channel": "aurora"},
     {"ver": "3", "locale": "ru", "ip": "15.211.153.0", "date": "2016-02-18", "timestamp": 1455837962661, "action": "fetch_served", "ua": "python-requests/2.9.1", "channel": "aurora"},
@@ -33,7 +33,7 @@ FIXTURE = [
     {"event": "SHOW_LOADER", "source": "NEW_TAB", "value": 1482268703822, "action": "activity_stream_masga_event", "tab_id": "-3-2", "client_id": "a7967bc5-38ea-dd48-bfe9-ee06ca94f7e1", "addon_version": "1.1.8", "locale": "en-US", "page": "NEW_TAB", "session_id": "{d8a1812e-9f38-184c-9eed-01b98d4363e5}", "experiment_id": "exp-005-metadata-service"},
     {"event": "SHOW_LOADER", "source": "NEW_TAB", "value": 5000, "action": "activity_stream_masga_event", "tab_id": "-3-2", "client_id": "a7967bc5-38ea-dd48-bfe9-ee06ca94f7e1", "addon_version": "1.1.8", "locale": "en-US", "page": "NEW_TAB", "session_id": "{d8a1812e-9f38-184c-9eed-01b98d4363e5}", "experiment_id": "exp-005-metadata-service"},
     {"event": "HIDE_LOADER", "source": "NEW_TAB", "value": 7000, "action": "activity_stream_masga_event", "tab_id": "-3-2", "client_id": "a7967bc5-38ea-dd48-bfe9-ee06ca94f7e1", "addon_version": "1.1.8", "locale": "en-US", "page": "NEW_TAB", "session_id": "{d8a1812e-9f38-184c-9eed-01b98d4363e5}", "experiment_id": "exp-005-metadata-service"},
-    {"event": "HIDE_LOADER", "source": "NEW_TAB", "value": 6000, "action": "activity_stream_masga_event", "tab_id": "-3-2", "client_id": "a7967bc5-38ea-dd48-bfe9-ee06ca94f7e1", "addon_version": "1.1.8", "locale": "en-US", "page": "NEW_TAB", "session_id": "{d8a1812e-9f38-184c-9eed-01b98d4363e5}", "experiment_id": "exp-005-metadata-service"},
+    {"event": "HIDE_LOADER", "source": "NEW_TAB", "value": 6000, "action": "activity_stream_masga_event", "tab_id": "-3-2", "client_id": "a7967bc5-38ea-dd48-bfe9-ee06ca94f7e1", "addon_version": "1.1.8", "locale": "en-US", "page": "NEW_TAB", "session_id": "{d8a1812e-9f38-184c-9eed-01b98d4363e5}", "experiment_id": "exp-005-metadata-service", "user_prefs": 7},
     {"session_duration": (2 ** 31 + 950), "locale": "en-US", "ip": "15.211.153.0", "date": "2016-04-04", "unload_reason": "close", "client_id": "93a7579d-c986-4e33-809e-e4101bf523f9", "max_scroll_depth": 61, "addon_version": "1.0.5", "total_history_size": 460, "ver": "3", "ua": "python-requests\/2.9.1", "load_latency": 216, "click_position": 19, "timestamp": 1459810810000, "action": "activity_stream_session", "tab_id": "5", "load_reason": "focus", "page": "timeline", "total_bookmarks": 3},
     {"locale": "en-US", "ip": "15.211.153.0", "client_id": "1249e986-b53f-4851-8f77-a9c87f8f6646", "date": "2016-04-04", "event": "previewCacheFetch", "event_id": "fd12fda24xd15", "addon_version": "1.0.5", "ver": "3", "source": "recent_links", "timestamp": 1459810810000, "action": "activity_stream_performance", "tab_id": "4", "ua": "python-requests\/2.9.1", "value": 2 ** 31 + 25},
 ]
@@ -129,7 +129,8 @@ class TestActivityStream(unittest.TestCase):
         # test the filter on the optional fields
         for field_name in ["load_latency", "experiment_id", "total_bookmarks",
                            "total_history_size", "session_id", "highlights_size",
-                           "max_scroll_depth"]:
+                           "max_scroll_depth", "topsites_size", "topsites_tippytop",
+                           "topsites_screenshot", "user_prefs"]:
             line = FIXTURE[0].copy()
             del line[field_name]
             self.assertIsNotNone(clean_activity_stream_session(line, self.params).next())
@@ -144,7 +145,8 @@ class TestActivityStream(unittest.TestCase):
 
         # test the filter on the numeric fields with invalid values
         for field_name in ["session_duration", "total_bookmarks", "total_history_size",
-                           "highlights_size", "max_scroll_depth"]:
+                           "highlights_size", "max_scroll_depth", "topsites_size",
+                           "topsites_tippytop", "topsites_screenshot", "user_prefs"]:
             line = FIXTURE[0].copy()
             line[field_name] = -1000
             ret = clean_activity_stream_session(line, self.params)
@@ -173,6 +175,13 @@ class TestActivityStream(unittest.TestCase):
             parts = clean_activity_stream_event(line, self.params).next()
             self.assertEqual(parts[field_name], "n/a")
 
+        # test the filter on the numeric fields with invalid values
+        for field_name in ["user_prefs"]:
+            line = FIXTURE[5].copy()
+            line[field_name] = -1000
+            ret = clean_activity_stream_event(line, self.params)
+            self.assertRaises(StopIteration, ret.next)
+
     def test_clean_activity_stream_performance(self):
         self.assertIsNotNone(clean_activity_stream_performance(FIXTURE[10], self.params).next())
 
@@ -199,7 +208,7 @@ class TestActivityStream(unittest.TestCase):
             self.assertEqual(parts[field_name], "n/a")
 
         # test the filter on the numeric fields with invalid values
-        for field_name in ["value"]:
+        for field_name in ["value", "user_prefs"]:
             line = FIXTURE[10].copy()
             line[field_name] = -1000
             ret = clean_activity_stream_performance(line, self.params)
@@ -233,6 +242,13 @@ class TestActivityStream(unittest.TestCase):
             line[field_name] = None
             parts = clean_activity_stream_masga(line, self.params).next()
             self.assertEqual(parts[field_name], "n/a")
+
+        # test the filter on the numeric fields with invalid values
+        for field_name in ["user_prefs"]:
+            line = FIXTURE[20].copy()
+            line[field_name] = -1000
+            ret = clean_activity_stream_masga(line, self.params)
+            self.assertRaises(StopIteration, ret.next)
 
         # test the filter on the numeric fields with invalid values
         for field_name in ["value"]:

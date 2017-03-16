@@ -213,6 +213,7 @@ RULES = [
                 key_parts=['client_id', 'tab_id', 'load_reason', 'session_duration', 'session_id',
                            'experiment_id', 'unload_reason', 'addon_version', 'locale', 'max_scroll_depth',
                            'total_bookmarks', 'total_history_size', 'load_latency', 'page', 'highlights_size',
+                           'topsites_size', 'topsites_tippytop', 'topsites_screenshot', 'user_prefs',
                            'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
                 parts_preprocess=[activity_stream_session_filter, clean_activity_stream_session, create_timestamp_str],
@@ -220,7 +221,7 @@ RULES = [
             ),
             'activity_stream_event_stats': Keyset(
                 key_parts=['client_id', 'tab_id', 'source', 'action_position', 'session_id', 'highlight_type', 'provider',
-                           'addon_version', 'locale', 'page', 'event', 'experiment_id', 'url', 'recommender_type',
+                           'addon_version', 'locale', 'page', 'event', 'experiment_id', 'url', 'recommender_type', 'user_prefs',
                            'metadata_source', 'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
                 column_mappings={'url': 'recommendation_url', 'provider': 'share_provider'},
@@ -228,7 +229,7 @@ RULES = [
                 table='activity_stream_events_daily',
             ),
             'activity_stream_performance_stats': Keyset(
-                key_parts=['client_id', 'tab_id', 'addon_version', 'session_id', 'locale',
+                key_parts=['client_id', 'tab_id', 'addon_version', 'session_id', 'locale', 'user_prefs',
                            'source', 'event', 'event_id', 'experiment_id', 'value', 'metadata_source',
                            'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
@@ -236,7 +237,7 @@ RULES = [
                 table='activity_stream_performance_daily',
             ),
             'activity_stream_masga_stats': Keyset(
-                key_parts=['client_id', 'tab_id', 'addon_version', 'session_id', 'locale',
+                key_parts=['client_id', 'tab_id', 'addon_version', 'session_id', 'locale', 'user_prefs',
                            'source', 'event', 'event_id', 'experiment_id', 'value', 'receive_at', 'date',
                            'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
@@ -247,6 +248,7 @@ RULES = [
                 key_parts=['client_id', 'tab_id', 'load_reason', 'session_duration', 'session_id',
                            'experiment_id', 'unload_reason', 'addon_version', 'locale', 'max_scroll_depth',
                            'total_bookmarks', 'total_history_size', 'load_latency', 'page', 'highlights_size',
+                           'topsites_size', 'topsites_tippytop', 'topsites_screenshot', 'user_prefs',
                            'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device', 'shield_variant',
                            'tp_version'],
                 value_parts=[],  # no value_parts for this keyset
@@ -257,14 +259,14 @@ RULES = [
                 key_parts=['client_id', 'tab_id', 'source', 'action_position', 'session_id', 'highlight_type', 'provider',
                            'addon_version', 'locale', 'page', 'event', 'experiment_id', 'url', 'recommender_type',
                            'metadata_source', 'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device',
-                           'shield_variant', 'tp_version'],
+                           'shield_variant', 'tp_version', 'user_prefs'],
                 value_parts=[],  # no value_parts for this keyset
                 column_mappings={'url': 'recommendation_url', 'provider': 'share_provider'},
                 parts_preprocess=[ss_activity_stream_event_filter, clean_activity_stream_event, clean_shield_study_fields, create_timestamp_str],
                 table='ss_event',
             ),
             'ss_activity_stream_performance_stats': Keyset(
-                key_parts=['client_id', 'tab_id', 'addon_version', 'session_id', 'locale',
+                key_parts=['client_id', 'tab_id', 'addon_version', 'session_id', 'locale', 'user_prefs',
                            'source', 'event', 'event_id', 'experiment_id', 'value', 'metadata_source',
                            'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device', 'shield_variant',
                            'tp_version'],
@@ -273,7 +275,7 @@ RULES = [
                 table='ss_performance',
             ),
             'ss_activity_stream_masga_stats': Keyset(
-                key_parts=['client_id', 'tab_id', 'addon_version', 'session_id', 'locale',
+                key_parts=['client_id', 'tab_id', 'addon_version', 'session_id', 'locale', 'user_prefs',
                            'source', 'event', 'event_id', 'experiment_id', 'value', 'metadata_source',
                            'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device', 'shield_variant',
                            'tp_version'],

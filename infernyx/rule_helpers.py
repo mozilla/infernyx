@@ -229,7 +229,8 @@ def clean_activity_stream_session(parts, params):
 
         # check those optional fields
         for f in ['max_scroll_depth', 'load_latency', 'highlights_size',
-                  'total_history_size', 'total_bookmarks']:
+                  'total_history_size', 'total_bookmarks', 'topsites_size',
+                  'topsites_tippytop', 'topsites_screenshot', 'user_prefs']:
             # populate the optional fields with default values if they are missing
             if parts.get(f, None) is None:
                 parts[f] = -1
@@ -276,6 +277,11 @@ def clean_activity_stream_event(parts, params):
         assert parts["event"]
 
         # check those optional fields
+        for f in ['user_prefs']:
+            if parts.get(f, None) is None:
+                parts[f] = -1
+            else:
+                assert parts[f] >= -1  # -1 is valid as it's the default for the integer type fields
         for f in ['action_position', 'source', 'experiment_id', 'session_id',
                   'url', 'recommender_type', 'highlight_type', 'provider', 'metadata_source']:
             # Populate the optional fields with default values if they are missing or with value "null"
@@ -322,6 +328,11 @@ def clean_activity_stream_performance(parts, params):
         assert 0 <= parts["value"] < 2 ** 31
 
         # check those optional fields
+        for f in ['user_prefs']:
+            if parts.get(f, None) is None:
+                parts[f] = -1
+            else:
+                assert parts[f] >= -1  # -1 is valid as it's the default for the integer type fields
         for f in ['experiment_id', 'session_id', 'metadata_source']:
             # Populate the optional fields with default values if they are missing or with value "null"
             # This is necessary as Disco doesn't support "null"/"None" in the key part
@@ -348,6 +359,11 @@ def clean_activity_stream_masga(parts, params):
             parts["value"] = -1
 
         # check those optional fields
+        for f in ['user_prefs']:
+            if parts.get(f, None) is None:
+                parts[f] = -1
+            else:
+                assert parts[f] >= -1  # -1 is valid as it's the default for the integer type fields
         for f in ['experiment_id', 'session_id', 'event_id']:
             # Populate the optional fields with default values if they are missing or with value "null"
             # This is necessary as Disco doesn't support "null"/"None" in the key part
