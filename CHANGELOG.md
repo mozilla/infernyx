@@ -1,3 +1,7 @@
+0.1.70
+======
+* process "topsites" stats and "user_prefs" for activity stream
+
 0.1.69
 ======
 * treat the "raw" field as optional in Test Pilot pings
