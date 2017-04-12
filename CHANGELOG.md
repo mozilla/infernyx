@@ -1,3 +1,7 @@
+0.1.71
+======
+* process "topsites_lowresicon" and "topsites_pinned" for activity stream
+
 0.1.70
 ======
 * process "topsites" stats and "user_prefs" for activity stream
