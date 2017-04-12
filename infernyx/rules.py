@@ -214,6 +214,7 @@ RULES = [
                            'experiment_id', 'unload_reason', 'addon_version', 'locale', 'max_scroll_depth',
                            'total_bookmarks', 'total_history_size', 'load_latency', 'page', 'highlights_size',
                            'topsites_size', 'topsites_tippytop', 'topsites_screenshot', 'user_prefs',
+                           'topsites_lowresicon', 'topsites_pinned',
                            'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
                 parts_preprocess=[activity_stream_session_filter, clean_activity_stream_session, create_timestamp_str],
@@ -249,6 +250,7 @@ RULES = [
                            'experiment_id', 'unload_reason', 'addon_version', 'locale', 'max_scroll_depth',
                            'total_bookmarks', 'total_history_size', 'load_latency', 'page', 'highlights_size',
                            'topsites_size', 'topsites_tippytop', 'topsites_screenshot', 'user_prefs',
+                           'topsites_lowresicon', 'topsites_pinned',
                            'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device', 'shield_variant',
                            'tp_version'],
                 value_parts=[],  # no value_parts for this keyset

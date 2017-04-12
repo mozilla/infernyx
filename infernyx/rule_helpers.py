@@ -230,7 +230,8 @@ def clean_activity_stream_session(parts, params):
         # check those optional fields
         for f in ['max_scroll_depth', 'load_latency', 'highlights_size',
                   'total_history_size', 'total_bookmarks', 'topsites_size',
-                  'topsites_tippytop', 'topsites_screenshot', 'user_prefs']:
+                  'topsites_tippytop', 'topsites_screenshot', 'user_prefs',
+                  'topsites_lowresicon', 'topsites_pinned']:
             # populate the optional fields with default values if they are missing
             if parts.get(f, None) is None:
                 parts[f] = -1
