@@ -76,8 +76,8 @@ def parse_ua(parts, params):
 
 def parse_tiles(parts, params):
     import sys
-    """If we have a 'click', 'block' or 'pin' action, just emit one record,
-        otherwise it's an impression, emit all of the records"""
+    """If we have a 'click', 'block', 'pin' or 'pocket' action, just emit
+       one record, otherwise it's an impression, emit all of the records"""
     tiles = parts.get('tiles')
 
     one = 1
@@ -86,7 +86,8 @@ def parse_tiles(parts, params):
 
     position = None
     vals = {'clicks': 0, 'impressions': 0, 'pinned': 0, 'blocked': 0,
-            'sponsored': 0, 'sponsored_link': 0, 'newtabs': 0, 'enhanced': False}
+            'sponsored': 0, 'sponsored_link': 0, 'newtabs': 0, 'enhanced': False,
+            'pocketed': 0}
     view = parts.get('view', sys.maxint)
 
     try:
@@ -103,6 +104,10 @@ def parse_tiles(parts, params):
         elif parts.get('block') is not None:
             position = parts['block']
             vals['blocked'] = one
+            tiles = [tiles[position]]
+        elif parts.get('pocket') is not None:
+            position = parts['pocket']
+            vals['pocketed'] = one
             tiles = [tiles[position]]
         elif parts.get('sponsored') is not None:
             position = parts['sponsored']
@@ -375,6 +380,29 @@ def clean_activity_stream_masga(parts, params):
         pass
 
 
+def clean_activity_stream_impression(parts, params):
+    try:
+        # check those required fields
+        assert parts["client_id"]
+        assert parts["addon_version"]
+        assert parts['source']
+
+        # check those optional fields
+        for f in ['user_prefs']:
+            if parts.get(f, None) is None:
+                parts[f] = -1
+            else:
+                assert parts[f] >= -1  # -1 is valid as it's the default for the integer type fields
+        for f in ['experiment_id']:
+            # Populate the optional fields with default values if they are missing or with value "null"
+            # This is necessary as Disco doesn't support "null"/"None" in the key part
+            if parts.get(f, None) is None:
+                parts[f] = "n/a"
+        yield parts
+    except Exception:
+        pass
+
+
 def clean_ping_centre_test_pilot(parts, params):
     try:
         # check those required fields
@@ -455,6 +483,11 @@ def activity_stream_masga_filter(parts, params):
         yield parts
 
 
+def activity_stream_impression_filter(parts, params):
+    if "activity_stream_impression" == parts.get("action", "") and "shield_variant" not in parts:
+        yield parts
+
+
 def ss_activity_stream_session_filter(parts, params):
     if "activity_stream_session" == parts.get("action", "") and "shield_variant" in parts:
         yield parts
@@ -472,6 +505,11 @@ def ss_activity_stream_performance_filter(parts, params):
 
 def ss_activity_stream_masga_filter(parts, params):
     if "activity_stream_masga_event" == parts.get("action", "") and "shield_variant" in parts:
+        yield parts
+
+
+def ss_activity_stream_impression_filter(parts, params):
+    if "activity_stream_impression" == parts.get("action", "") and "shield_variant" in parts:
         yield parts
 
 

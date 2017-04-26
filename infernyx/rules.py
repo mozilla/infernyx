@@ -18,7 +18,8 @@ from infernyx.rule_helpers import clean_data, parse_date, parse_locale, parse_ip
     activity_stream_masga_filter, ss_activity_stream_masga_filter, clean_activity_stream_masga,\
     activity_stream_mobile_session_filter, clean_activity_stream_mobile_session,\
     activity_stream_mobile_event_filter, clean_activity_stream_mobile_event,\
-    ping_centre_test_pilot_filter, clean_ping_centre_test_pilot
+    ping_centre_test_pilot_filter, clean_ping_centre_test_pilot, activity_stream_impression_filter,\
+    ss_activity_stream_impression_filter, clean_activity_stream_impression
 
 
 log = logging.getLogger(__name__)
@@ -245,6 +246,12 @@ RULES = [
                 parts_preprocess=[activity_stream_masga_filter, clean_activity_stream_masga, create_timestamp_str],
                 table='activity_stream_masga',
             ),
+            'activity_stream_impression_stats': Keyset(
+                key_parts=['client_id', 'addon_version', 'source', 'date', 'position', 'locale', 'tile_id',
+                           'user_prefs', 'country_code', 'os', 'browser', 'version', 'device', 'blacklisted'],
+                value_parts=['impressions', 'clicks', 'pinned', 'blocked', 'pocketed'],
+                parts_preprocess=[activity_stream_impression_filter, clean_activity_stream_impression, parse_tiles, create_timestamp_str],
+                table='activity_stream_impression_daily'),
             'ss_activity_stream_session_stats': Keyset(
                 key_parts=['client_id', 'tab_id', 'load_reason', 'session_duration', 'session_id',
                            'experiment_id', 'unload_reason', 'addon_version', 'locale', 'max_scroll_depth',
@@ -285,6 +292,13 @@ RULES = [
                 parts_preprocess=[ss_activity_stream_masga_filter, clean_activity_stream_masga, clean_shield_study_fields, create_timestamp_str],
                 table='ss_masga',
             ),
+            'ss_activity_stream_impression_stats': Keyset(
+                key_parts=['client_id', 'addon_version', 'source', 'date', 'position', 'locale', 'tile_id',
+                           'user_prefs', 'country_code', 'os', 'browser', 'version', 'device', 'blacklisted',
+                           'tp_version'],
+                value_parts=['impressions', 'clicks', 'pinned', 'blocked', 'pocketed'],
+                parts_preprocess=[ss_activity_stream_impression_filter, clean_activity_stream_impression, parse_tiles, create_timestamp_str],
+                table='ss_impression'),
         }
     ),
     InfernoRule(

@@ -5,7 +5,8 @@ from infernyx.rule_helpers import activity_stream_session_filter, activity_strea
     application_stats_filter, clean_activity_stream_session, clean_activity_stream_event,\
     activity_stream_performance_filter, clean_activity_stream_performance, ss_activity_stream_session_filter,\
     ss_activity_stream_event_filter, ss_activity_stream_performance_filter, clean_shield_study_fields,\
-    activity_stream_masga_filter, ss_activity_stream_masga_filter, clean_activity_stream_masga
+    activity_stream_masga_filter, ss_activity_stream_masga_filter, clean_activity_stream_masga,\
+    activity_stream_impression_filter, ss_activity_stream_impression_filter, clean_activity_stream_impression
 
 
 FIXTURE = [
@@ -34,6 +35,11 @@ FIXTURE = [
     {"event": "SHOW_LOADER", "source": "NEW_TAB", "value": 5000, "action": "activity_stream_masga_event", "tab_id": "-3-2", "client_id": "a7967bc5-38ea-dd48-bfe9-ee06ca94f7e1", "addon_version": "1.1.8", "locale": "en-US", "page": "NEW_TAB", "session_id": "{d8a1812e-9f38-184c-9eed-01b98d4363e5}", "experiment_id": "exp-005-metadata-service"},
     {"event": "HIDE_LOADER", "source": "NEW_TAB", "value": 7000, "action": "activity_stream_masga_event", "tab_id": "-3-2", "client_id": "a7967bc5-38ea-dd48-bfe9-ee06ca94f7e1", "addon_version": "1.1.8", "locale": "en-US", "page": "NEW_TAB", "session_id": "{d8a1812e-9f38-184c-9eed-01b98d4363e5}", "experiment_id": "exp-005-metadata-service"},
     {"event": "HIDE_LOADER", "source": "NEW_TAB", "value": 6000, "action": "activity_stream_masga_event", "tab_id": "-3-2", "client_id": "a7967bc5-38ea-dd48-bfe9-ee06ca94f7e1", "addon_version": "1.1.8", "locale": "en-US", "page": "NEW_TAB", "session_id": "{d8a1812e-9f38-184c-9eed-01b98d4363e5}", "experiment_id": "exp-005-metadata-service", "user_prefs": 7},
+    {"locale": "en-US", "ip": "15.211.153.0", "client_id": "1249e986-b53f-4851-8f77-a9c87f8f6646", "tiles": [{"id": 1}, {"id": 2}, {"id": 3}], "addon_version": "1.0.5", "source": "pocket", "timestamp": 1459810810000, "action": "activity_stream_impression", "ua": "python-requests\/2.9.1"},
+    {"locale": "en-US", "ip": "15.211.153.0", "client_id": "1249e986-b53f-4851-8f77-a9c87f8f6646", "tiles": [{"id": 1}], "addon_version": "1.0.5", "source": "pocket", "timestamp": 1459810810000, "action": "activity_stream_impression", "ua": "python-requests\/2.9.1", "click": 0},
+    {"locale": "en-US", "ip": "15.211.153.0", "client_id": "1249e986-b53f-4851-8f77-a9c87f8f6646", "tiles": [{"id": 1}], "addon_version": "1.0.5", "source": "pocket", "timestamp": 1459810810000, "action": "activity_stream_impression", "ua": "python-requests\/2.9.1", "block": 0},
+    {"locale": "en-US", "ip": "15.211.153.0", "client_id": "1249e986-b53f-4851-8f77-a9c87f8f6646", "tiles": [{"id": 1}], "addon_version": "1.0.5", "source": "pocket", "timestamp": 1459810810000, "action": "activity_stream_impression", "ua": "python-requests\/2.9.1", "pin": 0},
+    {"locale": "en-US", "ip": "15.211.153.0", "client_id": "1249e986-b53f-4851-8f77-a9c87f8f6646", "tiles": [{"id": 1}], "addon_version": "1.0.5", "source": "pocket", "timestamp": 1459810810000, "action": "activity_stream_impression", "ua": "python-requests\/2.9.1", "pocket": 0},
     {"session_duration": (2 ** 31 + 950), "locale": "en-US", "ip": "15.211.153.0", "date": "2016-04-04", "unload_reason": "close", "client_id": "93a7579d-c986-4e33-809e-e4101bf523f9", "max_scroll_depth": 61, "addon_version": "1.0.5", "total_history_size": 460, "ver": "3", "ua": "python-requests\/2.9.1", "load_latency": 216, "click_position": 19, "timestamp": 1459810810000, "action": "activity_stream_session", "tab_id": "5", "load_reason": "focus", "page": "timeline", "total_bookmarks": 3},
     {"locale": "en-US", "ip": "15.211.153.0", "client_id": "1249e986-b53f-4851-8f77-a9c87f8f6646", "date": "2016-04-04", "event": "previewCacheFetch", "event_id": "fd12fda24xd15", "addon_version": "1.0.5", "ver": "3", "source": "recent_links", "timestamp": 1459810810000, "action": "activity_stream_performance", "tab_id": "4", "ua": "python-requests\/2.9.1", "value": 2 ** 31 + 25},
 ]
@@ -50,10 +56,12 @@ class TestActivityStream(unittest.TestCase):
         n_event_logs = 0
         n_performance_logs = 0
         n_masga_logs = 0
+        n_impression_logs = 0
         n_ss_session_logs = 0
         n_ss_event_logs = 0
         n_ss_performance_logs = 0
         n_ss_masga_logs = 0
+        n_ss_impression_logs = 0
 
         for line in FIXTURE:
             for _ in application_stats_filter(line, self.params):
@@ -71,6 +79,9 @@ class TestActivityStream(unittest.TestCase):
             for _ in activity_stream_masga_filter(line, self.params):
                 n_masga_logs += 1
 
+            for _ in activity_stream_impression_filter(line, self.params):
+                n_impression_logs += 1
+
             # test the shield study filters
             line["shield_variant"] = "test"
             for _ in ss_activity_stream_session_filter(line, self.params):
@@ -85,15 +96,20 @@ class TestActivityStream(unittest.TestCase):
             for _ in ss_activity_stream_masga_filter(line, self.params):
                 n_ss_masga_logs += 1
 
+            for _ in ss_activity_stream_impression_filter(line, self.params):
+                n_ss_impression_logs += 1
+
         self.assertEqual(n_app_logs, 5)
         self.assertEqual(n_session_logs, 6)
         self.assertEqual(n_event_logs, 5)
         self.assertEqual(n_performance_logs, 6)
         self.assertEqual(n_masga_logs, 5)
+        self.assertEqual(n_impression_logs, 5)
         self.assertEqual(n_ss_session_logs, 6)
         self.assertEqual(n_ss_event_logs, 5)
         self.assertEqual(n_ss_performance_logs, 6)
         self.assertEqual(n_ss_masga_logs, 5)
+        self.assertEqual(n_ss_impression_logs, 5)
 
         # test filters are mutually orthogonal
         n_total = 0
@@ -102,10 +118,12 @@ class TestActivityStream(unittest.TestCase):
                                     activity_stream_performance_filter,
                                     application_stats_filter,
                                     activity_stream_masga_filter,
+                                    activity_stream_impression_filter,
                                     ss_activity_stream_session_filter,
                                     ss_activity_stream_event_filter,
                                     ss_activity_stream_performance_filter,
-                                    ss_activity_stream_masga_filter], 2):
+                                    ss_activity_stream_masga_filter,
+                                    ss_activity_stream_impression_filter], 2):
             for line in FIXTURE:
                 for item in f1(line, self.params):
                         for _ in f2(item, self.params):
@@ -258,6 +276,34 @@ class TestActivityStream(unittest.TestCase):
             line[field_name] = 2 ** 32 + 1
             ret = clean_activity_stream_masga(line, self.params)
             self.assertEqual(ret.next()["value"], -1)
+
+    def test_clean_activity_stream_impression(self):
+        self.assertIsNotNone(clean_activity_stream_impression(FIXTURE[25], self.params).next())
+
+        # test the filter on the required fields
+        for field_name in ["client_id", "addon_version", "source"]:
+            line = FIXTURE[25].copy()
+            del line[field_name]
+            ret = clean_activity_stream_impression(line, self.params)
+            self.assertRaises(StopIteration, ret.next)
+
+        # test the filter on the optional fields
+        for field_name in ["experiment_id"]:
+            line = FIXTURE[25].copy()
+            del line[field_name]
+            self.assertIsNotNone(clean_activity_stream_impression(line, self.params).next())
+
+            # test on "null" values on optional key
+            line[field_name] = None
+            parts = clean_activity_stream_impression(line, self.params).next()
+            self.assertEqual(parts[field_name], "n/a")
+
+        # test the filter on the numeric fields with invalid values
+        for field_name in ["user_prefs"]:
+            line = FIXTURE[25].copy()
+            line[field_name] = -1000
+            ret = clean_activity_stream_impression(line, self.params)
+            self.assertRaises(StopIteration, ret.next)
 
     def test_clean_shield_study_fields(self):
         self.assertIsNotNone(clean_shield_study_fields(FIXTURE[0], self.params).next())
