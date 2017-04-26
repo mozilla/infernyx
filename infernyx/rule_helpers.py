@@ -380,6 +380,29 @@ def clean_activity_stream_masga(parts, params):
         pass
 
 
+def clean_activity_stream_impression(parts, params):
+    try:
+        # check those required fields
+        assert parts["client_id"]
+        assert parts["addon_version"]
+        assert parts['source']
+
+        # check those optional fields
+        for f in ['user_prefs']:
+            if parts.get(f, None) is None:
+                parts[f] = -1
+            else:
+                assert parts[f] >= -1  # -1 is valid as it's the default for the integer type fields
+        for f in ['experiment_id']:
+            # Populate the optional fields with default values if they are missing or with value "null"
+            # This is necessary as Disco doesn't support "null"/"None" in the key part
+            if parts.get(f, None) is None:
+                parts[f] = "n/a"
+        yield parts
+    except Exception:
+        pass
+
+
 def clean_ping_centre_test_pilot(parts, params):
     try:
         # check those required fields

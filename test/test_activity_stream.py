@@ -6,7 +6,7 @@ from infernyx.rule_helpers import activity_stream_session_filter, activity_strea
     activity_stream_performance_filter, clean_activity_stream_performance, ss_activity_stream_session_filter,\
     ss_activity_stream_event_filter, ss_activity_stream_performance_filter, clean_shield_study_fields,\
     activity_stream_masga_filter, ss_activity_stream_masga_filter, clean_activity_stream_masga,\
-    activity_stream_impression_filter, ss_activity_stream_impression_filter
+    activity_stream_impression_filter, ss_activity_stream_impression_filter, clean_activity_stream_impression
 
 
 FIXTURE = [
@@ -276,6 +276,34 @@ class TestActivityStream(unittest.TestCase):
             line[field_name] = 2 ** 32 + 1
             ret = clean_activity_stream_masga(line, self.params)
             self.assertEqual(ret.next()["value"], -1)
+
+    def test_clean_activity_stream_impression(self):
+        self.assertIsNotNone(clean_activity_stream_impression(FIXTURE[25], self.params).next())
+
+        # test the filter on the required fields
+        for field_name in ["client_id", "addon_version", "source"]:
+            line = FIXTURE[25].copy()
+            del line[field_name]
+            ret = clean_activity_stream_impression(line, self.params)
+            self.assertRaises(StopIteration, ret.next)
+
+        # test the filter on the optional fields
+        for field_name in ["experiment_id"]:
+            line = FIXTURE[25].copy()
+            del line[field_name]
+            self.assertIsNotNone(clean_activity_stream_impression(line, self.params).next())
+
+            # test on "null" values on optional key
+            line[field_name] = None
+            parts = clean_activity_stream_impression(line, self.params).next()
+            self.assertEqual(parts[field_name], "n/a")
+
+        # test the filter on the numeric fields with invalid values
+        for field_name in ["user_prefs"]:
+            line = FIXTURE[25].copy()
+            line[field_name] = -1000
+            ret = clean_activity_stream_impression(line, self.params)
+            self.assertRaises(StopIteration, ret.next)
 
     def test_clean_shield_study_fields(self):
         self.assertIsNotNone(clean_shield_study_fields(FIXTURE[0], self.params).next())
