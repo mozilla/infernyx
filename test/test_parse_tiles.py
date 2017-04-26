@@ -35,8 +35,8 @@ class TestParseTiles(unittest.TestCase):
                 u'locale': u'pt-BR', u'ip': u'124.179.24.69', u'timestamp': 1420648352586, u'date': u'2015-01-07',
                 u'ua': u'Mozilla/5.0 (Windows NT 6.1; rv:34.0) Gecko/20100101 Firefox/34.0', u'view': 3}
 
-        actions = ['click', 'pin', 'block', 'sponsored', 'sponsored_link']
-        verifies = ['clicks', 'pinned', 'blocked', 'sponsored', 'sponsored_link']
+        actions = ['click', 'pin', 'block', 'sponsored', 'sponsored_link', 'pocket']
+        verifies = ['clicks', 'pinned', 'blocked', 'sponsored', 'sponsored_link', 'pocketed']
         for action, verify in zip(actions, verifies):
             imp = oimp.copy()
             imp[action] = 2
