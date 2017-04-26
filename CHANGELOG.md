@@ -1,3 +1,7 @@
+0.1.72
+======
+* process impression logs for activity stream
+
 0.1.71
 ======
 * process "topsites_lowresicon" and "topsites_pinned" for activity stream
