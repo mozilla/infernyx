@@ -247,7 +247,7 @@ RULES = [
                 table='activity_stream_masga',
             ),
             'activity_stream_impression_stats': Keyset(
-                key_parts=['client_id', 'addon_version', 'source', 'date', 'position', 'locale', 'tile_id',
+                key_parts=['client_id', 'addon_version', 'source', 'date', 'position', 'locale', 'tile_id', 'experiment_id',
                            'user_prefs', 'country_code', 'os', 'browser', 'version', 'device', 'blacklisted'],
                 value_parts=['impressions', 'clicks', 'pinned', 'blocked', 'pocketed'],
                 parts_preprocess=[activity_stream_impression_filter, clean_activity_stream_impression, parse_tiles, create_timestamp_str],
@@ -293,7 +293,7 @@ RULES = [
                 table='ss_masga',
             ),
             'ss_activity_stream_impression_stats': Keyset(
-                key_parts=['client_id', 'addon_version', 'source', 'date', 'position', 'locale', 'tile_id',
+                key_parts=['client_id', 'addon_version', 'source', 'date', 'position', 'locale', 'tile_id', 'experiment_id',
                            'user_prefs', 'country_code', 'os', 'browser', 'version', 'device', 'blacklisted',
                            'tp_version'],
                 value_parts=['impressions', 'clicks', 'pinned', 'blocked', 'pocketed'],
