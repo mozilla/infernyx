@@ -1,3 +1,7 @@
+0.1.73
+======
+* save experiment_id to activity_stream_impression_daily
+
 0.1.72
 ======
 * process impression logs for activity stream
