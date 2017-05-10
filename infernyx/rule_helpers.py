@@ -157,6 +157,20 @@ def parse_tiles(parts, params):
         print "Error parsing tiles: %s" % str(tiles)
 
 
+def parse_batch(parts, params):
+    batch_mode = parts.pop("batch-mode", False)
+    if batch_mode:
+        payloads = parts.pop("payloads", [])
+        try:
+            for payload in payloads:
+                payload.update(parts)
+                yield payload
+        except:
+            print "Error parsing batch payloads %s" % str(payloads)
+    else:
+        yield parts
+
+
 def parse_urls(parts, params):
     def combos(arr):
         for i, ela in enumerate(arr):
