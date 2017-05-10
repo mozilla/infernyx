@@ -1,3 +1,7 @@
+0.1.74
+======
+* add support for batch mode payloads and enable it with Activity Stream and Ping-centre
+
 0.1.73
 ======
 * save experiment_id to activity_stream_impression_daily
