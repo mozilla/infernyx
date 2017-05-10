@@ -19,7 +19,7 @@ from infernyx.rule_helpers import clean_data, parse_date, parse_locale, parse_ip
     activity_stream_mobile_session_filter, clean_activity_stream_mobile_session,\
     activity_stream_mobile_event_filter, clean_activity_stream_mobile_event,\
     ping_centre_test_pilot_filter, clean_ping_centre_test_pilot, activity_stream_impression_filter,\
-    ss_activity_stream_impression_filter, clean_activity_stream_impression
+    ss_activity_stream_impression_filter, clean_activity_stream_impression, parse_batch
 
 
 log = logging.getLogger(__name__)
@@ -190,7 +190,7 @@ RULES = [
         rule_cleanup=report_rule_stats,
         map_input_stream=chunk_json_stream,
         map_init_function=impression_stats_init,
-        parts_preprocess=[partial(clean_data, imps=False), parse_date, parse_ip, parse_ua],
+        parts_preprocess=[parse_batch, partial(clean_data, imps=False), parse_date, parse_ip, parse_ua],
         geoip_file=GEOIP,
         partitions=32,
         sort_buffer_size='25%',
@@ -310,7 +310,7 @@ RULES = [
         rule_cleanup=report_rule_stats,
         map_input_stream=chunk_json_stream,
         map_init_function=impression_stats_init,
-        parts_preprocess=[partial(clean_data, imps=False), parse_date, parse_ip, parse_ua, create_timestamp_str],
+        parts_preprocess=[parse_batch, partial(clean_data, imps=False), parse_date, parse_ip, parse_ua, create_timestamp_str],
         geoip_file=GEOIP,
         partitions=32,
         sort_buffer_size='25%',
