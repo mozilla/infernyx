@@ -530,3 +530,124 @@ def ss_activity_stream_impression_filter(parts, params):
 def ping_centre_test_pilot_filter(parts, params):
     if "testpilot" == parts.get("topic", ""):
         yield parts
+
+
+# filters and processors for Activity Stream system addon
+def assa_session_filter(parts, params):
+    if "activity_stream_session" == parts.get("action", ""):
+        yield parts
+
+
+def assa_event_filter(parts, params):
+    if "activity_stream_user_event" == parts.get("action", ""):
+        yield parts
+
+
+def assa_performance_filter(parts, params):
+    if "activity_stream_performance_event" == parts.get("action", ""):
+        yield parts
+
+
+def assa_masga_filter(parts, params):
+    if "activity_stream_undesired_event" == parts.get("action", ""):
+        yield parts
+
+
+def clean_assa_session(parts, params):
+    import sys
+
+    try:
+        # check those required fields
+        assert parts["client_id"]
+        assert parts["addon_version"]
+        assert parts["page"]
+        assert parts["session_id"]
+        assert 0 <= parts["session_duration"] < 2 ** 31
+        assert parts["load_trigger_type"]
+
+        # check those floating point fields
+        for f in ["load_trigger_ts", "visibility_event_rcvd_ts"]:
+            if parts.get(f, None) is None:
+                # TODO: increment the counters upon missing doubles
+                parts[f] = -1.0
+            else:
+                # do NOT tolerate invalid values here
+                assert -1.0 <= parts[f] < sys.float_info.max
+        yield parts
+    except Exception:
+        pass
+
+
+def clean_assa_event(parts, params):
+    try:
+        # check those required fields
+        assert parts["client_id"]
+        assert parts["addon_version"]
+        assert parts["page"]
+        assert parts["session_id"]
+        assert parts["event"]
+
+        for f in ['action_position', 'source']:
+            # Populate the optional fields with default values if they are missing or with value "null"
+            # This is necessary as Disco doesn't support "null"/"None" in the key part
+            if parts.get(f, None) is None:
+                parts[f] = "n/a"
+        yield parts
+    except Exception:
+        pass
+
+
+def clean_assa_performance(parts, params):
+    try:
+        # check those required fields
+        assert parts["client_id"]
+        assert parts["addon_version"]
+        assert parts["event"]
+
+        # check those optional integer fields
+        for f in ["value"]:
+            if parts.get(f, None) is None:
+                parts[f] = -1
+            else:
+                # some addon versions might send floating point values by mistake, we do the conversion here
+                parts[f] = int(round(parts[f]))
+                if parts[f] >= 2 ** 31:
+                    parts[f] = -1
+
+        # check those optional string fields
+        for f in ["page", "source", "event_id", "session_id"]:
+            # Populate the optional fields with default values if they are missing or with value "null"
+            # This is necessary as Disco doesn't support "null"/"None" in the key part
+            if parts.get(f, None) is None:
+                parts[f] = "n/a"
+        yield parts
+    except Exception:
+        pass
+
+
+def clean_assa_masga(parts, params):
+    try:
+        # check those required fields
+        assert parts["client_id"]
+        assert parts["addon_version"]
+        assert parts["event"]
+
+        # check those optional integer fields
+        for f in ["value"]:
+            if parts.get(f, None) is None:
+                parts[f] = -1
+            else:
+                # some addon versions might send floating point values by mistake, we do the conversion here
+                parts[f] = int(round(parts[f]))
+                if parts[f] >= 2 ** 31:
+                    parts[f] = -1
+
+        # check those optional string fields
+        for f in ["page", "source", "session_id"]:
+            # Populate the optional fields with default values if they are missing or with value "null"
+            # This is necessary as Disco doesn't support "null"/"None" in the key part
+            if parts.get(f, None) is None:
+                parts[f] = "n/a"
+        yield parts
+    except Exception:
+        pass

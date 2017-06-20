@@ -19,7 +19,9 @@ from infernyx.rule_helpers import clean_data, parse_date, parse_locale, parse_ip
     activity_stream_mobile_session_filter, clean_activity_stream_mobile_session,\
     activity_stream_mobile_event_filter, clean_activity_stream_mobile_event,\
     ping_centre_test_pilot_filter, clean_ping_centre_test_pilot, activity_stream_impression_filter,\
-    ss_activity_stream_impression_filter, clean_activity_stream_impression, parse_batch
+    ss_activity_stream_impression_filter, clean_activity_stream_impression, parse_batch,\
+    assa_session_filter, assa_event_filter, assa_masga_filter, assa_performance_filter,\
+    clean_assa_session, clean_assa_event, clean_assa_performance, clean_assa_masga
 
 
 log = logging.getLogger(__name__)
@@ -180,6 +182,63 @@ RULES = [
                    'version', 'device', 'year', 'month', 'week', 'enhanced', 'blacklisted'],
         value_parts=['impressions', 'clicks', 'pinned', 'blocked', 'sponsored', 'sponsored_link'],
         table='impression_stats_daily'
+    ),
+    InfernoRule(
+        name='activity_stream_stats',
+        source_tags=['incoming:activity_stream'],
+        max_blobs=APP_MAX_BLOBS,
+        min_blobs=APP_MIN_BLOBS,
+        archive=True,
+        rule_cleanup=report_rule_stats,
+        map_input_stream=chunk_json_stream,
+        map_init_function=impression_stats_init,
+        parts_preprocess=[parse_batch, partial(clean_data, imps=False), parse_date, parse_ip,
+                          parse_ua, create_timestamp_str],
+        geoip_file=GEOIP,
+        partitions=32,
+        sort_buffer_size='25%',
+        result_processor=partial(insert_redshift,
+                                 host=RS_HOST,
+                                 port=RS_PORT,
+                                 database=RS_DB,
+                                 user=RS_USER,
+                                 password=RS_PASSWORD,
+                                 bucket_name=RS_BUCKET),
+        combiner_function=combiner,
+        keysets={
+            'activity_stream_session_stats': Keyset(
+                key_parts=['client_id', 'addon_version', 'page', 'session_duration', 'session_id',
+                           'load_trigger_type', 'load_trigger_ts', 'visibility_event_rcvd_ts', 'locale',
+                           'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
+                value_parts=[],  # no value_parts for this keyset
+                parts_preprocess=[assa_session_filter, clean_assa_session],
+                table='assa_sessions_daily',
+            ),
+            'activity_stream_event_stats': Keyset(
+                key_parts=['client_id', 'addon_version', 'source', 'session_id', 'page', 'action_position',
+                           'event', 'locale',
+                           'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
+                value_parts=[],  # no value_parts for this keyset
+                parts_preprocess=[assa_event_filter, clean_assa_event],
+                table='assa_events_daily',
+            ),
+            'activity_stream_performance_stats': Keyset(
+                key_parts=['client_id', 'addon_version', 'session_id', 'page', 'source', 'event', 'event_id',
+                           'value', 'locale',
+                           'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
+                value_parts=[],  # no value_parts for this keyset
+                parts_preprocess=[assa_performance_filter, clean_assa_performance],
+                table='assa_performance_daily',
+            ),
+            'activity_stream_masga_stats': Keyset(
+                key_parts=['client_id', 'addon_version', 'source', 'session_id', 'page', 'event', 'value',
+                           'locale',
+                           'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
+                value_parts=[],  # no value_parts for this keyset
+                parts_preprocess=[assa_masga_filter, clean_assa_masga],
+                table='assa_masga_daily',
+            )
+        }
     ),
     InfernoRule(
         name='application_stats',
