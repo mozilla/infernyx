@@ -1,3 +1,7 @@
+0.1.75
+======
+* add a new rule to process pings from activity stream system addon
+
 0.1.74
 ======
 * add support for batch mode payloads and enable it with Activity Stream and Ping-centre
