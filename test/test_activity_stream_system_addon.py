@@ -27,10 +27,12 @@ def generate_session_payload():
         "addon_version": random.choice(VERSION),
         "page": random.choice(PAGE),
         "session_id": random.choice(UUID),
-        "load_trigger_type": random.choice(LOAD_TRIGGER_TYPE),
         "session_duration": abs(long(random.gauss(2, 1) * 1000)),
-        "load_trigger_ts": abs(random.gauss(1, 1) * 1000),
-        "visibility_event_rcvd_ts": abs(random.gauss(200, 20)),
+        "perf": {
+            "load_trigger_type": random.choice(LOAD_TRIGGER_TYPE),
+            "load_trigger_ts": abs(random.gauss(1, 1) * 1000),
+            "visibility_event_rcvd_ts": abs(random.gauss(200, 20)),
+        }
     }
     return payload
 
