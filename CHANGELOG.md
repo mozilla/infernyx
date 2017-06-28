@@ -1,3 +1,7 @@
+0.1.76
+======
+* handle the nested "perf" object for assa_session pings
+
 0.1.75
 ======
 * add a new rule to process pings from activity stream system addon
