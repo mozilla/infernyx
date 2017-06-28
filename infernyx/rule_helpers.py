@@ -563,6 +563,8 @@ def clean_assa_session(parts, params):
         assert parts["page"]
         assert parts["session_id"]
         assert 0 <= parts["session_duration"] < 2 ** 31
+        # merge `perf` into `parts`
+        parts.update(parts.pop("perf"))
         assert parts["load_trigger_type"]
 
         # check those floating point fields
