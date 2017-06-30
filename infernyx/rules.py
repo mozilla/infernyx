@@ -21,7 +21,8 @@ from infernyx.rule_helpers import clean_data, parse_date, parse_locale, parse_ip
     ping_centre_test_pilot_filter, clean_ping_centre_test_pilot, activity_stream_impression_filter,\
     ss_activity_stream_impression_filter, clean_activity_stream_impression, parse_batch,\
     assa_session_filter, assa_event_filter, assa_masga_filter, assa_performance_filter,\
-    clean_assa_session, clean_assa_event, clean_assa_performance, clean_assa_masga
+    clean_assa_session, clean_assa_event, clean_assa_performance, clean_assa_masga,\
+    timestamp_milli_to_micro, timestamp_micro_to_milli
 
 
 log = logging.getLogger(__name__)
@@ -211,7 +212,10 @@ RULES = [
                            'load_trigger_type', 'load_trigger_ts', 'visibility_event_rcvd_ts', 'locale',
                            'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
-                parts_preprocess=[assa_session_filter, clean_assa_session],
+                # convert the timestamps to avoid the precision loss during the map/reduce
+                parts_preprocess=[assa_session_filter, clean_assa_session,
+                                  partial(timestamp_milli_to_micro, columns=['load_trigger_ts', 'visibility_event_rcvd_ts'])],
+                parts_postprocess=[partial(timestamp_micro_to_milli, columns=['load_trigger_ts', 'visibility_event_rcvd_ts'])],
                 table='assa_sessions_daily',
             ),
             'activity_stream_event_stats': Keyset(
