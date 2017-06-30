@@ -553,6 +553,20 @@ def assa_masga_filter(parts, params):
         yield parts
 
 
+def timestamp_milli_to_micro(parts, params, columns=[]):
+    for column in columns:
+        parts[column] = int(parts[column] * 1000)
+    yield parts
+
+
+def timestamp_micro_to_milli(keys, value, params, columns=[]):
+    key_parts = params.keysets["activity_stream_session_stats"]["key_parts"]
+    for column in columns:
+        index = key_parts.index(column)
+        keys[index] = float(keys[index]) * 1e-3
+    yield keys, value
+
+
 def clean_assa_session(parts, params):
     import sys
 
