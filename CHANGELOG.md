@@ -1,3 +1,7 @@
+0.1.77
+======
+* handle double fields to avoid precision loss for assa_session pings
+
 0.1.76
 ======
 * handle the nested "perf" object for assa_session pings
