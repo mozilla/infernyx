@@ -210,12 +210,13 @@ RULES = [
             'activity_stream_session_stats': Keyset(
                 key_parts=['client_id', 'addon_version', 'page', 'session_duration', 'session_id',
                            'load_trigger_type', 'load_trigger_ts', 'visibility_event_rcvd_ts', 'locale',
+                           'topsites_first_painted_ts',
                            'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
                 # convert the timestamps to avoid the precision loss during the map/reduce
                 parts_preprocess=[assa_session_filter, clean_assa_session,
-                                  partial(timestamp_milli_to_micro, columns=['load_trigger_ts', 'visibility_event_rcvd_ts'])],
-                parts_postprocess=[partial(timestamp_micro_to_milli, columns=['load_trigger_ts', 'visibility_event_rcvd_ts'])],
+                                  partial(timestamp_milli_to_micro, columns=['load_trigger_ts', 'visibility_event_rcvd_ts', 'topsites_first_painted_ts'])],
+                parts_postprocess=[partial(timestamp_micro_to_milli, columns=['load_trigger_ts', 'visibility_event_rcvd_ts', 'topsites_first_painted_ts'])],
                 table='assa_sessions_daily',
             ),
             'activity_stream_event_stats': Keyset(
