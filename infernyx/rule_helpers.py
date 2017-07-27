@@ -576,13 +576,23 @@ def clean_assa_session(parts, params):
         assert parts["addon_version"]
         assert parts["page"]
         assert parts["session_id"]
-        assert 0 <= parts["session_duration"] < 2 ** 31
-        # merge `perf` into `parts`
-        parts.update(parts.pop("perf"))
+        # merge `perf` into `parts` if any
+        parts.update(parts.pop("perf", {}))
         assert parts["load_trigger_type"]
 
+        # check those optional integer fields
+        for f in ["session_duration"]:
+            if parts.get(f, None) is None:
+                parts[f] = -1
+            else:
+                # some addon versions might send floating point values by mistake, we do the conversion here
+                parts[f] = int(round(parts[f]))
+                if parts[f] >= 2 ** 31 or parts[f] < 0:
+                    parts[f] = -1
+
         # check those floating point fields
-        for f in ["load_trigger_ts", "visibility_event_rcvd_ts"]:
+        for f in ["load_trigger_ts", "visibility_event_rcvd_ts",
+                  "topsites_first_painted_ts"]:
             if parts.get(f, None) is None:
                 # TODO: increment the counters upon missing doubles
                 parts[f] = -1.0
