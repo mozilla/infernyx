@@ -1,3 +1,7 @@
+0.1.78
+======
+* handle topsites_first_painted_ts for assa_session pings
+
 0.1.77
 ======
 * handle double fields to avoid precision loss for assa_session pings
