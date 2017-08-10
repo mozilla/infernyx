@@ -1,3 +1,7 @@
+0.1.79
+======
+* process user_prefs for activity stream system addon pings
+
 0.1.78
 ======
 * handle topsites_first_painted_ts for assa_session pings
