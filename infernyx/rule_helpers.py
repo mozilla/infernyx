@@ -581,7 +581,7 @@ def clean_assa_session(parts, params):
         assert parts["load_trigger_type"]
 
         # check those optional integer fields
-        for f in ["session_duration"]:
+        for f in ["session_duration", "user_prefs"]:
             if parts.get(f, None) is None:
                 parts[f] = -1
             else:
@@ -618,6 +618,16 @@ def clean_assa_event(parts, params):
             # This is necessary as Disco doesn't support "null"/"None" in the key part
             if parts.get(f, None) is None:
                 parts[f] = "n/a"
+
+        # check those optional integer fields
+        for f in ["user_prefs"]:
+            if parts.get(f, None) is None:
+                parts[f] = -1
+            else:
+                # some addon versions might send floating point values by mistake, we do the conversion here
+                parts[f] = int(round(parts[f]))
+                if parts[f] >= 2 ** 31:
+                    parts[f] = -1
         yield parts
     except Exception:
         pass
@@ -631,7 +641,7 @@ def clean_assa_performance(parts, params):
         assert parts["event"]
 
         # check those optional integer fields
-        for f in ["value"]:
+        for f in ["value", "user_prefs"]:
             if parts.get(f, None) is None:
                 parts[f] = -1
             else:
@@ -659,7 +669,7 @@ def clean_assa_masga(parts, params):
         assert parts["event"]
 
         # check those optional integer fields
-        for f in ["value"]:
+        for f in ["value", "user_prefs"]:
             if parts.get(f, None) is None:
                 parts[f] = -1
             else:

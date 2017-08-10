@@ -88,6 +88,7 @@ def attach_extra_info(ping):
     ping["date"] = now.strftime("%Y-%m-%d")
     ping["timestamp"] = int(now.strftime("%s")) * 1000
     ping["locale"] = "en-US"
+    ping["user_prefs"] = 7
     return ping
 
 
@@ -149,14 +150,14 @@ class TestActivityStreamSystemAddon(unittest.TestCase):
             self.assertRaises(StopIteration, ret.next)
 
         # test the filter on the numeric fields with invalid values
-        for field_name in ["session_duration"]:
+        for field_name in ["session_duration", "user_prefs"]:
             line = self.SESSION_PINGS[0].copy()
             line[field_name] = 2 ** 32
             parts = clean_assa_session(line, self.params).next()
             self.assertEquals(parts[field_name], -1)
 
         # test the filter on the numeric fields with float
-        for field_name in ["session_duration"]:
+        for field_name in ["session_duration", "user_prefs"]:
             line = self.SESSION_PINGS[0].copy()
             line[field_name] = 100.4
             parts = clean_assa_session(line, self.params).next()
@@ -183,6 +184,20 @@ class TestActivityStreamSystemAddon(unittest.TestCase):
             del line[field_name]
             ret = clean_assa_event(line, self.params)
             self.assertRaises(StopIteration, ret.next)
+
+        # test the filter on the numeric fields with invalid values
+        for field_name in ["user_prefs"]:
+            line = self.EVENT_PINGS[0].copy()
+            line[field_name] = 2 ** 32
+            parts = clean_assa_event(line, self.params).next()
+            self.assertEquals(parts[field_name], -1)
+
+        # test the filter on the numeric fields with invalid values
+        for field_name in ["user_prefs"]:
+            line = self.EVENT_PINGS[0].copy()
+            line[field_name] = 100.4
+            parts = clean_assa_event(line, self.params).next()
+            self.assertEquals(parts[field_name], 100)
 
         # test the filter on the optional fields
         for field_name in ['action_position', 'source']:
@@ -217,14 +232,14 @@ class TestActivityStreamSystemAddon(unittest.TestCase):
             self.assertEqual(parts[field_name], "n/a")
 
         # test the filter on the numeric fields with invalid values
-        for field_name in ["value"]:
+        for field_name in ["value", "user_prefs"]:
             line = self.PERFORMANCE_PINGS[0].copy()
             line[field_name] = 2 ** 32
             parts = clean_assa_performance(line, self.params).next()
             self.assertEquals(parts[field_name], -1)
 
         # test the filter on the numeric fields with float
-        for field_name in ["value"]:
+        for field_name in ["value", "user_prefs"]:
             line = self.PERFORMANCE_PINGS[0].copy()
             line[field_name] = 100.4
             parts = clean_assa_performance(line, self.params).next()
@@ -252,14 +267,14 @@ class TestActivityStreamSystemAddon(unittest.TestCase):
             self.assertEqual(parts[field_name], "n/a")
 
         # test the filter on the numeric fields with invalid values
-        for field_name in ["value"]:
+        for field_name in ["value", "user_prefs"]:
             line = self.MASGA_PINGS[0].copy()
             line[field_name] = 2 ** 32
             ret = clean_assa_masga(line, self.params)
-            self.assertEqual(ret.next()["value"], -1)
+            self.assertEqual(ret.next()[field_name], -1)
 
         # test the filter on the numeric fields with float
-        for field_name in ["value"]:
+        for field_name in ["value", "user_prefs"]:
             line = self.MASGA_PINGS[0].copy()
             line[field_name] = 100.4
             parts = clean_assa_masga(line, self.params).next()
