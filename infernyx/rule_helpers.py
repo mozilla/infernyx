@@ -553,6 +553,11 @@ def assa_masga_filter(parts, params):
         yield parts
 
 
+def assa_impression_filter(parts, params):
+    if "activity_stream_impression_stats" == parts.get("action", ""):
+        yield parts
+
+
 def timestamp_milli_to_micro(parts, params, columns=[]):
     for column in columns:
         parts[column] = int(parts[column] * 1000)
@@ -684,6 +689,32 @@ def clean_assa_masga(parts, params):
             # This is necessary as Disco doesn't support "null"/"None" in the key part
             if parts.get(f, None) is None:
                 parts[f] = "n/a"
+        yield parts
+    except Exception:
+        pass
+
+
+def clean_assa_impression(parts, params):
+    try:
+        # check those required fields
+        assert parts["client_id"]
+        assert parts["addon_version"]
+        assert parts["page"]
+
+        for f in ['source']:
+            # Populate the optional fields with default values if they are missing or with value "null"
+            # This is necessary as Disco doesn't support "null"/"None" in the key part
+            if parts.get(f, None) is None:
+                parts[f] = "n/a"
+
+        # check those optional integer fields
+        for f in ['user_prefs']:
+            if parts.get(f, None) is None:
+                parts[f] = -1
+            else:
+                parts[f] = int(round(parts[f]))
+                if parts[f] >= 2 ** 31:
+                    parts[f] = -1
         yield parts
     except Exception:
         pass

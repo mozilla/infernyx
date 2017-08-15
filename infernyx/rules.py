@@ -22,7 +22,8 @@ from infernyx.rule_helpers import clean_data, parse_date, parse_locale, parse_ip
     ss_activity_stream_impression_filter, clean_activity_stream_impression, parse_batch,\
     assa_session_filter, assa_event_filter, assa_masga_filter, assa_performance_filter,\
     clean_assa_session, clean_assa_event, clean_assa_performance, clean_assa_masga,\
-    timestamp_milli_to_micro, timestamp_micro_to_milli
+    timestamp_milli_to_micro, timestamp_micro_to_milli, assa_impression_filter,\
+    clean_assa_impression
 
 
 log = logging.getLogger(__name__)
@@ -242,6 +243,13 @@ RULES = [
                 value_parts=[],  # no value_parts for this keyset
                 parts_preprocess=[assa_masga_filter, clean_assa_masga],
                 table='assa_masga_daily',
+            ),
+            'activity_stream_impression_stats': Keyset(
+                key_parts=['client_id', 'addon_version', 'page', 'source', 'date', 'position', 'locale', 'tile_id',
+                           'user_prefs', 'country_code', 'os', 'browser', 'version', 'device', 'blacklisted'],
+                value_parts=['impressions', 'clicks', 'pinned', 'blocked', 'pocketed'],
+                parts_preprocess=[assa_impression_filter, clean_assa_impression, parse_tiles],
+                table='assa_impression_stats_daily'
             )
         }
     ),
