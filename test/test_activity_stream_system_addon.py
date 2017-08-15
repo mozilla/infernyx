@@ -7,7 +7,7 @@ from itertools import combinations
 
 from infernyx.rule_helpers import assa_session_filter, assa_event_filter,\
     clean_assa_session, clean_assa_event, assa_performance_filter, clean_assa_performance,\
-    assa_masga_filter, clean_assa_masga
+    assa_masga_filter, clean_assa_masga, assa_impression_filter, clean_assa_impression
 
 
 UUID = [str(uuid.uuid4()) for _i in range(10)]
@@ -18,6 +18,8 @@ VERSION = ["1.0.0", "1.0.1", "1.0.2", "1.0.3"]
 UA = ["python-requests/2.9.1"]
 EVENT = ["delete", "click", "search"]
 LOAD_TRIGGER_TYPE = ["newtab", "restore", "refresh"]
+TILES = [[{"id": 10000}, {"id": 10001}, {"id": 10002}], [{"id": 10001, "pos": 2}]]
+IMPRESSION_EVENTS = ["click", "block", "pocket"]
 
 
 def generate_session_payload():
@@ -81,6 +83,21 @@ def generate_masga_payload():
     return payload
 
 
+def generate_impression_payload():
+    payload = {
+        "action": "activity_stream_impression_stats",
+        "client_id": random.choice(UUID),
+        "session_id": random.choice(UUID),
+        "addon_version": random.choice(VERSION),
+        "page": random.choice(PAGE),
+        "source": random.choice(SOURCE),
+        "tiles": random.choice(TILES)
+    }
+    if (len(payload["tiles"]) == 1):
+        payload[random.choice(IMPRESSION_EVENTS)] = 0
+    return payload
+
+
 def attach_extra_info(ping):
     ping["ip"] = random.choice(IP)
     ping["ua"] = random.choice(UA)
@@ -101,13 +118,16 @@ class TestActivityStreamSystemAddon(unittest.TestCase):
         self.EVENT_PINGS = [attach_extra_info(generate_event_payload()) for i in range(5)]
         self.PERFORMANCE_PINGS = [attach_extra_info(generate_performance_payload()) for i in range(5)]
         self.MASGA_PINGS = [attach_extra_info(generate_masga_payload()) for i in range(5)]
-        self.FIXTURE = self.SESSION_PINGS + self.EVENT_PINGS + self.PERFORMANCE_PINGS + self.MASGA_PINGS
+        self.IMPRESSION_PINGS = [attach_extra_info(generate_impression_payload()) for i in range(5)]
+        self.FIXTURE = self.SESSION_PINGS + self.EVENT_PINGS + self.PERFORMANCE_PINGS + self.MASGA_PINGS +\
+            self.IMPRESSION_PINGS
 
     def test_filters(self):
         n_session_logs = 0
         n_event_logs = 0
         n_performance_logs = 0
         n_masga_logs = 0
+        n_impression_logs = 0
 
         for line in self.FIXTURE:
             for _ in assa_session_filter(line, self.params):
@@ -122,16 +142,22 @@ class TestActivityStreamSystemAddon(unittest.TestCase):
             for _ in assa_masga_filter(line, self.params):
                 n_masga_logs += 1
 
+            for _ in assa_impression_filter(line, self.params):
+                n_impression_logs += 1
+
         self.assertEqual(n_session_logs, 5)
         self.assertEqual(n_event_logs, 5)
         self.assertEqual(n_performance_logs, 5)
         self.assertEqual(n_masga_logs, 5)
+        self.assertEqual(n_impression_logs, 5)
+
         # test filters are mutually orthogonal
         n_total = 0
         for f1, f2 in combinations([assa_event_filter,
                                     assa_session_filter,
                                     assa_performance_filter,
-                                    assa_masga_filter], 2):
+                                    assa_masga_filter,
+                                    assa_impression_filter], 2):
             for line in self.FIXTURE:
                 for item in f1(line, self.params):
                         for _ in f2(item, self.params):
@@ -278,4 +304,39 @@ class TestActivityStreamSystemAddon(unittest.TestCase):
             line = self.MASGA_PINGS[0].copy()
             line[field_name] = 100.4
             parts = clean_assa_masga(line, self.params).next()
+            self.assertEquals(parts[field_name], 100)
+
+    def test_clean_assa_impression(self):
+        self.assertIsNotNone(clean_assa_impression(self.IMPRESSION_PINGS[0], self.params).next())
+
+        # test the filter on the required fields
+        for field_name in ["client_id", "addon_version", "page"]:
+            line = self.IMPRESSION_PINGS[0].copy()
+            del line[field_name]
+            ret = clean_assa_impression(line, self.params)
+            self.assertRaises(StopIteration, ret.next)
+
+        # test the filter on the optional fields
+        for field_name in ["source"]:
+            line = self.IMPRESSION_PINGS[0].copy()
+            del line[field_name]
+            self.assertIsNotNone(clean_assa_impression(line, self.params).next())
+
+            # test on "null" values on optional key
+            line[field_name] = None
+            parts = clean_assa_impression(line, self.params).next()
+            self.assertEqual(parts[field_name], "n/a")
+
+        # test the filter on the numeric fields with invalid values
+        for field_name in ["user_prefs"]:
+            line = self.IMPRESSION_PINGS[0].copy()
+            line[field_name] = 2 ** 32
+            ret = clean_assa_impression(line, self.params)
+            self.assertEqual(ret.next()[field_name], -1)
+
+        # test the filter on the numeric fields with float
+        for field_name in ["user_prefs"]:
+            line = self.IMPRESSION_PINGS[0].copy()
+            line[field_name] = 100.4
+            parts = clean_assa_impression(line, self.params).next()
             self.assertEquals(parts[field_name], 100)
