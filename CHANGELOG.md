@@ -1,3 +1,7 @@
+0.1.80
+======
+* process impression pings for activity stream system addon
+
 0.1.79
 ======
 * process user_prefs for activity stream system addon pings
