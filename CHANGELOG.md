@@ -1,3 +1,8 @@
+0.1.81
+======
+* process release_channel for activity stream tables
+* process firefox onboarding pings
+
 0.1.80
 ======
 * process impression pings for activity stream system addon
