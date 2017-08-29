@@ -23,7 +23,8 @@ from infernyx.rule_helpers import clean_data, parse_date, parse_locale, parse_ip
     assa_session_filter, assa_event_filter, assa_masga_filter, assa_performance_filter,\
     clean_assa_session, clean_assa_event, clean_assa_performance, clean_assa_masga,\
     timestamp_milli_to_micro, timestamp_micro_to_milli, assa_impression_filter,\
-    clean_assa_impression
+    clean_assa_impression, firefox_onboarding_session_filter, firefox_onboarding_event_filter,\
+    clean_firefox_onboarding_event, clean_firefox_onboarding_session
 
 
 log = logging.getLogger(__name__)
@@ -410,6 +411,20 @@ RULES = [
                 value_parts=[],  # no value_parts for this keyset
                 parts_preprocess=[activity_stream_mobile_event_filter, clean_activity_stream_mobile_event],
                 table='activity_stream_mobile_events_daily',
+            ),
+            'firefox_onboarding_session_stats': Keyset(
+                key_parts=['client_id', 'addon_version', 'session_duration', 'session_id', 'page', 'event', 'category',
+                           'receive_at', 'locale', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
+                value_parts=["impression"],
+                parts_preprocess=[firefox_onboarding_session_filter, clean_firefox_onboarding_session],
+                table='firefox_onboarding_session_daily',
+            ),
+            'firefox_onboarding_events_stats': Keyset(
+                key_parts=['client_id', 'addon_version', 'session_id', 'page', 'event', 'tour_id', 'category',
+                           'receive_at', 'locale', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
+                value_parts=["impression"],
+                parts_preprocess=[firefox_onboarding_event_filter, clean_firefox_onboarding_event],
+                table='firefox_onboarding_events_daily',
             ),
             'ping_centre_test_pilot_stats': Keyset(
                 key_parts=["client_id", "addon_id", "addon_version", "firefox_version", "client_time",
