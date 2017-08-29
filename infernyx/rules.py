@@ -211,7 +211,7 @@ RULES = [
             'activity_stream_session_stats': Keyset(
                 key_parts=['client_id', 'addon_version', 'page', 'session_duration', 'session_id',
                            'load_trigger_type', 'load_trigger_ts', 'visibility_event_rcvd_ts', 'locale',
-                           'topsites_first_painted_ts', 'user_prefs',
+                           'topsites_first_painted_ts', 'user_prefs', 'release_channel',
                            'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
                 # convert the timestamps to avoid the precision loss during the map/reduce
@@ -222,7 +222,7 @@ RULES = [
             ),
             'activity_stream_event_stats': Keyset(
                 key_parts=['client_id', 'addon_version', 'source', 'session_id', 'page', 'action_position',
-                           'event', 'locale', 'user_prefs',
+                           'event', 'locale', 'user_prefs', 'release_channel',
                            'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
                 parts_preprocess=[assa_event_filter, clean_assa_event],
@@ -230,7 +230,7 @@ RULES = [
             ),
             'activity_stream_performance_stats': Keyset(
                 key_parts=['client_id', 'addon_version', 'session_id', 'page', 'source', 'event', 'event_id',
-                           'value', 'locale', 'user_prefs',
+                           'value', 'locale', 'user_prefs', 'release_channel',
                            'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
                 parts_preprocess=[assa_performance_filter, clean_assa_performance],
@@ -238,7 +238,7 @@ RULES = [
             ),
             'activity_stream_masga_stats': Keyset(
                 key_parts=['client_id', 'addon_version', 'source', 'session_id', 'page', 'event', 'value',
-                           'locale', 'user_prefs',
+                           'locale', 'user_prefs', 'release_channel',
                            'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
                 parts_preprocess=[assa_masga_filter, clean_assa_masga],
@@ -246,7 +246,8 @@ RULES = [
             ),
             'activity_stream_impression_stats': Keyset(
                 key_parts=['client_id', 'addon_version', 'page', 'source', 'date', 'position', 'locale', 'tile_id',
-                           'user_prefs', 'country_code', 'os', 'browser', 'version', 'device', 'blacklisted'],
+                           'user_prefs', 'country_code', 'os', 'browser', 'version', 'device', 'blacklisted',
+                           'release_channel'],
                 value_parts=['impressions', 'clicks', 'pinned', 'blocked', 'pocketed'],
                 parts_preprocess=[assa_impression_filter, clean_assa_impression, parse_tiles],
                 table='assa_impression_stats_daily'
