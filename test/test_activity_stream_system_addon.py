@@ -20,6 +20,7 @@ EVENT = ["delete", "click", "search"]
 LOAD_TRIGGER_TYPE = ["newtab", "restore", "refresh"]
 TILES = [[{"id": 10000}, {"id": 10001}, {"id": 10002}], [{"id": 10001, "pos": 2}]]
 IMPRESSION_EVENTS = ["click", "block", "pocket"]
+RELEASE_CHANNEL = ["release", "beta", "nightly"]
 
 
 def generate_session_payload():
@@ -106,6 +107,7 @@ def attach_extra_info(ping):
     ping["timestamp"] = int(now.strftime("%s")) * 1000
     ping["locale"] = "en-US"
     ping["user_prefs"] = 7
+    ping["release_channel"] = random.choice(RELEASE_CHANNEL)
     return ping
 
 
@@ -201,6 +203,17 @@ class TestActivityStreamSystemAddon(unittest.TestCase):
             ret = clean_assa_session(line, self.params)
             self.assertRaises(StopIteration, ret.next)
 
+        # test the filter on the optional fields
+        for field_name in ['release_channel']:
+            line = self.SESSION_PINGS[0].copy()
+            del line[field_name]
+            self.assertIsNotNone(clean_assa_session(line, self.params).next())
+
+            # test on "null" values on optional key
+            line[field_name] = None
+            parts = clean_assa_session(line, self.params).next()
+            self.assertEqual(parts[field_name], "n/a")
+
     def test_clean_assa_event(self):
         self.assertIsNotNone(clean_assa_event(self.EVENT_PINGS[0], self.params).next())
 
@@ -226,7 +239,7 @@ class TestActivityStreamSystemAddon(unittest.TestCase):
             self.assertEquals(parts[field_name], 100)
 
         # test the filter on the optional fields
-        for field_name in ['action_position', 'source']:
+        for field_name in ['action_position', 'source', 'release_channel']:
             line = self.EVENT_PINGS[0].copy()
             del line[field_name]
             self.assertIsNotNone(clean_assa_event(line, self.params).next())
@@ -247,7 +260,7 @@ class TestActivityStreamSystemAddon(unittest.TestCase):
             self.assertRaises(StopIteration, ret.next)
 
         # test the filter on the optional fields
-        for field_name in ["page", "source", "event_id", "session_id"]:
+        for field_name in ["page", "source", "event_id", "session_id", "release_channel"]:
             line = self.PERFORMANCE_PINGS[0].copy()
             del line[field_name]
             self.assertIsNotNone(clean_assa_performance(line, self.params).next())
@@ -282,7 +295,7 @@ class TestActivityStreamSystemAddon(unittest.TestCase):
             self.assertRaises(StopIteration, ret.next)
 
         # test the filter on the optional fields
-        for field_name in ["page", "source", "session_id"]:
+        for field_name in ["page", "source", "session_id", "release_channel"]:
             line = self.MASGA_PINGS[0].copy()
             del line[field_name]
             self.assertIsNotNone(clean_assa_masga(line, self.params).next())
@@ -317,7 +330,7 @@ class TestActivityStreamSystemAddon(unittest.TestCase):
             self.assertRaises(StopIteration, ret.next)
 
         # test the filter on the optional fields
-        for field_name in ["source"]:
+        for field_name in ["source", "release_channel"]:
             line = self.IMPRESSION_PINGS[0].copy()
             del line[field_name]
             self.assertIsNotNone(clean_assa_impression(line, self.params).next())
