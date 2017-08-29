@@ -333,6 +333,66 @@ def clean_activity_stream_mobile_event(parts, params):
         pass
 
 
+def clean_firefox_onboarding_session(parts, params):
+    try:
+        assert parts["client_id"]
+        assert parts["addon_version"]
+
+        # check those required fields
+        assert parts["event"]
+        assert parts["page"]
+        assert parts["category"]
+
+        # check those optional integer fields
+        for f in ['session_duration', 'impression']:
+            if parts.get(f, None) is None:
+                parts[f] = -1
+            else:
+                # some addon versions might send floating point values by mistake, we do the conversion here
+                parts[f] = int(round(parts[f]))
+                if parts[f] >= 2 ** 31 or parts[f] < 0:
+                    parts[f] = -1
+
+        for f in ['session_id']:
+            # Populate the optional fields with default values if they are missing or with value "null"
+            # This is necessary as Disco doesn't support "null"/"None" in the key part
+            if parts.get(f, None) is None:
+                parts[f] = "n/a"
+        yield parts
+    except Exception:
+        pass
+
+
+def clean_firefox_onboarding_event(parts, params):
+    try:
+        assert parts["client_id"]
+        assert parts["addon_version"]
+
+        # check those required fields
+        assert parts["event"]
+        assert parts["page"]
+        assert parts["category"]
+
+        # check those optional integer fields
+        for f in ['impression']:
+            if parts.get(f, None) is None:
+                parts[f] = -1
+            else:
+                # some addon versions might send floating point values by mistake, we do the conversion here
+                parts[f] = int(round(parts[f]))
+                if parts[f] >= 2 ** 31 or parts[f] < 0:
+                    parts[f] = -1
+
+        for f in ['session_id', 'tour_id']:
+            # Populate the optional fields with default values if they are missing or with value "null"
+            # This is necessary as Disco doesn't support "null"/"None" in the key part
+            if parts.get(f, None) is None:
+                parts[f] = "n/a"
+        yield parts
+    except Exception:
+        pass
+
+
 def clean_activity_stream_performance(parts, params):
     try:
         assert parts["client_id"]
@@ -474,6 +534,16 @@ def activity_stream_mobile_session_filter(parts, params):
 
 def activity_stream_mobile_event_filter(parts, params):
     if "activity-stream-mobile-events" == parts.get("topic", ""):
+        yield parts
+
+
+def firefox_onboarding_session_filter(parts, params):
+    if "firefox-onboarding-session" == parts.get("topic", ""):
+        yield parts
+
+
+def firefox_onboarding_event_filter(parts, params):
+    if "firefox-onboarding-event" == parts.get("topic", ""):
         yield parts
 
 
