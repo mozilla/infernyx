@@ -334,6 +334,8 @@ def clean_activity_stream_mobile_event(parts, params):
 
 
 def clean_firefox_onboarding_session(parts, params):
+    import sys
+
     try:
         assert parts["client_id"]
         assert parts["addon_version"]
@@ -342,9 +344,16 @@ def clean_firefox_onboarding_session(parts, params):
         assert parts["event"]
         assert parts["page"]
         assert parts["category"]
+        assert parts["tour_source"]
+
+        # check those required big integer fields
+        for f in ['session_begin', 'session_end']:
+            assert parts[f] < sys.maxint
+
+        assert parts['session_end'] >= parts['session_begin']
 
         # check those optional integer fields
-        for f in ['session_duration', 'impression']:
+        for f in ['impression']:
             if parts.get(f, None) is None:
                 parts[f] = -1
             else:
@@ -372,6 +381,7 @@ def clean_firefox_onboarding_event(parts, params):
         assert parts["event"]
         assert parts["page"]
         assert parts["category"]
+        assert parts["tour_source"]
 
         # check those optional integer fields
         for f in ['impression']:
