@@ -1,7 +1,9 @@
 import unittest
 import random
 import uuid
+import time
 import datetime
+import sys
 from itertools import combinations
 
 from infernyx.rule_helpers import firefox_onboarding_session_filter, firefox_onboarding_event_filter,\
@@ -15,6 +17,7 @@ VERSION = ["1.0.0", "1.0.1", "1.0.2", "1.0.3"]
 UA = ["python-requests/2.9.1"]
 EVENT = ["overlay-nav-click", "notification-click"]
 CATEGORY = ["overlay_interaction", "notify_interaction"]
+TOUR_SOURCE = ["icon", "watermark", "notification"]
 
 
 def generate_session_payload():
@@ -24,10 +27,12 @@ def generate_session_payload():
         "addon_version": random.choice(VERSION),
         "page": random.choice(PAGE),
         "session_id": random.choice(UUID),
-        "session_duration": abs(long(random.gauss(2, 1) * 1000)),
+        "session_begin": time.time() * 1000,
+        "session_end": time.time() * 1000 + abs(long(random.gauss(2, 1) * 1000)),
         "event": random.choice(EVENT),
         "impression": 1,
-        "category": random.choice(CATEGORY)
+        "category": random.choice(CATEGORY),
+        "tour_source": random.choice(TOUR_SOURCE)
     }
     return payload
 
@@ -42,7 +47,8 @@ def generate_event_payload():
         "event": random.choice(EVENT),
         "tour_id": random.choice(TOUR_ID),
         "impression": 1,
-        "category": random.choice(CATEGORY)
+        "category": random.choice(CATEGORY),
+        "tour_source": random.choice(TOUR_SOURCE)
     }
     return payload
 
@@ -94,21 +100,35 @@ class TestFirefoxOnboarding(unittest.TestCase):
         self.assertIsNotNone(clean_firefox_onboarding_session(self.SESSION_PINGS[0], self.params).next())
 
         # test the filter on the required fields
-        for field_name in ["client_id", "addon_version", "page", "event", "category"]:
+        for field_name in ["client_id", "addon_version", "page", "event", "category", "tour_source",
+                           "session_begin", "session_end"]:
             line = self.SESSION_PINGS[0].copy()
             del line[field_name]
             ret = clean_firefox_onboarding_session(line, self.params)
             self.assertRaises(StopIteration, ret.next)
 
+        # test the filter on the bigint fields
+        for field_name in ["session_begin", "session_end"]:
+            line = self.SESSION_PINGS[0].copy()
+            line[field_name] = sys.maxint + 1
+            ret = clean_firefox_onboarding_session(line, self.params)
+            self.assertRaises(StopIteration, ret.next)
+
+        # test the session_begin is greater than session_end
+        line = self.SESSION_PINGS[0].copy()
+        line['session_begin'] = sys.maxint
+        ret = clean_firefox_onboarding_session(line, self.params)
+        self.assertRaises(StopIteration, ret.next)
+
         # test the filter on the numeric fields with invalid values
-        for field_name in ["session_duration", "impression"]:
+        for field_name in ["impression"]:
             line = self.SESSION_PINGS[0].copy()
             line[field_name] = 2 ** 32
             parts = clean_firefox_onboarding_session(line, self.params).next()
             self.assertEquals(parts[field_name], -1)
 
         # test the filter on the numeric fields with float
-        for field_name in ["session_duration", "impression"]:
+        for field_name in ["impression"]:
             line = self.SESSION_PINGS[0].copy()
             line[field_name] = 100.4
             parts = clean_firefox_onboarding_session(line, self.params).next()
@@ -129,7 +149,7 @@ class TestFirefoxOnboarding(unittest.TestCase):
         self.assertIsNotNone(clean_firefox_onboarding_event(self.EVENT_PINGS[0], self.params).next())
 
         # test the filter on the required fields
-        for field_name in ["client_id", "addon_version", "page", "event", "category"]:
+        for field_name in ["client_id", "addon_version", "page", "event", "category", "tour_source"]:
             line = self.EVENT_PINGS[0].copy()
             del line[field_name]
             ret = clean_firefox_onboarding_event(line, self.params)

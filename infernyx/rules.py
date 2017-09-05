@@ -413,14 +413,16 @@ RULES = [
                 table='activity_stream_mobile_events_daily',
             ),
             'firefox_onboarding_session_stats': Keyset(
-                key_parts=['client_id', 'addon_version', 'session_duration', 'session_id', 'page', 'event', 'category',
+                key_parts=['client_id', 'addon_version', 'session_begin', 'session_end', 'session_id', 'page',
+                           'event', 'category', 'tour_source',
                            'receive_at', 'locale', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=["impression"],
                 parts_preprocess=[firefox_onboarding_session_filter, clean_firefox_onboarding_session],
-                table='firefox_onboarding_session_daily',
+                table='firefox_onboarding_sessions_daily',
             ),
             'firefox_onboarding_events_stats': Keyset(
                 key_parts=['client_id', 'addon_version', 'session_id', 'page', 'event', 'tour_id', 'category',
+                           'tour_source',
                            'receive_at', 'locale', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=["impression"],
                 parts_preprocess=[firefox_onboarding_event_filter, clean_firefox_onboarding_event],
