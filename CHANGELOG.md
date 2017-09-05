@@ -1,3 +1,7 @@
+0.1.82
+======
+* processs session_begin, session_end, and tour_source for firefox onboarding
+
 0.1.81
 ======
 * process release_channel for activity stream tables
