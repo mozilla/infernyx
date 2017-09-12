@@ -1,3 +1,7 @@
+0.1.83
+======
+* remove tour_source from firefox onboarding events
+
 0.1.82
 ======
 * processs session_begin, session_end, and tour_source for firefox onboarding
