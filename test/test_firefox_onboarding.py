@@ -48,7 +48,6 @@ def generate_event_payload():
         "tour_id": random.choice(TOUR_ID),
         "impression": 1,
         "category": random.choice(CATEGORY),
-        "tour_source": random.choice(TOUR_SOURCE)
     }
     return payload
 
@@ -149,7 +148,7 @@ class TestFirefoxOnboarding(unittest.TestCase):
         self.assertIsNotNone(clean_firefox_onboarding_event(self.EVENT_PINGS[0], self.params).next())
 
         # test the filter on the required fields
-        for field_name in ["client_id", "addon_version", "page", "event", "category", "tour_source"]:
+        for field_name in ["client_id", "addon_version", "page", "event", "category"]:
             line = self.EVENT_PINGS[0].copy()
             del line[field_name]
             ret = clean_firefox_onboarding_event(line, self.params)

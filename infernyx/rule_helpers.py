@@ -381,7 +381,6 @@ def clean_firefox_onboarding_event(parts, params):
         assert parts["event"]
         assert parts["page"]
         assert parts["category"]
-        assert parts["tour_source"]
 
         # check those optional integer fields
         for f in ['impression']:
