@@ -91,7 +91,7 @@ def generate_impression_payload():
         "session_id": random.choice(UUID),
         "addon_version": random.choice(VERSION),
         "page": random.choice(PAGE),
-        "source": random.choice(SOURCE),
+        "source": "TOP_STORIES",
         "tiles": random.choice(TILES)
     }
     if (len(payload["tiles"]) == 1):
@@ -328,6 +328,12 @@ class TestActivityStreamSystemAddon(unittest.TestCase):
             del line[field_name]
             ret = clean_assa_impression(line, self.params)
             self.assertRaises(StopIteration, ret.next)
+
+        # test the non-topstories source should be rejected
+        line = self.IMPRESSION_PINGS[0].copy()
+        line["source"] = "HIGHLIGHTS"
+        ret = clean_assa_impression(line, self.params)
+        self.assertRaises(StopIteration, ret.next)
 
         # test the filter on the optional fields
         for field_name in ["source", "release_channel"]:
