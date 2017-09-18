@@ -1,3 +1,7 @@
+0.1.84
+======
+* exclude all the non-topstories impressions for activity stream system addon
+
 0.1.83
 ======
 * remove tour_source from firefox onboarding events
