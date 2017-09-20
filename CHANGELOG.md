@@ -1,3 +1,8 @@
+0.1.85
+======
+* process shield_id for activity stream tables
+* do not overwrite "version" if provided
+
 0.1.84
 ======
 * exclude all the non-topstories impressions for activity stream system addon
