@@ -62,7 +62,9 @@ def parse_ua(parts, params):
     try:
         result_dict = user_agent_parser.Parse(ua)
         parts['os'] = result_dict['os']['family'][:64]
-        parts['version'] = ("%s.%s" % (result_dict['user_agent']['major'], result_dict['user_agent']['minor']))[:64]
+        # Do not overwrite "version" if provided
+        if parts.get("version") is None:
+            parts['version'] = ("%s.%s" % (result_dict['user_agent']['major'], result_dict['user_agent']['minor']))[:64]
         parts['browser'] = result_dict['user_agent']['family'][:64]
         parts['device'] = result_dict['device']['family'][:64]
     except:
@@ -665,7 +667,7 @@ def clean_assa_session(parts, params):
         assert parts["load_trigger_type"]
 
         # check those optional fields
-        for f in ['release_channel']:
+        for f in ['release_channel', 'shield_id']:
             # Populate the optional fields with default values if they are missing or with value "null"
             # This is necessary as Disco doesn't support "null"/"None" in the key part
             if parts.get(f, None) is None:
@@ -704,7 +706,7 @@ def clean_assa_event(parts, params):
         assert parts["session_id"]
         assert parts["event"]
 
-        for f in ['action_position', 'source', 'release_channel']:
+        for f in ['action_position', 'source', 'release_channel', 'shield_id']:
             # Populate the optional fields with default values if they are missing or with value "null"
             # This is necessary as Disco doesn't support "null"/"None" in the key part
             if parts.get(f, None) is None:
@@ -742,7 +744,7 @@ def clean_assa_performance(parts, params):
                     parts[f] = -1
 
         # check those optional string fields
-        for f in ["page", "source", "event_id", "session_id", "release_channel"]:
+        for f in ["page", "source", "event_id", "session_id", "release_channel", "shield_id"]:
             # Populate the optional fields with default values if they are missing or with value "null"
             # This is necessary as Disco doesn't support "null"/"None" in the key part
             if parts.get(f, None) is None:
@@ -770,7 +772,7 @@ def clean_assa_masga(parts, params):
                     parts[f] = -1
 
         # check those optional string fields
-        for f in ["page", "source", "session_id", "release_channel"]:
+        for f in ["page", "source", "session_id", "release_channel", "shield_id"]:
             # Populate the optional fields with default values if they are missing or with value "null"
             # This is necessary as Disco doesn't support "null"/"None" in the key part
             if parts.get(f, None) is None:
@@ -792,7 +794,7 @@ def clean_assa_impression(parts, params):
             # This is already fixed in AS, we still need this hot fix for the old versions of AS.
             assert parts["source"] == "TOP_STORIES"
 
-        for f in ['source', 'release_channel']:
+        for f in ['source', 'release_channel', 'shield_id']:
             # Populate the optional fields with default values if they are missing or with value "null"
             # This is necessary as Disco doesn't support "null"/"None" in the key part
             if parts.get(f, None) is None:
