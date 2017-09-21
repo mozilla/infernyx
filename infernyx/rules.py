@@ -24,7 +24,8 @@ from infernyx.rule_helpers import clean_data, parse_date, parse_locale, parse_ip
     clean_assa_session, clean_assa_event, clean_assa_performance, clean_assa_masga,\
     timestamp_milli_to_micro, timestamp_micro_to_milli, assa_impression_filter,\
     clean_assa_impression, firefox_onboarding_session_filter, firefox_onboarding_event_filter,\
-    clean_firefox_onboarding_event, clean_firefox_onboarding_session
+    clean_firefox_onboarding_event, clean_firefox_onboarding_session, ping_centre_main_filter,\
+    clean_ping_centre_main
 
 
 log = logging.getLogger(__name__)
@@ -396,6 +397,13 @@ RULES = [
                                  password=RS_PASSWORD,
                                  bucket_name=RS_BUCKET),
         keysets={
+            'ping_centre_main': Keyset(
+                key_parts=['client_id', 'shield_id', 'event', 'value', 'release_channel', 'receive_at',
+                           'locale', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
+                value_parts=[],  # no value_parts for this keyset
+                parts_preprocess=[ping_centre_main_filter, clean_ping_centre_main],
+                table='ping_centre_main',
+            ),
             'activity_stream_mobile_session_stats': Keyset(
                 key_parts=['client_id', 'build', 'app_version', 'session_duration', 'receive_at',
                            'locale', 'date', 'country_code', 'os', 'browser', 'version', 'device',

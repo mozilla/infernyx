@@ -513,6 +513,23 @@ def clean_ping_centre_test_pilot(parts, params):
         pass
 
 
+def clean_ping_centre_main(parts, params):
+    try:
+        # check those required fields
+        for field in ["client_id", "release_channel", "event"]:
+            assert field in parts
+
+        # check those optional fields
+        for field in ['value', 'shield_id']:
+            # Populate the optional fields with default values if they are missing or with value "null"
+            # This is necessary as Disco doesn't support "null"/"None" in the key part
+            if parts.get(field, None) is None:
+                parts[field] = "n/a"
+        yield parts
+    except Exception:
+        pass
+
+
 def clean_shield_study_fields(parts, params):
     for f in ['tp_version']:
         # Populate the optional fields with default values if they are missing or with value "null"
@@ -610,6 +627,11 @@ def ss_activity_stream_impression_filter(parts, params):
 
 def ping_centre_test_pilot_filter(parts, params):
     if "testpilot" == parts.get("topic", ""):
+        yield parts
+
+
+def ping_centre_main_filter(parts, params):
+    if "main" == parts.get("topic", ""):
         yield parts
 
 
