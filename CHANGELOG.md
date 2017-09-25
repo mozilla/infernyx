@@ -1,3 +1,7 @@
+0.1.86
+======
+* process ping_centre_main
+
 0.1.85
 ======
 * process shield_id for activity stream tables
