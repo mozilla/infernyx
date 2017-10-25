@@ -36,6 +36,16 @@ def generate_session_payload():
             "load_trigger_ts": abs(random.gauss(1, 1) * 1000),
             "visibility_event_rcvd_ts": abs(random.gauss(200, 20)),
             "topsites_first_painted_ts": abs(random.gauss(100, 10)),
+            "is_preloaded": True,
+            "is_prerendered": True,
+            "topsites_data_late_by_ms": 50,
+            "highlights_data_late_by_ms": 100,
+            "topsites_icon_stats": {
+                "screenshot_with_icon": 3,
+                "screenshot": 2,
+                "tippytop": 0,
+                "rich_icon": 7
+            }
         }
     }
     return payload
@@ -179,14 +189,17 @@ class TestActivityStreamSystemAddon(unittest.TestCase):
             self.assertRaises(StopIteration, ret.next)
 
         # test the filter on the numeric fields with invalid values
-        for field_name in ["session_duration", "user_prefs"]:
+        int_fields = ["session_duration", "user_prefs", "topsites_data_late_by_ms",
+                      "highlights_data_late_by_ms", "topsites_data_late_by_ms",
+                      "screenshot_with_icon", "screenshot", "tippytop", "rich_icon"]
+        for field_name in int_fields:
             line = self.SESSION_PINGS[0].copy()
             line[field_name] = 2 ** 32
             parts = clean_assa_session(line, self.params).next()
             self.assertEquals(parts[field_name], -1)
 
         # test the filter on the numeric fields with float
-        for field_name in ["session_duration", "user_prefs"]:
+        for field_name in int_fields:
             line = self.SESSION_PINGS[0].copy()
             line[field_name] = 100.4
             parts = clean_assa_session(line, self.params).next()
@@ -214,6 +227,18 @@ class TestActivityStreamSystemAddon(unittest.TestCase):
             line[field_name] = None
             parts = clean_assa_session(line, self.params).next()
             self.assertEqual(parts[field_name], "n/a")
+
+        # test the filter on the optional boolean fields
+        for field_name in ['is_preloaded', 'is_prerendered']:
+            line = self.SESSION_PINGS[0].copy()
+            del line[field_name]
+            parts = clean_assa_session(line, self.params).next()
+            self.assertFalse(parts[field_name])
+
+            # test on "null" values on optional key
+            line[field_name] = None
+            parts = clean_assa_session(line, self.params).next()
+            self.assertFalse(parts[field_name])
 
     def test_clean_assa_event(self):
         self.assertIsNotNone(clean_assa_event(self.EVENT_PINGS[0], self.params).next())

@@ -214,6 +214,8 @@ RULES = [
                 key_parts=['client_id', 'addon_version', 'page', 'session_duration', 'session_id',
                            'load_trigger_type', 'load_trigger_ts', 'visibility_event_rcvd_ts', 'locale',
                            'topsites_first_painted_ts', 'user_prefs', 'release_channel', 'shield_id',
+                           'is_preloaded', 'is_prerendered', 'topsites_data_late_by_ms', 'highlights_data_late_by_ms',
+                           'screenshot_with_icon', 'screenshot', 'tippytop', 'rich_icon',
                            'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
                 # convert the timestamps to avoid the precision loss during the map/reduce
