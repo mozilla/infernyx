@@ -35,6 +35,18 @@ def parse_date(parts, params):
         pass
 
 
+def parse_time(parts, params):
+    from datetime import datetime
+
+    try:
+        received_at = datetime.fromtimestamp(parts['timestamp'] / 1000.0)
+        parts['hour'] = received_at.hour
+        parts['minute'] = received_at.minute
+        yield parts
+    except:
+        pass
+
+
 def parse_locale(parts, params):
     # skip illegal locales
     try:
