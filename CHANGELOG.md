@@ -1,3 +1,8 @@
+0.1.87
+======
+* process is_preloaded, is_prerendered, topsites_data_late_by_ms, highlights_data_late_by_ms, and topsites_icon_stats from AS session
+* add hour and minute for AS impression_stats
+
 0.1.86
 ======
 * process ping_centre_main
