@@ -9,7 +9,7 @@ from config_infernyx import *
 import datetime
 import logging
 
-from infernyx.rule_helpers import clean_data, parse_date, parse_locale, parse_ip, parse_ua,\
+from infernyx.rule_helpers import clean_data, parse_date, parse_time, parse_locale, parse_ip, parse_ua,\
     parse_tiles, parse_urls, parse_distinct, parse_ip_clicks, count, filter_clicks, filter_blacklist,\
     create_timestamp_str, activity_stream_session_filter, activity_stream_event_filter,\
     application_stats_filter, clean_activity_stream_session, clean_activity_stream_event,\
@@ -214,6 +214,8 @@ RULES = [
                 key_parts=['client_id', 'addon_version', 'page', 'session_duration', 'session_id',
                            'load_trigger_type', 'load_trigger_ts', 'visibility_event_rcvd_ts', 'locale',
                            'topsites_first_painted_ts', 'user_prefs', 'release_channel', 'shield_id',
+                           'is_preloaded', 'is_prerendered', 'topsites_data_late_by_ms', 'highlights_data_late_by_ms',
+                           'screenshot_with_icon', 'screenshot', 'tippytop', 'rich_icon',
                            'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
                 # convert the timestamps to avoid the precision loss during the map/reduce
@@ -249,9 +251,9 @@ RULES = [
             'activity_stream_impression_stats': Keyset(
                 key_parts=['client_id', 'addon_version', 'page', 'source', 'date', 'position', 'locale', 'tile_id',
                            'user_prefs', 'country_code', 'os', 'browser', 'version', 'device', 'blacklisted',
-                           'release_channel', 'shield_id'],
+                           'release_channel', 'shield_id', 'hour', 'minute'],
                 value_parts=['impressions', 'clicks', 'pinned', 'blocked', 'pocketed'],
-                parts_preprocess=[assa_impression_filter, clean_assa_impression, parse_tiles],
+                parts_preprocess=[assa_impression_filter, clean_assa_impression, parse_tiles, parse_time],
                 table='assa_impression_stats_daily'
             )
         }

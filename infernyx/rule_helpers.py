@@ -35,6 +35,18 @@ def parse_date(parts, params):
         pass
 
 
+def parse_time(parts, params):
+    from datetime import datetime
+
+    try:
+        received_at = datetime.fromtimestamp(parts['timestamp'] / 1000.0)
+        parts['hour'] = received_at.hour
+        parts['minute'] = received_at.minute
+        yield parts
+    except:
+        pass
+
+
 def parse_locale(parts, params):
     # skip illegal locales
     try:
@@ -686,6 +698,8 @@ def clean_assa_session(parts, params):
         assert parts["session_id"]
         # merge `perf` into `parts` if any
         parts.update(parts.pop("perf", {}))
+        # merge `perf.topsites_icon_stats` into `parts` if any
+        parts.update(parts.pop("topsites_icon_stats", {}))
         assert parts["load_trigger_type"]
 
         # check those optional fields
@@ -695,8 +709,14 @@ def clean_assa_session(parts, params):
             if parts.get(f, None) is None:
                 parts[f] = "n/a"
 
+        # check those optional boolean fields, set it to False if missing
+        for f in ['is_preloaded', 'is_prerendered']:
+            parts[f] = bool(parts.get(f))
+
         # check those optional integer fields
-        for f in ["session_duration", "user_prefs"]:
+        for f in ["session_duration", "user_prefs", "topsites_data_late_by_ms",
+                  "highlights_data_late_by_ms", "screenshot_with_icon",
+                  "screenshot", "tippytop", "rich_icon"]:
             if parts.get(f, None) is None:
                 parts[f] = -1
             else:
