@@ -44,7 +44,8 @@ def generate_session_payload():
                 "screenshot_with_icon": 3,
                 "screenshot": 2,
                 "tippytop": 0,
-                "rich_icon": 7
+                "rich_icon": 7,
+                "no_image": 1
             }
         }
     }
@@ -191,7 +192,8 @@ class TestActivityStreamSystemAddon(unittest.TestCase):
         # test the filter on the numeric fields with invalid values
         int_fields = ["session_duration", "user_prefs", "topsites_data_late_by_ms",
                       "highlights_data_late_by_ms", "topsites_data_late_by_ms",
-                      "screenshot_with_icon", "screenshot", "tippytop", "rich_icon"]
+                      "screenshot_with_icon", "screenshot", "tippytop", "rich_icon",
+                      "no_image"]
         for field_name in int_fields:
             line = self.SESSION_PINGS[0].copy()
             line[field_name] = 2 ** 32

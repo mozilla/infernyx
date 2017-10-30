@@ -716,7 +716,7 @@ def clean_assa_session(parts, params):
         # check those optional integer fields
         for f in ["session_duration", "user_prefs", "topsites_data_late_by_ms",
                   "highlights_data_late_by_ms", "screenshot_with_icon",
-                  "screenshot", "tippytop", "rich_icon"]:
+                  "screenshot", "tippytop", "rich_icon", "no_image"]:
             if parts.get(f, None) is None:
                 parts[f] = -1
             else:

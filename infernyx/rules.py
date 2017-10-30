@@ -215,7 +215,7 @@ RULES = [
                            'load_trigger_type', 'load_trigger_ts', 'visibility_event_rcvd_ts', 'locale',
                            'topsites_first_painted_ts', 'user_prefs', 'release_channel', 'shield_id',
                            'is_preloaded', 'is_prerendered', 'topsites_data_late_by_ms', 'highlights_data_late_by_ms',
-                           'screenshot_with_icon', 'screenshot', 'tippytop', 'rich_icon',
+                           'screenshot_with_icon', 'screenshot', 'tippytop', 'rich_icon', 'no_image',
                            'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
                 # convert the timestamps to avoid the precision loss during the map/reduce
