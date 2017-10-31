@@ -1,3 +1,7 @@
+0.1.88
+======
+* process no_image for AS session
+
 0.1.87
 ======
 * process is_preloaded, is_prerendered, topsites_data_late_by_ms, highlights_data_late_by_ms, and topsites_icon_stats from AS session
