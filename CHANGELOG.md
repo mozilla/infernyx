@@ -1,3 +1,8 @@
+0.1.89
+======
+* process impression_id for AS impression stats
+* remove rules for activity stream test pilot and test pilot
+
 0.1.88
 ======
 * process no_image for AS session
