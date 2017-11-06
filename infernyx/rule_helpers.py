@@ -850,6 +850,11 @@ def clean_assa_impression(parts, params):
                 parts[f] = int(round(parts[f]))
                 if parts[f] >= 2 ** 31:
                     parts[f] = -1
+
+        # map impression_id, which has been added in Firefox 58, to client_id if provided
+        if "impression_id" in parts:
+            parts["client_id"] = parts["impression_id"]
+
         yield parts
     except Exception:
         pass

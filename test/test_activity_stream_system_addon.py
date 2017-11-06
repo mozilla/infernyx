@@ -389,3 +389,10 @@ class TestActivityStreamSystemAddon(unittest.TestCase):
             line[field_name] = 100.4
             parts = clean_assa_impression(line, self.params).next()
             self.assertEquals(parts[field_name], 100)
+
+        # test the client_id gets overwritten by impression_id
+        line = self.SESSION_PINGS[0].copy()
+        line["client_id"] = "n/a"
+        line["impression_id"] = "some_impression_id"
+        parts = clean_assa_impression(line, self.params).next()
+        self.assertEqual(parts["client_id"], line["impression_id"])
