@@ -248,38 +248,6 @@ def filter_blacklist(parts, params):
         yield parts
 
 
-def clean_activity_stream_session(parts, params):
-    try:
-        assert parts["client_id"]
-        assert parts["addon_version"]
-        assert parts["page"]
-        assert parts["tab_id"]
-
-        # check those required fields
-        assert parts["load_reason"]
-        assert parts["unload_reason"]
-        assert 0 <= parts["session_duration"] < 2 ** 31
-
-        # check those optional fields
-        for f in ['max_scroll_depth', 'load_latency', 'highlights_size',
-                  'total_history_size', 'total_bookmarks', 'topsites_size',
-                  'topsites_tippytop', 'topsites_screenshot', 'user_prefs',
-                  'topsites_lowresicon', 'topsites_pinned']:
-            # populate the optional fields with default values if they are missing
-            if parts.get(f, None) is None:
-                parts[f] = -1
-            else:
-                assert parts[f] >= -1  # -1 is valid as it's the default for the integer type fields
-        for f in ['experiment_id', 'session_id']:
-            # Populate the optional fields with default values if they are missing or with value "null"
-            # This is necessary as Disco doesn't support "null"/"None" in the key part
-            if parts.get(f, None) is None:
-                parts[f] = "n/a"
-        yield parts
-    except Exception:
-        pass
-
-
 def clean_activity_stream_mobile_session(parts, params):
     try:
         assert parts["client_id"]
@@ -291,33 +259,6 @@ def clean_activity_stream_mobile_session(parts, params):
 
         # check those optional fields
         for f in ['release_channel']:
-            # Populate the optional fields with default values if they are missing or with value "null"
-            # This is necessary as Disco doesn't support "null"/"None" in the key part
-            if parts.get(f, None) is None:
-                parts[f] = "n/a"
-        yield parts
-    except Exception:
-        pass
-
-
-def clean_activity_stream_event(parts, params):
-    try:
-        assert parts["client_id"]
-        assert parts["addon_version"]
-        assert parts["page"]
-        assert parts["tab_id"]
-
-        # check those required fields
-        assert parts["event"]
-
-        # check those optional fields
-        for f in ['user_prefs']:
-            if parts.get(f, None) is None:
-                parts[f] = -1
-            else:
-                assert parts[f] >= -1  # -1 is valid as it's the default for the integer type fields
-        for f in ['action_position', 'source', 'experiment_id', 'session_id',
-                  'url', 'recommender_type', 'highlight_type', 'provider', 'metadata_source']:
             # Populate the optional fields with default values if they are missing or with value "null"
             # This is necessary as Disco doesn't support "null"/"None" in the key part
             if parts.get(f, None) is None:
@@ -416,115 +357,6 @@ def clean_firefox_onboarding_event(parts, params):
         pass
 
 
-def clean_activity_stream_performance(parts, params):
-    try:
-        assert parts["client_id"]
-        assert parts["addon_version"]
-        assert parts["tab_id"]
-
-        # check those required fields
-        assert parts["event"]
-        assert parts['event_id']
-        assert parts['source']
-        # some addon versions might send floating point values by mistake, we do the conversion here
-        parts["value"] = int(round(parts["value"]))
-        assert 0 <= parts["value"] < 2 ** 31
-
-        # check those optional fields
-        for f in ['user_prefs']:
-            if parts.get(f, None) is None:
-                parts[f] = -1
-            else:
-                assert parts[f] >= -1  # -1 is valid as it's the default for the integer type fields
-        for f in ['experiment_id', 'session_id', 'metadata_source']:
-            # Populate the optional fields with default values if they are missing or with value "null"
-            # This is necessary as Disco doesn't support "null"/"None" in the key part
-            if parts.get(f, None) is None:
-                parts[f] = "n/a"
-        yield parts
-    except Exception:
-        pass
-
-
-def clean_activity_stream_masga(parts, params):
-    try:
-        assert parts["client_id"]
-        assert parts["addon_version"]
-        assert parts["tab_id"]
-
-        # check those required fields
-        assert parts["event"]
-        assert parts['source']
-        # some addon versions might send floating point values by mistake, we do the conversion here
-        parts["value"] = int(round(parts["value"]))
-        # the client might send a unix timestamp sometimes, flag it as invalid by using a negetive number
-        if parts["value"] >= 2 ** 31:
-            parts["value"] = -1
-
-        # check those optional fields
-        for f in ['user_prefs']:
-            if parts.get(f, None) is None:
-                parts[f] = -1
-            else:
-                assert parts[f] >= -1  # -1 is valid as it's the default for the integer type fields
-        for f in ['experiment_id', 'session_id', 'event_id']:
-            # Populate the optional fields with default values if they are missing or with value "null"
-            # This is necessary as Disco doesn't support "null"/"None" in the key part
-            if parts.get(f, None) is None:
-                parts[f] = "n/a"
-        yield parts
-    except Exception:
-        pass
-
-
-def clean_activity_stream_impression(parts, params):
-    try:
-        # check those required fields
-        assert parts["client_id"]
-        assert parts["addon_version"]
-        assert parts['source']
-
-        # check those optional fields
-        for f in ['user_prefs']:
-            if parts.get(f, None) is None:
-                parts[f] = -1
-            else:
-                assert parts[f] >= -1  # -1 is valid as it's the default for the integer type fields
-        for f in ['experiment_id']:
-            # Populate the optional fields with default values if they are missing or with value "null"
-            # This is necessary as Disco doesn't support "null"/"None" in the key part
-            if parts.get(f, None) is None:
-                parts[f] = "n/a"
-        yield parts
-    except Exception:
-        pass
-
-
-def clean_ping_centre_test_pilot(parts, params):
-    try:
-        # check those required fields
-        for field in ["client_id", "event_type", "client_time", "addon_id", "addon_version",
-                      "firefox_version", "os_name", "os_version", "locale"]:
-            assert field in parts
-
-        assert 0 <= parts["client_time"] < 2 ** 31
-
-        # Refers to https://github.com/mozilla/infernyx/issues/72
-        # Always set "raw" to "n/a" regardless of its actual value, even if it's missing in the payload.
-        # This field is no longer a required one, we keep it for the backward compatibility.
-        parts["raw"] = "n/a"
-
-        # check those optional fields
-        for f in ['object', 'variants']:
-            # Populate the optional fields with default values if they are missing or with value "null"
-            # This is necessary as Disco doesn't support "null"/"None" in the key part
-            if parts.get(f, None) is None:
-                parts[f] = "n/a"
-        yield parts
-    except Exception:
-        pass
-
-
 def clean_ping_centre_main(parts, params):
     try:
         # check those required fields
@@ -584,61 +416,6 @@ def firefox_onboarding_session_filter(parts, params):
 
 def firefox_onboarding_event_filter(parts, params):
     if "firefox-onboarding-event" == parts.get("topic", ""):
-        yield parts
-
-
-def activity_stream_session_filter(parts, params):
-    if "activity_stream_session" == parts.get("action", "") and "shield_variant" not in parts:
-        yield parts
-
-
-def activity_stream_event_filter(parts, params):
-    if "activity_stream_event" == parts.get("action", "") and "shield_variant" not in parts:
-        yield parts
-
-
-def activity_stream_performance_filter(parts, params):
-    if "activity_stream_performance" == parts.get("action", "") and "shield_variant" not in parts:
-        yield parts
-
-
-def activity_stream_masga_filter(parts, params):
-    if "activity_stream_masga_event" == parts.get("action", "") and "shield_variant" not in parts:
-        yield parts
-
-
-def activity_stream_impression_filter(parts, params):
-    if "activity_stream_impression" == parts.get("action", "") and "shield_variant" not in parts:
-        yield parts
-
-
-def ss_activity_stream_session_filter(parts, params):
-    if "activity_stream_session" == parts.get("action", "") and "shield_variant" in parts:
-        yield parts
-
-
-def ss_activity_stream_event_filter(parts, params):
-    if "activity_stream_event" == parts.get("action", "") and "shield_variant" in parts:
-        yield parts
-
-
-def ss_activity_stream_performance_filter(parts, params):
-    if "activity_stream_performance" == parts.get("action", "") and "shield_variant" in parts:
-        yield parts
-
-
-def ss_activity_stream_masga_filter(parts, params):
-    if "activity_stream_masga_event" == parts.get("action", "") and "shield_variant" in parts:
-        yield parts
-
-
-def ss_activity_stream_impression_filter(parts, params):
-    if "activity_stream_impression" == parts.get("action", "") and "shield_variant" in parts:
-        yield parts
-
-
-def ping_centre_test_pilot_filter(parts, params):
-    if "testpilot" == parts.get("topic", ""):
         yield parts
 
 
@@ -850,6 +627,11 @@ def clean_assa_impression(parts, params):
                 parts[f] = int(round(parts[f]))
                 if parts[f] >= 2 ** 31:
                     parts[f] = -1
+
+        # map impression_id, which has been added in Firefox 58, to client_id if provided
+        if "impression_id" in parts:
+            parts["client_id"] = parts["impression_id"]
+
         yield parts
     except Exception:
         pass
