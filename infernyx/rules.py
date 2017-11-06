@@ -11,15 +11,9 @@ import logging
 
 from infernyx.rule_helpers import clean_data, parse_date, parse_time, parse_locale, parse_ip, parse_ua,\
     parse_tiles, parse_urls, parse_distinct, parse_ip_clicks, count, filter_clicks, filter_blacklist,\
-    create_timestamp_str, activity_stream_session_filter, activity_stream_event_filter,\
-    application_stats_filter, clean_activity_stream_session, clean_activity_stream_event,\
-    activity_stream_performance_filter, clean_activity_stream_performance, ss_activity_stream_session_filter,\
-    ss_activity_stream_event_filter, ss_activity_stream_performance_filter, clean_shield_study_fields,\
-    activity_stream_masga_filter, ss_activity_stream_masga_filter, clean_activity_stream_masga,\
+    create_timestamp_str, application_stats_filter, parse_batch,\
     activity_stream_mobile_session_filter, clean_activity_stream_mobile_session,\
     activity_stream_mobile_event_filter, clean_activity_stream_mobile_event,\
-    ping_centre_test_pilot_filter, clean_ping_centre_test_pilot, activity_stream_impression_filter,\
-    ss_activity_stream_impression_filter, clean_activity_stream_impression, parse_batch,\
     assa_session_filter, assa_event_filter, assa_masga_filter, assa_performance_filter,\
     clean_assa_session, clean_assa_event, clean_assa_performance, clean_assa_masga,\
     timestamp_milli_to_micro, timestamp_micro_to_milli, assa_impression_filter,\
@@ -286,96 +280,7 @@ RULES = [
                 value_parts=['count'],
                 parts_preprocess=[application_stats_filter, count],
                 table='application_stats_daily',
-            ),
-            'activity_stream_session_stats': Keyset(
-                key_parts=['client_id', 'tab_id', 'load_reason', 'session_duration', 'session_id',
-                           'experiment_id', 'unload_reason', 'addon_version', 'locale', 'max_scroll_depth',
-                           'total_bookmarks', 'total_history_size', 'load_latency', 'page', 'highlights_size',
-                           'topsites_size', 'topsites_tippytop', 'topsites_screenshot', 'user_prefs',
-                           'topsites_lowresicon', 'topsites_pinned',
-                           'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
-                value_parts=[],  # no value_parts for this keyset
-                parts_preprocess=[activity_stream_session_filter, clean_activity_stream_session, create_timestamp_str],
-                table='activity_stream_stats_daily',
-            ),
-            'activity_stream_event_stats': Keyset(
-                key_parts=['client_id', 'tab_id', 'source', 'action_position', 'session_id', 'highlight_type', 'provider',
-                           'addon_version', 'locale', 'page', 'event', 'experiment_id', 'url', 'recommender_type', 'user_prefs',
-                           'metadata_source', 'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
-                value_parts=[],  # no value_parts for this keyset
-                column_mappings={'url': 'recommendation_url', 'provider': 'share_provider'},
-                parts_preprocess=[activity_stream_event_filter, clean_activity_stream_event, create_timestamp_str],
-                table='activity_stream_events_daily',
-            ),
-            'activity_stream_performance_stats': Keyset(
-                key_parts=['client_id', 'tab_id', 'addon_version', 'session_id', 'locale', 'user_prefs',
-                           'source', 'event', 'event_id', 'experiment_id', 'value', 'metadata_source',
-                           'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
-                value_parts=[],  # no value_parts for this keyset
-                parts_preprocess=[activity_stream_performance_filter, clean_activity_stream_performance, create_timestamp_str],
-                table='activity_stream_performance_daily',
-            ),
-            'activity_stream_masga_stats': Keyset(
-                key_parts=['client_id', 'tab_id', 'addon_version', 'session_id', 'locale', 'user_prefs',
-                           'source', 'event', 'event_id', 'experiment_id', 'value', 'receive_at', 'date',
-                           'country_code', 'os', 'browser', 'version', 'device'],
-                value_parts=[],  # no value_parts for this keyset
-                parts_preprocess=[activity_stream_masga_filter, clean_activity_stream_masga, create_timestamp_str],
-                table='activity_stream_masga',
-            ),
-            'activity_stream_impression_stats': Keyset(
-                key_parts=['client_id', 'addon_version', 'source', 'date', 'position', 'locale', 'tile_id', 'experiment_id',
-                           'user_prefs', 'country_code', 'os', 'browser', 'version', 'device', 'blacklisted'],
-                value_parts=['impressions', 'clicks', 'pinned', 'blocked', 'pocketed'],
-                parts_preprocess=[activity_stream_impression_filter, clean_activity_stream_impression, parse_tiles, create_timestamp_str],
-                table='activity_stream_impression_daily'),
-            'ss_activity_stream_session_stats': Keyset(
-                key_parts=['client_id', 'tab_id', 'load_reason', 'session_duration', 'session_id',
-                           'experiment_id', 'unload_reason', 'addon_version', 'locale', 'max_scroll_depth',
-                           'total_bookmarks', 'total_history_size', 'load_latency', 'page', 'highlights_size',
-                           'topsites_size', 'topsites_tippytop', 'topsites_screenshot', 'user_prefs',
-                           'topsites_lowresicon', 'topsites_pinned',
-                           'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device', 'shield_variant',
-                           'tp_version'],
-                value_parts=[],  # no value_parts for this keyset
-                parts_preprocess=[ss_activity_stream_session_filter, clean_activity_stream_session, clean_shield_study_fields, create_timestamp_str],
-                table='ss_session',
-            ),
-            'ss_activity_stream_event_stats': Keyset(
-                key_parts=['client_id', 'tab_id', 'source', 'action_position', 'session_id', 'highlight_type', 'provider',
-                           'addon_version', 'locale', 'page', 'event', 'experiment_id', 'url', 'recommender_type',
-                           'metadata_source', 'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device',
-                           'shield_variant', 'tp_version', 'user_prefs'],
-                value_parts=[],  # no value_parts for this keyset
-                column_mappings={'url': 'recommendation_url', 'provider': 'share_provider'},
-                parts_preprocess=[ss_activity_stream_event_filter, clean_activity_stream_event, clean_shield_study_fields, create_timestamp_str],
-                table='ss_event',
-            ),
-            'ss_activity_stream_performance_stats': Keyset(
-                key_parts=['client_id', 'tab_id', 'addon_version', 'session_id', 'locale', 'user_prefs',
-                           'source', 'event', 'event_id', 'experiment_id', 'value', 'metadata_source',
-                           'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device', 'shield_variant',
-                           'tp_version'],
-                value_parts=[],  # no value_parts for this keyset
-                parts_preprocess=[ss_activity_stream_performance_filter, clean_activity_stream_performance, clean_shield_study_fields, create_timestamp_str],
-                table='ss_performance',
-            ),
-            'ss_activity_stream_masga_stats': Keyset(
-                key_parts=['client_id', 'tab_id', 'addon_version', 'session_id', 'locale', 'user_prefs',
-                           'source', 'event', 'event_id', 'experiment_id', 'value', 'metadata_source',
-                           'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device', 'shield_variant',
-                           'tp_version'],
-                value_parts=[],  # no value_parts for this keyset
-                parts_preprocess=[ss_activity_stream_masga_filter, clean_activity_stream_masga, clean_shield_study_fields, create_timestamp_str],
-                table='ss_masga',
-            ),
-            'ss_activity_stream_impression_stats': Keyset(
-                key_parts=['client_id', 'addon_version', 'source', 'date', 'position', 'locale', 'tile_id', 'experiment_id',
-                           'user_prefs', 'country_code', 'os', 'browser', 'version', 'device', 'blacklisted',
-                           'tp_version'],
-                value_parts=['impressions', 'clicks', 'pinned', 'blocked', 'pocketed'],
-                parts_preprocess=[ss_activity_stream_impression_filter, clean_activity_stream_impression, parse_tiles, create_timestamp_str],
-                table='ss_impression'),
+            )
         }
     ),
     InfernoRule(
@@ -436,16 +341,7 @@ RULES = [
                 value_parts=["impression"],
                 parts_preprocess=[firefox_onboarding_event_filter, clean_firefox_onboarding_event],
                 table='firefox_onboarding_events_daily',
-            ),
-            'ping_centre_test_pilot_stats': Keyset(
-                key_parts=["client_id", "addon_id", "addon_version", "firefox_version", "client_time",
-                           "event_type", "object", "variants", "receive_at", "date", "os_name",
-                           "os_version", "locale", "raw"],
-                column_mappings={'raw': 'raw_ping'},  # raw is a reversed keyword in Redshift
-                value_parts=[],  # no value_parts for this keyset
-                parts_preprocess=[ping_centre_test_pilot_filter, clean_ping_centre_test_pilot],
-                table='ping_centre_test_pilot',
-            ),
+            )
         },
     ),
     InfernoRule(
