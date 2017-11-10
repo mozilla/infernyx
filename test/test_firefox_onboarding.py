@@ -18,6 +18,9 @@ UA = ["python-requests/2.9.1"]
 EVENT = ["overlay-nav-click", "notification-click"]
 CATEGORY = ["overlay_interaction", "notify_interaction"]
 TOUR_SOURCE = ["icon", "watermark", "notification"]
+TOUR_TYPE = ["new", "update"]
+BUBBLE_STATE = ["bubble", "dot", "hide"]
+NOTIFICATION_STATE = ["show", "hide", "finish"]
 
 
 def generate_session_payload():
@@ -32,7 +35,8 @@ def generate_session_payload():
         "event": random.choice(EVENT),
         "impression": 1,
         "category": random.choice(CATEGORY),
-        "tour_source": random.choice(TOUR_SOURCE)
+        "tour_source": random.choice(TOUR_SOURCE),
+        "tour_type": random.choice(TOUR_TYPE)
     }
     return payload
 
@@ -48,6 +52,11 @@ def generate_event_payload():
         "tour_id": random.choice(TOUR_ID),
         "impression": 1,
         "category": random.choice(CATEGORY),
+        "tour_type": random.choice(TOUR_TYPE),
+        "timestamp": time.time() * 1000,
+        "tour_source": random.choice(TOUR_SOURCE),
+        "bubble_state": random.choice(BUBBLE_STATE),
+        "notification_state": random.choice(NOTIFICATION_STATE),
     }
     return payload
 
@@ -134,7 +143,7 @@ class TestFirefoxOnboarding(unittest.TestCase):
             self.assertEquals(parts[field_name], 100)
 
         # test the filter on the optional fields
-        for field_name in ['session_id']:
+        for field_name in ['session_id', 'tour_type']:
             line = self.EVENT_PINGS[0].copy()
             del line[field_name]
             self.assertIsNotNone(clean_firefox_onboarding_event(line, self.params).next())
@@ -168,8 +177,16 @@ class TestFirefoxOnboarding(unittest.TestCase):
             parts = clean_firefox_onboarding_event(line, self.params).next()
             self.assertEquals(parts[field_name], 100)
 
+        # test the filter on the bigint fields
+        for field_name in ["timestamp"]:
+            line = self.EVENT_PINGS[0].copy()
+            line[field_name] = sys.maxint + 1
+            ret = clean_firefox_onboarding_event(line, self.params)
+            self.assertRaises(StopIteration, ret.next)
+
         # test the filter on the optional fields
-        for field_name in ['tour_id', 'session_id']:
+        for field_name in ['tour_id', 'session_id', "tour_type", "tour_source",
+                           "bubble_state", "notification_state"]:
             line = self.EVENT_PINGS[0].copy()
             del line[field_name]
             self.assertIsNotNone(clean_firefox_onboarding_event(line, self.params).next())

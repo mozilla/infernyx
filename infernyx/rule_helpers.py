@@ -317,7 +317,7 @@ def clean_firefox_onboarding_session(parts, params):
                 if parts[f] >= 2 ** 31 or parts[f] < 0:
                     parts[f] = -1
 
-        for f in ['session_id']:
+        for f in ['session_id', 'tour_type']:
             # Populate the optional fields with default values if they are missing or with value "null"
             # This is necessary as Disco doesn't support "null"/"None" in the key part
             if parts.get(f, None) is None:
@@ -328,6 +328,8 @@ def clean_firefox_onboarding_session(parts, params):
 
 
 def clean_firefox_onboarding_event(parts, params):
+    import sys
+
     try:
         assert parts["client_id"]
         assert parts["addon_version"]
@@ -336,6 +338,13 @@ def clean_firefox_onboarding_event(parts, params):
         assert parts["event"]
         assert parts["page"]
         assert parts["category"]
+
+        # check those optional big integer fields
+        for f in ['timestamp']:
+            if parts.get(f, None) is None:
+                parts[f] = -1
+            else:
+                assert parts[f] < sys.maxint
 
         # check those optional integer fields
         for f in ['impression']:
@@ -347,7 +356,8 @@ def clean_firefox_onboarding_event(parts, params):
                 if parts[f] >= 2 ** 31 or parts[f] < 0:
                     parts[f] = -1
 
-        for f in ['session_id', 'tour_id']:
+        for f in ['session_id', 'tour_id', 'tour_type', 'tour_source', 'bubble_state',
+                  'notification_state']:
             # Populate the optional fields with default values if they are missing or with value "null"
             # This is necessary as Disco doesn't support "null"/"None" in the key part
             if parts.get(f, None) is None:
