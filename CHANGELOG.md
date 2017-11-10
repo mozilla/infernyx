@@ -1,3 +1,7 @@
+0.1.90
+======
+* process various new columns for firefox onboarding
+
 0.1.89
 ======
 * process impression_id for AS impression stats
