@@ -329,7 +329,7 @@ RULES = [
             ),
             'firefox_onboarding_session_stats': Keyset(
                 key_parts=['client_id', 'addon_version', 'session_begin', 'session_end', 'session_id', 'page',
-                           'event', 'category', 'tour_source',
+                           'event', 'category', 'tour_source', 'tour_type',
                            'receive_at', 'locale', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=["impression"],
                 parts_preprocess=[firefox_onboarding_session_filter, clean_firefox_onboarding_session],
@@ -337,7 +337,8 @@ RULES = [
             ),
             'firefox_onboarding_events_stats': Keyset(
                 key_parts=['client_id', 'addon_version', 'session_id', 'page', 'event', 'tour_id', 'category',
-                           'receive_at', 'locale', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
+                           'receive_at', 'locale', 'date', 'country_code', 'os', 'browser', 'version', 'device',
+                           'timestamp', 'tour_type', 'tour_source', 'bubble_state', 'notification_state'],
                 value_parts=["impression"],
                 parts_preprocess=[firefox_onboarding_event_filter, clean_firefox_onboarding_event],
                 table='firefox_onboarding_events_daily',
