@@ -5,7 +5,7 @@ import stat
 import os
 import sys
 import boto
-import json
+import ujson
 from boto.s3.key import Key
 from boto.utils import compute_md5
 from boto.utils import get_instance_metadata
@@ -90,7 +90,7 @@ def _build_datafiles(disco_iter, params, job_id):
 
         data = dict(zip(columns, tuple(key[1:]) + tuple(value)))
         # _log(job_id, 'Debug.persist_results: %s' % escaped, logging.DEBUG)
-        tmp.write(json.dumps(data) + '\n')
+        tmp.write(ujson.dumps(data) + '\n')
         total_lines += 1
 
     if tmp:
