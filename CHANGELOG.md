@@ -1,3 +1,7 @@
+0.1.91
+======
+* use ujson in the result processor for better performance
+
 0.1.90
 ======
 * process various new columns for firefox onboarding
