@@ -11,6 +11,7 @@ from boto.utils import compute_md5
 from boto.utils import get_instance_metadata
 import psycopg2
 from psycopg2.extras import DictCursor
+import gzip
 
 
 DataFile = namedtuple('DataFile', ['tempfile', 's3', 'tablename', 'columns'])
@@ -82,7 +83,8 @@ def _build_datafiles(disco_iter, params, job_id):
             keyset = params.keysets[pivot]
             if tmp:
                 tmp.close()
-            tmp = tempfile.NamedTemporaryFile(delete=False, prefix=pivot, dir='/tmp')
+            tmp_file_name = tempfile.mktemp(prefix=pivot, dir='/tmp')
+            tmp = gzip.open(tmp_file_name, 'wb', 1)
             os.chmod(tmp.name, stat.S_IROTH | stat.S_IRGRP | stat.S_IRUSR)
             columns = _get_columns(keyset)
             datafiles.append(DataFile(tmp.name, (None, None), keyset['table'], ','.join(columns)))
@@ -95,13 +97,15 @@ def _build_datafiles(disco_iter, params, job_id):
 
     if tmp:
         tmp.close()
+
+
     return datafiles, total_lines
 
 
 def _insert_datafiles(host, port, database, user, password, datafiles, params, job_id, total_lines, extras=''):
     connection, cursor = _connect(host, port, database, user, password)
     try:
-        query = "COPY %s (%s) FROM '%s' WITH %s JSON 'auto' TRUNCATECOLUMNS"
+        query = "COPY %s (%s) FROM '%s' WITH %s JSON 'auto' TRUNCATECOLUMNS GZIP"
         for tmpfile, (s3_bucket, s3_key), tablename, columns in datafiles:
 
             # Default delimiter is |, default escape is backslash
