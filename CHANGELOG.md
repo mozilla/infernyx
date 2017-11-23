@@ -1,3 +1,7 @@
+0.1.92
+======
+* gzip the database result processor
+
 0.1.91
 ======
 * use ujson in the result processor for better performance
