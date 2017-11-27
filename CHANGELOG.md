@@ -1,3 +1,7 @@
+0.1.93
+======
+* check invalid timestamps for firefox onboarding
+
 0.1.92
 ======
 * gzip the database result processor
