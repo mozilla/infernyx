@@ -128,6 +128,13 @@ class TestFirefoxOnboarding(unittest.TestCase):
         ret = clean_firefox_onboarding_session(line, self.params)
         self.assertRaises(StopIteration, ret.next)
 
+        # test the session timestamps with other types
+        for field_name in ["session_begin", "session_end"]:
+            line = self.SESSION_PINGS[0].copy()
+            line[field_name] = line[field_name] + .1
+            parts = clean_firefox_onboarding_session(line, self.params).next()
+            self.assertTrue(isinstance(parts[field_name], int))
+
         # test the filter on the numeric fields with invalid values
         for field_name in ["impression"]:
             line = self.SESSION_PINGS[0].copy()
@@ -180,6 +187,10 @@ class TestFirefoxOnboarding(unittest.TestCase):
         # test the filter on the bigint fields
         for field_name in ["timestamp"]:
             line = self.EVENT_PINGS[0].copy()
+            line[field_name] = line[field_name] + .1
+            parts = clean_firefox_onboarding_event(line, self.params).next()
+            self.assertTrue(isinstance(parts[field_name], int))
+
             line[field_name] = sys.maxint + 1
             ret = clean_firefox_onboarding_event(line, self.params)
             self.assertRaises(StopIteration, ret.next)
