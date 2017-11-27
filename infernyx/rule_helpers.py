@@ -303,6 +303,8 @@ def clean_firefox_onboarding_session(parts, params):
 
         # check those required big integer fields
         for f in ['session_begin', 'session_end']:
+            # cast to integer in case the client sends other types
+            parts[f] = int(round(parts[f]))
             assert parts[f] < sys.maxint
 
         assert parts['session_end'] >= parts['session_begin']
@@ -344,6 +346,8 @@ def clean_firefox_onboarding_event(parts, params):
             if parts.get(f, None) is None:
                 parts[f] = -1
             else:
+                # cast to integer in case the client sends other types
+                parts[f] = int(round(parts[f]))
                 assert parts[f] < sys.maxint
 
         # check those optional integer fields
