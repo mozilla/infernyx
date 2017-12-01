@@ -371,6 +371,83 @@ def clean_firefox_onboarding_event(parts, params):
         pass
 
 
+def clean_firefox_onboarding_session_v2(parts, params):
+    import sys
+
+    try:
+        assert parts["client_id"]
+        assert parts["addon_version"]
+
+        # check those required fields
+        assert parts["page"]
+        assert parts["category"]
+        assert parts["tour_type"]
+        assert parts["type"]
+        assert parts["parent_session_id"]
+        assert parts["root_session_id"]
+
+        # check those required big integer fields
+        for f in ['session_begin', 'session_end']:
+            # cast to integer in case the client sends other types
+            parts[f] = int(round(parts[f]))
+            assert parts[f] < sys.maxint
+
+        assert parts['session_end'] >= parts['session_begin']
+
+        for f in ['session_id']:
+            # Populate the optional fields with default values if they are missing or with value "null"
+            # This is necessary as Disco doesn't support "null"/"None" in the key part
+            if parts.get(f, None) is None:
+                parts[f] = "n/a"
+        yield parts
+    except Exception:
+        pass
+
+
+def clean_firefox_onboarding_event_v2(parts, params):
+    import sys
+
+    try:
+        assert parts["client_id"]
+        assert parts["addon_version"]
+
+        # check those required fields
+        assert parts["bubble_state"]
+        assert parts["page"]
+        assert parts["category"]
+        assert parts["current_tour_id"]
+        assert parts["logo_state"]
+        assert parts["notification_state"]
+        assert parts["parent_session_id"]
+        assert parts["root_session_id"]
+        assert parts["target_tour_id"]
+        assert parts["tour_type"]
+        assert parts["type"]
+
+        # check those optional big integer fields
+        for f in ['timestamp']:
+            if parts.get(f, None) is None:
+                parts[f] = -1
+            else:
+                # cast to integer in case the client sends other types
+                parts[f] = int(round(parts[f]))
+                assert parts[f] < sys.maxint
+
+        # check those optional integer fields
+        for f in ['notification_impression', 'width']:
+            if parts.get(f, None) is None:
+                parts[f] = -1
+            else:
+                # some addon versions might send floating point values by mistake, we do the conversion here
+                parts[f] = int(round(parts[f]))
+                if parts[f] >= 2 ** 31 or parts[f] < 0:
+                    parts[f] = -1
+
+        yield parts
+    except Exception:
+        pass
+
+
 def clean_ping_centre_main(parts, params):
     try:
         # check those required fields
@@ -430,6 +507,16 @@ def firefox_onboarding_session_filter(parts, params):
 
 def firefox_onboarding_event_filter(parts, params):
     if "firefox-onboarding-event" == parts.get("topic", ""):
+        yield parts
+
+
+def firefox_onboarding_session_filter_v2(parts, params):
+    if "firefox-onboarding-session2" == parts.get("topic", ""):
+        yield parts
+
+
+def firefox_onboarding_event_filter_v2(parts, params):
+    if "firefox-onboarding-event2" == parts.get("topic", ""):
         yield parts
 
 
