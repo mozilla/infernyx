@@ -1,3 +1,7 @@
+0.1.94
+======
+* process firefox onboarding v2
+
 0.1.93
 ======
 * check invalid timestamps for firefox onboarding
