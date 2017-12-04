@@ -19,7 +19,8 @@ from infernyx.rule_helpers import clean_data, parse_date, parse_time, parse_loca
     timestamp_milli_to_micro, timestamp_micro_to_milli, assa_impression_filter,\
     clean_assa_impression, firefox_onboarding_session_filter, firefox_onboarding_event_filter,\
     clean_firefox_onboarding_event, clean_firefox_onboarding_session, ping_centre_main_filter,\
-    clean_ping_centre_main
+    clean_ping_centre_main, firefox_onboarding_session_filter_v2, firefox_onboarding_event_filter_v2,\
+    clean_firefox_onboarding_session_v2, clean_firefox_onboarding_event_v2
 
 
 log = logging.getLogger(__name__)
@@ -342,6 +343,23 @@ RULES = [
                 value_parts=["impression"],
                 parts_preprocess=[firefox_onboarding_event_filter, clean_firefox_onboarding_event],
                 table='firefox_onboarding_events_daily',
+            ),
+            'firefox_onboarding_session2_stats': Keyset(
+                key_parts=['client_id', 'addon_version', 'session_begin', 'session_end', 'session_id', 'page',
+                           'parent_session_id', 'root_session_id', 'category', 'tour_type', 'type', 'release_channel',
+                           'receive_at', 'locale', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
+                value_parts=[],  # no value_parts for this keyset
+                parts_preprocess=[firefox_onboarding_session_filter_v2, clean_firefox_onboarding_session_v2],
+                table='firefox_onboarding_sessions2_daily',
+            ),
+            'firefox_onboarding_events2_stats': Keyset(
+                key_parts=['client_id', 'addon_version', 'bubble_state', 'category', 'current_tour_id', 'logo_state',
+                           'notification_impression', 'notification_state', 'page', 'parent_session_id', 'root_session_id',
+                           'timestamp', 'tour_type', 'type', 'width', 'target_tour_id', 'release_channel',
+                           'receive_at', 'locale', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
+                value_parts=[],  # no value_parts for this keyset
+                parts_preprocess=[firefox_onboarding_event_filter_v2, clean_firefox_onboarding_event_v2],
+                table='firefox_onboarding_events2_daily',
             )
         },
     ),
