@@ -1,3 +1,7 @@
+0.1.95
+======
+* add uuid validations
+
 0.1.94
 ======
 * process firefox onboarding v2
