@@ -565,6 +565,17 @@ def timestamp_micro_to_milli(keys, value, params, columns=[]):
     yield keys, value
 
 
+def validate_uuid4(parts, params, fields=[]):
+    from uuid import UUID
+
+    try:
+        for field in fields:
+            UUID(parts[field], version=4)
+        yield parts
+    except:
+        pass
+
+
 def clean_assa_session(parts, params):
     import sys
 
