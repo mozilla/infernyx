@@ -20,7 +20,7 @@ from infernyx.rule_helpers import clean_data, parse_date, parse_time, parse_loca
     clean_assa_impression, firefox_onboarding_session_filter, firefox_onboarding_event_filter,\
     clean_firefox_onboarding_event, clean_firefox_onboarding_session, ping_centre_main_filter,\
     clean_ping_centre_main, firefox_onboarding_session_filter_v2, firefox_onboarding_event_filter_v2,\
-    clean_firefox_onboarding_session_v2, clean_firefox_onboarding_event_v2
+    clean_firefox_onboarding_session_v2, clean_firefox_onboarding_event_v2, validate_uuid4
 
 
 log = logging.getLogger(__name__)
@@ -214,7 +214,9 @@ RULES = [
                            'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
                 # convert the timestamps to avoid the precision loss during the map/reduce
-                parts_preprocess=[assa_session_filter, clean_assa_session,
+                parts_preprocess=[assa_session_filter,
+                                  partial(validate_uuid4, fields=["client_id", "session_id"]),
+                                  clean_assa_session,
                                   partial(timestamp_milli_to_micro, columns=['load_trigger_ts', 'visibility_event_rcvd_ts', 'topsites_first_painted_ts'])],
                 parts_postprocess=[partial(timestamp_micro_to_milli, columns=['load_trigger_ts', 'visibility_event_rcvd_ts', 'topsites_first_painted_ts'])],
                 table='assa_sessions_daily',
@@ -224,7 +226,9 @@ RULES = [
                            'event', 'locale', 'user_prefs', 'release_channel', 'shield_id',
                            'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
-                parts_preprocess=[assa_event_filter, clean_assa_event],
+                parts_preprocess=[assa_event_filter,
+                                  partial(validate_uuid4, fields=["client_id", "session_id"]),
+                                  clean_assa_event],
                 table='assa_events_daily',
             ),
             'activity_stream_performance_stats': Keyset(
@@ -232,7 +236,9 @@ RULES = [
                            'value', 'locale', 'user_prefs', 'release_channel', 'shield_id',
                            'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
-                parts_preprocess=[assa_performance_filter, clean_assa_performance],
+                parts_preprocess=[assa_performance_filter,
+                                  partial(validate_uuid4, fields=["client_id"]),
+                                  clean_assa_performance],
                 table='assa_performance_daily',
             ),
             'activity_stream_masga_stats': Keyset(
@@ -240,7 +246,9 @@ RULES = [
                            'locale', 'user_prefs', 'release_channel', 'shield_id',
                            'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
-                parts_preprocess=[assa_masga_filter, clean_assa_masga],
+                parts_preprocess=[assa_masga_filter,
+                                  partial(validate_uuid4, fields=["client_id"]),
+                                  clean_assa_masga],
                 table='assa_masga_daily',
             ),
             'activity_stream_impression_stats': Keyset(
@@ -248,7 +256,9 @@ RULES = [
                            'user_prefs', 'country_code', 'os', 'browser', 'version', 'device', 'blacklisted',
                            'release_channel', 'shield_id', 'hour', 'minute'],
                 value_parts=['impressions', 'clicks', 'pinned', 'blocked', 'pocketed'],
-                parts_preprocess=[assa_impression_filter, clean_assa_impression, parse_tiles, parse_time],
+                parts_preprocess=[assa_impression_filter,
+                                  partial(validate_uuid4, fields=["client_id"]),
+                                  clean_assa_impression, parse_tiles, parse_time],
                 table='assa_impression_stats_daily'
             )
         }
@@ -309,7 +319,9 @@ RULES = [
                 key_parts=['client_id', 'shield_id', 'event', 'value', 'release_channel', 'receive_at',
                            'locale', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
-                parts_preprocess=[ping_centre_main_filter, clean_ping_centre_main],
+                parts_preprocess=[ping_centre_main_filter,
+                                  partial(validate_uuid4, fields=["client_id"]),
+                                  clean_ping_centre_main],
                 table='ping_centre_main',
             ),
             'activity_stream_mobile_session_stats': Keyset(
@@ -333,7 +345,9 @@ RULES = [
                            'event', 'category', 'tour_source', 'tour_type',
                            'receive_at', 'locale', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=["impression"],
-                parts_preprocess=[firefox_onboarding_session_filter, clean_firefox_onboarding_session],
+                parts_preprocess=[firefox_onboarding_session_filter,
+                                  partial(validate_uuid4, fields=["client_id"]),
+                                  clean_firefox_onboarding_session],
                 table='firefox_onboarding_sessions_daily',
             ),
             'firefox_onboarding_events_stats': Keyset(
@@ -341,7 +355,9 @@ RULES = [
                            'receive_at', 'locale', 'date', 'country_code', 'os', 'browser', 'version', 'device',
                            'timestamp', 'tour_type', 'tour_source', 'bubble_state', 'notification_state'],
                 value_parts=["impression"],
-                parts_preprocess=[firefox_onboarding_event_filter, clean_firefox_onboarding_event],
+                parts_preprocess=[firefox_onboarding_event_filter,
+                                  partial(validate_uuid4, fields=["client_id"]),
+                                  clean_firefox_onboarding_event],
                 table='firefox_onboarding_events_daily',
             ),
             'firefox_onboarding_session2_stats': Keyset(
@@ -349,7 +365,9 @@ RULES = [
                            'parent_session_id', 'root_session_id', 'category', 'tour_type', 'type', 'release_channel',
                            'receive_at', 'locale', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
-                parts_preprocess=[firefox_onboarding_session_filter_v2, clean_firefox_onboarding_session_v2],
+                parts_preprocess=[firefox_onboarding_session_filter_v2,
+                                  partial(validate_uuid4, fields=["client_id"]),
+                                  clean_firefox_onboarding_session_v2],
                 table='firefox_onboarding_sessions2_daily',
             ),
             'firefox_onboarding_events2_stats': Keyset(
@@ -358,7 +376,9 @@ RULES = [
                            'timestamp', 'tour_type', 'type', 'width', 'target_tour_id', 'release_channel',
                            'receive_at', 'locale', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
-                parts_preprocess=[firefox_onboarding_event_filter_v2, clean_firefox_onboarding_event_v2],
+                parts_preprocess=[firefox_onboarding_event_filter_v2,
+                                  partial(validate_uuid4, fields=["client_id"]),
+                                  clean_firefox_onboarding_event_v2],
                 table='firefox_onboarding_events2_daily',
             )
         },
