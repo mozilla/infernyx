@@ -592,7 +592,7 @@ def clean_assa_session(parts, params):
         assert parts["load_trigger_type"]
 
         # check those optional fields
-        for f in ['release_channel', 'shield_id']:
+        for f in ['release_channel', 'shield_id', 'region']:
             # Populate the optional fields with default values if they are missing or with value "null"
             # This is necessary as Disco doesn't support "null"/"None" in the key part
             if parts.get(f, None) is None:
@@ -605,7 +605,8 @@ def clean_assa_session(parts, params):
         # check those optional integer fields
         for f in ["session_duration", "user_prefs", "topsites_data_late_by_ms",
                   "highlights_data_late_by_ms", "screenshot_with_icon",
-                  "screenshot", "tippytop", "rich_icon", "no_image"]:
+                  "screenshot", "tippytop", "rich_icon", "no_image", "topsites_pinned",
+                  "profile_creation_date"]:
             if parts.get(f, None) is None:
                 parts[f] = -1
             else:
@@ -725,7 +726,7 @@ def clean_assa_impression(parts, params):
             # This is already fixed in AS, we still need this hot fix for the old versions of AS.
             assert parts["source"] == "TOP_STORIES"
 
-        for f in ['source', 'release_channel', 'shield_id']:
+        for f in ['source', 'release_channel', 'shield_id', 'region']:
             # Populate the optional fields with default values if they are missing or with value "null"
             # This is necessary as Disco doesn't support "null"/"None" in the key part
             if parts.get(f, None) is None:

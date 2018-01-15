@@ -211,6 +211,7 @@ RULES = [
                            'topsites_first_painted_ts', 'user_prefs', 'release_channel', 'shield_id',
                            'is_preloaded', 'is_prerendered', 'topsites_data_late_by_ms', 'highlights_data_late_by_ms',
                            'screenshot_with_icon', 'screenshot', 'tippytop', 'rich_icon', 'no_image',
+                           'topsites_pinned', 'profile_creation_date', 'region',
                            'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
                 # convert the timestamps to avoid the precision loss during the map/reduce
@@ -219,6 +220,7 @@ RULES = [
                                   clean_assa_session,
                                   partial(timestamp_milli_to_micro, columns=['load_trigger_ts', 'visibility_event_rcvd_ts', 'topsites_first_painted_ts'])],
                 parts_postprocess=[partial(timestamp_micro_to_milli, columns=['load_trigger_ts', 'visibility_event_rcvd_ts', 'topsites_first_painted_ts'])],
+                column_mappings={"region": "client_region"},
                 table='assa_sessions_daily',
             ),
             'activity_stream_event_stats': Keyset(
@@ -254,11 +256,12 @@ RULES = [
             'activity_stream_impression_stats': Keyset(
                 key_parts=['client_id', 'addon_version', 'page', 'source', 'date', 'position', 'locale', 'tile_id',
                            'user_prefs', 'country_code', 'os', 'browser', 'version', 'device', 'blacklisted',
-                           'release_channel', 'shield_id', 'hour', 'minute'],
+                           'release_channel', 'shield_id', 'hour', 'minute', 'region'],
                 value_parts=['impressions', 'clicks', 'pinned', 'blocked', 'pocketed'],
                 parts_preprocess=[assa_impression_filter,
                                   partial(validate_uuid4, fields=["client_id"]),
                                   clean_assa_impression, parse_tiles, parse_time],
+                column_mappings={"region": "client_region"},
                 table='assa_impression_stats_daily'
             )
         }
