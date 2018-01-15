@@ -197,7 +197,8 @@ class TestActivityStreamSystemAddon(unittest.TestCase):
         int_fields = ["session_duration", "user_prefs", "topsites_data_late_by_ms",
                       "highlights_data_late_by_ms", "topsites_data_late_by_ms",
                       "screenshot_with_icon", "screenshot", "tippytop", "rich_icon",
-                      "no_image", "topsites_pinned", "profile_creation_date"]
+                      "no_image", "topsites_pinned", "profile_creation_date",
+                      "custom_screenshot"]
         for field_name in int_fields:
             line = self.SESSION_PINGS[0].copy()
             line[field_name] = 2 ** 32

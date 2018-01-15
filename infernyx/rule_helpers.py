@@ -606,7 +606,7 @@ def clean_assa_session(parts, params):
         for f in ["session_duration", "user_prefs", "topsites_data_late_by_ms",
                   "highlights_data_late_by_ms", "screenshot_with_icon",
                   "screenshot", "tippytop", "rich_icon", "no_image", "topsites_pinned",
-                  "profile_creation_date"]:
+                  "profile_creation_date", "custom_screenshot"]:
             if parts.get(f, None) is None:
                 parts[f] = -1
             else:
