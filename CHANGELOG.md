@@ -1,3 +1,8 @@
+0.1.96
+======
+* clean up tmp files upon exception in result_processor
+* process custom_screenshot, topsites_pinned, profile_creation_date, region for activity stream
+
 0.1.95
 ======
 * add uuid validations
