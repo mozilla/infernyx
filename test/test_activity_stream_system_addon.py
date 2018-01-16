@@ -31,6 +31,8 @@ def generate_session_payload():
         "page": random.choice(PAGE),
         "session_id": random.choice(UUID),
         "session_duration": abs(long(random.gauss(2, 1) * 1000)),
+        "region": "US",
+        "profile_creation_date": 16587,
         "perf": {
             "load_trigger_type": random.choice(LOAD_TRIGGER_TYPE),
             "load_trigger_ts": abs(random.gauss(1, 1) * 1000),
@@ -46,7 +48,8 @@ def generate_session_payload():
                 "tippytop": 0,
                 "rich_icon": 7,
                 "no_image": 1
-            }
+            },
+            "topsites_pinned": 3
         }
     }
     return payload
@@ -103,6 +106,7 @@ def generate_impression_payload():
         "addon_version": random.choice(VERSION),
         "page": random.choice(PAGE),
         "source": "TOP_STORIES",
+        "region": "US",
         "tiles": random.choice(TILES)
     }
     if (len(payload["tiles"]) == 1):
@@ -193,7 +197,8 @@ class TestActivityStreamSystemAddon(unittest.TestCase):
         int_fields = ["session_duration", "user_prefs", "topsites_data_late_by_ms",
                       "highlights_data_late_by_ms", "topsites_data_late_by_ms",
                       "screenshot_with_icon", "screenshot", "tippytop", "rich_icon",
-                      "no_image"]
+                      "no_image", "topsites_pinned", "profile_creation_date",
+                      "custom_screenshot"]
         for field_name in int_fields:
             line = self.SESSION_PINGS[0].copy()
             line[field_name] = 2 ** 32
@@ -220,7 +225,7 @@ class TestActivityStreamSystemAddon(unittest.TestCase):
             self.assertRaises(StopIteration, ret.next)
 
         # test the filter on the optional fields
-        for field_name in ['release_channel', 'shield_id']:
+        for field_name in ['release_channel', 'shield_id', 'region']:
             line = self.SESSION_PINGS[0].copy()
             del line[field_name]
             self.assertIsNotNone(clean_assa_session(line, self.params).next())
@@ -366,7 +371,7 @@ class TestActivityStreamSystemAddon(unittest.TestCase):
         self.assertRaises(StopIteration, ret.next)
 
         # test the filter on the optional fields
-        for field_name in ["source", "release_channel", "shield_id"]:
+        for field_name in ["source", "release_channel", "shield_id", "region"]:
             line = self.IMPRESSION_PINGS[0].copy()
             del line[field_name]
             self.assertIsNotNone(clean_assa_impression(line, self.params).next())
