@@ -76,28 +76,37 @@ def _build_datafiles(disco_iter, params, job_id):
     total_lines = 0
     tmp = None
 
-    for key, value in disco_iter:
-        # New keyset was discovered
-        if pivot != key[0]:
-            pivot = key[0]
-            keyset = params.keysets[pivot]
-            if tmp:
-                tmp.close()
-            tmp_file_name = tempfile.mktemp(prefix=pivot, dir='/tmp')
-            tmp = gzip.open(tmp_file_name, 'wb', 1)
-            os.chmod(tmp.name, stat.S_IROTH | stat.S_IRGRP | stat.S_IRUSR)
-            columns = _get_columns(keyset)
-            datafiles.append(DataFile(tmp.name, (None, None), keyset['table'], ','.join(columns)))
-            _log(job_id, "Saving %s data in %s" % (keyset['table'], tmp.name))
+    try:
+        for key, value in disco_iter:
+            # New keyset was discovered
+            if pivot != key[0]:
+                pivot = key[0]
+                keyset = params.keysets[pivot]
+                if tmp:
+                    tmp.close()
+                tmp_file_name = tempfile.mktemp(prefix=pivot, dir='/tmp')
+                tmp = gzip.open(tmp_file_name, 'wb', 1)
+                os.chmod(tmp.name, stat.S_IROTH | stat.S_IRGRP | stat.S_IRUSR)
+                columns = _get_columns(keyset)
+                datafiles.append(DataFile(tmp.name, (None, None), keyset['table'], ','.join(columns)))
+                _log(job_id, "Saving %s data in %s" % (keyset['table'], tmp.name))
 
-        data = dict(zip(columns, tuple(key[1:]) + tuple(value)))
-        # _log(job_id, 'Debug.persist_results: %s' % escaped, logging.DEBUG)
-        tmp.write(ujson.dumps(data) + '\n')
-        total_lines += 1
+            data = dict(zip(columns, tuple(key[1:]) + tuple(value)))
+            # _log(job_id, 'Debug.persist_results: %s' % escaped, logging.DEBUG)
+            tmp.write(ujson.dumps(data) + '\n')
+            total_lines += 1
 
-    if tmp:
-        tmp.close()
-
+        if tmp:
+            tmp.close()
+    except Exception as e:
+        # Nuke all the data files if any exception has been raised so that no files
+        # will be left behind. This is likely to happen when `gzip.open` or `tmp.write`
+        # fails upon conditions, e.g. running out of disk space
+        _log(job_id, "Failed to build datafiles in the result processor: %s", e)
+        for tmpfile, _, _, _ in datafiles:
+            _log(job_id, "Cleaning up tmp files: %s" % tmpfile)
+            os.unlink(tmpfile)
+        raise e
 
     return datafiles, total_lines
 
