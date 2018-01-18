@@ -570,6 +570,8 @@ def validate_uuid4(parts, params, fields=[]):
 
     try:
         for field in fields:
+            if parts[field] == "n/a":
+                continue
             UUID(parts[field], version=4)
         yield parts
     except:
