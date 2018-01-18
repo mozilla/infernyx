@@ -1,3 +1,7 @@
+0.1.97
+======
+* fix uuid validation so that it recognizes "n/a"
+
 0.1.96
 ======
 * clean up tmp files upon exception in result_processor
