@@ -1,3 +1,8 @@
+0.1.98
+======
+* use unix gzip to replace the python gzip
+* use multifile COPY for AWS Redshift
+
 0.1.97
 ======
 * fix uuid validation so that it recognizes "n/a"
