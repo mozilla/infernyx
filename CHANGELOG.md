@@ -1,3 +1,7 @@
+0.1.99
+======
+* fix an issue introduced in 0.1.98
+
 0.1.98
 ======
 * use unix gzip to replace the python gzip
