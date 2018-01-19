@@ -1,3 +1,7 @@
+0.2.0
+=====
+* fix the manifest naming issue in result processor 
+
 0.1.99
 ======
 * fix an issue introduced in 0.1.98
