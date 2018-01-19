@@ -217,9 +217,10 @@ def _upload_s3(datafiles, job_id, bucket_name='infernyx'):
             s3_entries.append(s3_entry)
 
         # upload the manifest
+        prefix = tmp_file_list[0].rsplit('.')[0]
         manifest = ujson.dumps({"entries": s3_entries})
         manifest_key = Key(bucket)
-        manifest_key.key = "%s.manifest" % job_id
+        manifest_key.key = "%s.%s.manifest" % (job_id, prefix)
         _log(job_id, "->S3 %s/%s: %s" % (bucket_name, manifest_key.key, manifest))
         manifest_key.set_contents_from_string(manifest)
 
