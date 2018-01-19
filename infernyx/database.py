@@ -188,23 +188,24 @@ def _compress_datafiles(datafiles, job_id):
         raise e
     else:
         # Update the name of the tmp files
-        for tmpfile_list, s3, tablename, columns in datafiles:
-            new_tmpfile_list = map(lambda v: v + ".gz", tmp_file_list)
-            rval.append(DataFile(new_tmpfile_list, s3, tablename, columns))
+        for tmp_file_list, s3, tablename, columns in datafiles:
+            new_list = map(lambda v: v + ".gz", tmp_file_list)
+            rval.append(DataFile(new_list, s3, tablename, columns))
 
     return rval
 
 
 def _upload_s3(datafiles, job_id, bucket_name='infernyx'):
     rval = []
+
+    conn = boto.connect_s3()
+    bucket = conn.get_bucket(bucket_name, validate=False)
+
     for tmp_file_list, _, tablename, columns in datafiles:
         s3_entries = []
         for tmpfile in tmp_file_list:
             with open(tmpfile) as f:
                 md5 = compute_md5(f)
-
-            conn = boto.connect_s3()
-            bucket = conn.get_bucket(bucket_name, validate=False)
 
             k = Key(bucket)
             k.key = "%s-%s" % (job_id, tmpfile)
