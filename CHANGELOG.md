@@ -1,3 +1,8 @@
+0.2.1
+=====
+* add support for multi-table inserts
+* add a new destination table for assa_sessions_daily
+
 0.2.0
 =====
 * fix the manifest naming issue in result processor 
