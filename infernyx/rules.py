@@ -221,7 +221,7 @@ RULES = [
                                   partial(timestamp_milli_to_micro, columns=['load_trigger_ts', 'visibility_event_rcvd_ts', 'topsites_first_painted_ts'])],
                 parts_postprocess=[partial(timestamp_micro_to_milli, columns=['load_trigger_ts', 'visibility_event_rcvd_ts', 'topsites_first_painted_ts'])],
                 column_mappings={"region": "client_region"},
-                table='assa_sessions_daily',
+                table=['assa_sessions_daily', 'assa_sessions_daily_by_client_id'],
             ),
             'activity_stream_event_stats': Keyset(
                 key_parts=['client_id', 'addon_version', 'source', 'session_id', 'page', 'action_position',

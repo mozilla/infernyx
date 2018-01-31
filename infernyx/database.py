@@ -133,10 +133,16 @@ def _insert_datafiles(host, port, database, user, password, datafiles, params, j
     try:
         query = "COPY %s (%s) FROM '%s' WITH %s JSON 'auto' TRUNCATECOLUMNS GZIP manifest"
         for tmp_file_list, (s3_bucket, s3_key), tablename, columns in datafiles:
+            if isinstance(tablename, (list, tuple)):
+                tables = tablename
+            else:
+                tables = [tablename]
+
             fle = "s3://%s/%s" % (s3_bucket, s3_key)
-            command = query % (tablename, columns, fle, extras)
-            _log(job_id, "Executing: %s" % command)
-            cursor.execute(command)
+            for table in tables:
+                command = query % (table, columns, fle, extras)
+                _log(job_id, "Executing: %s" % command)
+                cursor.execute(command)
     except Exception as e:
         _log(job_id, "Error persisting results. Rolling back: %s" % e.message, logging.ERROR)
         import traceback
