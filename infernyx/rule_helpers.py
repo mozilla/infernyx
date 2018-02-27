@@ -632,6 +632,8 @@ def clean_assa_session(parts, params):
 
 
 def clean_assa_event(parts, params):
+    import json
+
     try:
         # check those required fields
         assert parts["client_id"]
@@ -639,6 +641,10 @@ def clean_assa_event(parts, params):
         assert parts["page"]
         assert parts["session_id"]
         assert parts["event"]
+        # serialize the `value` object to JSON, use `{}` if it's missing
+        value = parts.pop("value", {})
+        assert isinstance(value, dict)
+        parts["value"] = json.dumps(value)
 
         for f in ['action_position', 'source', 'release_channel', 'shield_id']:
             # Populate the optional fields with default values if they are missing or with value "null"
