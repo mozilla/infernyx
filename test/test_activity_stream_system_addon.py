@@ -3,6 +3,7 @@ import random
 import uuid
 import datetime
 import sys
+import json
 from itertools import combinations
 
 from infernyx.rule_helpers import assa_session_filter, assa_event_filter,\
@@ -64,7 +65,11 @@ def generate_event_payload():
         "page": random.choice(PAGE),
         "event": random.choice(EVENT),
         "source": random.choice(SOURCE),
-        "action_position": "1"
+        "action_position": "1",
+        "value": {
+            "card_type": "bookmark",
+            "icon_type": "screenshot"
+        }
     }
     return payload
 
@@ -248,7 +253,7 @@ class TestActivityStreamSystemAddon(unittest.TestCase):
             self.assertFalse(parts[field_name])
 
     def test_clean_assa_event(self):
-        self.assertIsNotNone(clean_assa_event(self.EVENT_PINGS[0], self.params).next())
+        self.assertIsNotNone(clean_assa_event(self.EVENT_PINGS[0].copy(), self.params).next())
 
         # test the filter on the required fields
         for field_name in ["client_id", "addon_version", "page", "event", "session_id"]:
@@ -278,9 +283,29 @@ class TestActivityStreamSystemAddon(unittest.TestCase):
             self.assertIsNotNone(clean_assa_event(line, self.params).next())
 
             # test on "null" values on optional key
+            line = self.EVENT_PINGS[0].copy()
             line[field_name] = None
             parts = clean_assa_event(line, self.params).next()
             self.assertEqual(parts[field_name], "n/a")
+
+        # test the filter on the nested fields
+        for field_name in ['value']:
+            line = self.EVENT_PINGS[0].copy()
+
+            # "value" should be serialized by JSON
+            val = line["value"]
+            parts = clean_assa_event(line, self.params).next()
+            self.assertEqual(parts["value"], json.dumps(val))
+
+            # missing "value" will be replaced by an empty dict
+            del line["value"]
+            parts = clean_assa_event(line, self.params).next()
+            self.assertEqual(parts["value"], json.dumps({}))
+
+            # non-dict "value" will throw
+            line["value"] = "not_a_dict"
+            ret = clean_assa_event(line, self.params)
+            self.assertRaises(StopIteration, ret.next)
 
     def test_clean_assa_performance(self):
         self.assertIsNotNone(clean_assa_performance(self.PERFORMANCE_PINGS[0], self.params).next())
