@@ -1,3 +1,7 @@
+0.2.2
+=====
+* process value for assa_events_daily
+
 0.2.1
 =====
 * add support for multi-table inserts
