@@ -14,7 +14,7 @@ import psycopg2
 from psycopg2.extras import DictCursor
 
 
-RAW_FILE_MAX_LINE = 1500000
+RAW_FILE_MAX_LINE = 1000000
 
 DataFile = namedtuple('DataFile', ['tempfile', 's3', 'tablename', 'columns'])
 
@@ -172,9 +172,8 @@ def _compress_datafiles(datafiles, job_id):
     try:
         for tmp_file_list, _, _, _ in datafiles:
             prefix = tmp_file_list[0].rsplit('.')[0]
-            # We can further tune the parallel level with `xargs -P`
             _log(job_id, "Compressing datafiles : %s" % tmp_file_list)
-            cmd = "ls %s.* | xargs gzip -1" % prefix
+            cmd = "ls %s.* | xargs pigz -1" % prefix
             subprocess.check_call(cmd, shell=True)
     except subprocess.CalledProcessError as e:
         # Nuke all the data files if any exception has been raised so that no files
