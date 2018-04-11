@@ -178,7 +178,7 @@ def _compress_datafiles(datafiles, job_id):
     except subprocess.CalledProcessError as e:
         # Nuke all the data files if any exception has been raised so that no files
         # will be left behind
-        _log(job_id, "Failed to compress datafiles in the result processor: %s", e)
+        _log(job_id, "Failed to compress datafiles in the result processor: %s" % e)
         for tmp_file_list, _, _, _ in datafiles:
             for tmp_file in tmp_file_list:
                 _log(job_id, "Cleaning up tmp&gzip file for %s" % tmp_file)
