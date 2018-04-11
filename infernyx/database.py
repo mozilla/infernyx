@@ -118,7 +118,7 @@ def _build_datafiles(disco_iter, params, job_id):
         # Nuke all the data files if any exception has been raised so that no files
         # will be left behind. This is likely to happen when `tmp.write` fails upon
         # e.g. running out of disk space
-        _log(job_id, "Failed to build datafiles in the result processor: %s", e)
+        _log(job_id, "Failed to build datafiles in the result processor: %s" % e)
         for tmp_file_list, _, _, _ in datafiles:
             for tmp_file in tmp_file_list:
                 _log(job_id, "Cleaning up tmp file: %s" % tmp_file)
