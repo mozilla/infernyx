@@ -1,3 +1,7 @@
+0.2.4
+=====
+* fix logging in database.py
+
 0.2.3
 =====
 * optimize result_processor in database.py
