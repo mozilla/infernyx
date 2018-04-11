@@ -1,3 +1,7 @@
+0.2.3
+=====
+* optimize result_processor in database.py
+
 0.2.2
 =====
 * process value for assa_events_daily
