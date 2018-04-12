@@ -1,3 +1,7 @@
+0.2.5
+=====
+* handle database connection errors
+
 0.2.4
 =====
 * fix logging in database.py
