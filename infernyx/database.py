@@ -129,8 +129,10 @@ def _build_datafiles(disco_iter, params, job_id):
 
 
 def _insert_datafiles(host, port, database, user, password, datafiles, params, job_id, total_lines, extras=''):
-    connection, cursor = _connect(host, port, database, user, password)
+    connection = None
+    cursor = None
     try:
+        connection, cursor = _connect(host, port, database, user, password)
         query = "COPY %s (%s) FROM '%s' WITH %s JSON 'auto' TRUNCATECOLUMNS GZIP manifest"
         for tmp_file_list, (s3_bucket, s3_key), tablename, columns in datafiles:
             if isinstance(tablename, (list, tuple)):
@@ -154,8 +156,10 @@ def _insert_datafiles(host, port, database, user, password, datafiles, params, j
         connection.commit()
         _log(job_id, "Processed %d records in %d keysets." % (total_lines, len(params.keysets)))
     finally:
-        cursor.close()
-        connection.close()
+        if cursor is not None:
+            cursor.close()
+        if connection is not None:
+            connection.close()
         for tmp_file_list, s3, _, _ in datafiles:
             for tmpfile in tmp_file_list:
                 try:
