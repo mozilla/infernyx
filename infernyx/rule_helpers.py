@@ -525,6 +525,11 @@ def ping_centre_main_filter(parts, params):
         yield parts
 
 
+def activity_stream_router_event_filter(parts, params):
+    if "activity-stream-router" == parts.get("topic", ""):
+        yield parts
+
+
 # filters and processors for Activity Stream system addon
 def assa_session_filter(parts, params):
     if "activity_stream_session" == parts.get("action", ""):
@@ -643,7 +648,7 @@ def clean_assa_event(parts, params):
         assert parts["event"]
         # serialize the `value` object to JSON, use `{}` if it's missing
         value = parts.pop("value", {})
-        assert isinstance(value, dict)
+        assert isinstance(value, (dict, list))
         parts["value"] = json.dumps(value)
 
         for f in ['action_position', 'source', 'release_channel', 'shield_id']:
@@ -752,6 +757,37 @@ def clean_assa_impression(parts, params):
         # map impression_id, which has been added in Firefox 58, to client_id if provided
         if "impression_id" in parts:
             parts["client_id"] = parts["impression_id"]
+
+        yield parts
+    except Exception:
+        pass
+
+
+def clean_assa_router_event(parts, params):
+    import json
+
+    try:
+        # check those required fields
+        assert parts["impression_id"]
+        assert parts["addon_version"]
+        assert parts["event"]
+        assert parts["action"]
+        # action is the actual source since source is now hardcoded in the current implementation
+        parts["source"] = parts["action"]
+        assert parts["message_id"]
+        # If `value` is a dict, serialize it to JSON, use `{}` if it's missing, otherwise
+        # just save the raw value
+        value = parts.pop("value", {})
+        if isinstance(value, (dict, list)):
+            parts["value"] = json.dumps(value)
+        else:
+            parts["value"] = value if value is not None else 'n/a'
+
+        for f in ['release_channel', 'shield_id']:
+            # Populate the optional fields with default values if they are missing or with value "null"
+            # This is necessary as Disco doesn't support "null"/"None" in the key part
+            if parts.get(f, None) is None:
+                parts[f] = "n/a"
 
         yield parts
     except Exception:

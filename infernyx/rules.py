@@ -20,7 +20,7 @@ from infernyx.rule_helpers import clean_data, parse_date, parse_time, parse_loca
     clean_assa_impression, firefox_onboarding_session_filter, firefox_onboarding_event_filter,\
     clean_firefox_onboarding_event, clean_firefox_onboarding_session, ping_centre_main_filter,\
     clean_ping_centre_main, firefox_onboarding_event_filter_v2, clean_firefox_onboarding_event_v2,\
-    validate_uuid4
+    validate_uuid4, activity_stream_router_event_filter, clean_assa_router_event
 
 
 log = logging.getLogger(__name__)
@@ -373,6 +373,16 @@ RULES = [
                                   partial(validate_uuid4, fields=["client_id"]),
                                   clean_firefox_onboarding_event_v2],
                 table='firefox_onboarding_events2_daily',
+            ),
+            'activity_stream_router_event_stats': Keyset(
+                key_parts=["impression_id", "addon_version", "source", "event", "value", "message_id",
+                           "receive_at", "release_channel", "shield_id", "date",
+                           "locale", "country_code", "os", "browser", "version", "device"],
+                value_parts=[],  # no value_parts for this keyset
+                parts_preprocess=[activity_stream_router_event_filter,
+                                  partial(validate_uuid4, fields=["impression_id"]),
+                                  clean_assa_router_event],
+                table='assa_router_events_daily',
             )
         },
     ),
