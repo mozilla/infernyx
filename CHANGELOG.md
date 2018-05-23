@@ -1,3 +1,7 @@
+0.2.7
+=====
+* process activity stream router ping
+
 0.2.6
 =====
 * disable firefox onboarding session2 job
