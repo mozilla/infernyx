@@ -1,3 +1,7 @@
+0.2.8
+=====
+* process profile_creation_date for ping_centre_main
+
 0.2.7
 =====
 * process activity stream router ping

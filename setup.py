@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='infernyx',
-    version='0.2.7',
+    version='0.2.8',
     packages=['infernyx'],
     url='',
     license='',
