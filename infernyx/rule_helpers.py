@@ -460,6 +460,17 @@ def clean_ping_centre_main(parts, params):
             # This is necessary as Disco doesn't support "null"/"None" in the key part
             if parts.get(field, None) is None:
                 parts[field] = "n/a"
+
+        # check those optional integer fields
+        for f in ["profile_creation_date"]:
+            if parts.get(f, None) is None:
+                parts[f] = -1
+            else:
+                # some addon versions might send floating point values by mistake, we do the conversion here
+                parts[f] = int(round(parts[f]))
+                if parts[f] >= 2 ** 31 or parts[f] < 0:
+                    parts[f] = -1
+
         yield parts
     except Exception:
         pass
