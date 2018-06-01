@@ -22,6 +22,7 @@ def generate_ping_centre_main_payload():
         "client_id": random.choice(UUID),
         "release_channel": random.choice(RELEASE_CHANNEL),
         "event": random.choice(EVENT),
+        "profile_creation_date": 18000,
     }
     return payload
 
@@ -73,3 +74,18 @@ class TestPingCentreMain(unittest.TestCase):
             line[field_name] = None
             parts = clean_ping_centre_main(line, self.params).next()
             self.assertEqual(parts[field_name], "n/a")
+
+        # test the filter on the numeric fields with invalid values
+        int_fields = ["profile_creation_date"]
+        for field_name in int_fields:
+            line = self.MAIN_PINGS[0].copy()
+            line[field_name] = 2 ** 32
+            parts = clean_ping_centre_main(line, self.params).next()
+            self.assertEquals(parts[field_name], -1)
+
+        # test the filter on the numeric fields with float
+        for field_name in int_fields:
+            line = self.MAIN_PINGS[0].copy()
+            line[field_name] = 100.4
+            parts = clean_ping_centre_main(line, self.params).next()
+            self.assertEquals(parts[field_name], 100)

@@ -320,6 +320,7 @@ RULES = [
         keysets={
             'ping_centre_main': Keyset(
                 key_parts=['client_id', 'shield_id', 'event', 'value', 'release_channel', 'receive_at',
+                           'profile_creation_date',
                            'locale', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
                 parts_preprocess=[ping_centre_main_filter,
