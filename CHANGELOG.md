@@ -1,3 +1,7 @@
+0.2.9
+=====
+* hotfix to handle the invalid value for load_trigger_type
+
 0.2.8
 =====
 * process profile_creation_date for ping_centre_main
