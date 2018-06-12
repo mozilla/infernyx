@@ -608,6 +608,10 @@ def clean_assa_session(parts, params):
         # merge `perf.topsites_icon_stats` into `parts` if any
         parts.update(parts.pop("topsites_icon_stats", {}))
         assert parts["load_trigger_type"]
+        if parts["load_trigger_type"] not in ["unexpected", "first_window_opened",
+                                              "session_restore", "menu_plus_or_keyboard",
+                                              "url_bar", "refresh"]:
+            parts["load_trigger_type"] = "invalid"
 
         # check those optional fields
         for f in ['release_channel', 'shield_id', 'region']:
