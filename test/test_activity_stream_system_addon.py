@@ -198,6 +198,13 @@ class TestActivityStreamSystemAddon(unittest.TestCase):
             ret = clean_assa_session(line, self.params)
             self.assertRaises(StopIteration, ret.next)
 
+        # test the invalid field on the required fields
+        for field_name in ["load_trigger_type"]:
+            line = self.SESSION_PINGS[0].copy()
+            line[field_name] = "\\u0000\\u0000\\u0000\\u0000"
+            parts = clean_assa_session(line, self.params).next()
+            self.assertEqual(parts[field_name], "invalid")
+
         # test the filter on the numeric fields with invalid values
         int_fields = ["session_duration", "user_prefs", "topsites_data_late_by_ms",
                       "highlights_data_late_by_ms", "topsites_data_late_by_ms",
