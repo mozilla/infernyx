@@ -718,7 +718,9 @@ def clean_assa_masga(parts, params):
     try:
         # check those required fields
         assert parts["client_id"]
-        assert parts["addon_version"]
+        # due to bug 1472038, we have to relax this condition, and treat addon_version as an optional field
+        # TODO: re-enable this check once bug 1472038 gets fixed on client
+        # assert parts["addon_version"]
         assert parts["event"]
 
         # check those optional integer fields
@@ -732,7 +734,7 @@ def clean_assa_masga(parts, params):
                     parts[f] = -1
 
         # check those optional string fields
-        for f in ["page", "source", "session_id", "release_channel", "shield_id"]:
+        for f in ["page", "source", "session_id", "release_channel", "shield_id", "addon_version"]:
             # Populate the optional fields with default values if they are missing or with value "null"
             # This is necessary as Disco doesn't support "null"/"None" in the key part
             if parts.get(f, None) is None:
