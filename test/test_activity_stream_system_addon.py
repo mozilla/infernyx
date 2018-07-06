@@ -354,7 +354,7 @@ class TestActivityStreamSystemAddon(unittest.TestCase):
         self.assertIsNotNone(clean_assa_masga(self.MASGA_PINGS[0], self.params).next())
 
         # test the filter on the required fields
-        for field_name in ["client_id", "addon_version", "event"]:
+        for field_name in ["client_id", "event"]:
             line = self.MASGA_PINGS[0].copy()
             del line[field_name]
             ret = clean_assa_masga(line, self.params)
@@ -362,7 +362,7 @@ class TestActivityStreamSystemAddon(unittest.TestCase):
 
         # test the filter on the optional fields
         for field_name in ["page", "source", "session_id", "release_channel",
-                           "shield_id"]:
+                           "shield_id", "addon_version"]:
             line = self.MASGA_PINGS[0].copy()
             del line[field_name]
             self.assertIsNotNone(clean_assa_masga(line, self.params).next())
