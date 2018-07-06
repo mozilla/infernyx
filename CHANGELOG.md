@@ -1,3 +1,7 @@
+0.2.10
+======
+* hotfix to handle the "null" addon_version in assa_masga
+
 0.2.9
 =====
 * hotfix to handle the invalid value for load_trigger_type
