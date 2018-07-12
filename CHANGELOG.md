@@ -1,3 +1,7 @@
+0.2.11
+======
+* hotfix to handle the invalid locales
+
 0.2.10
 ======
 * hotfix to handle the "null" addon_version in assa_masga
