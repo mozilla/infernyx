@@ -133,7 +133,11 @@ def _insert_datafiles(host, port, database, user, password, datafiles, params, j
     cursor = None
     try:
         connection, cursor = _connect(host, port, database, user, password)
-        query = "COPY %s (%s) FROM '%s' WITH %s JSON 'auto' TRUNCATECOLUMNS GZIP manifest"
+        # we tolerate 100 errors for each COPY, this allows us to handle the
+        # occasional illegal values, such as '\u0000' without checking each
+        # value. Tolerating 100 errors should not prevent us from capturing
+        # other legit load errors given the current data scale.
+        query = "COPY %s (%s) FROM '%s' WITH %s JSON 'auto' TRUNCATECOLUMNS GZIP manifest MAXERROR 100"
         for tmp_file_list, (s3_bucket, s3_key), tablename, columns in datafiles:
             if isinstance(tablename, (list, tuple)):
                 tables = tablename
