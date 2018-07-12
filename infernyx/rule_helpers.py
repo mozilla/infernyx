@@ -9,6 +9,8 @@ def clean_data(parts, params, imps=True):
             assert params.ip_pattern.match(ip)
         assert datetime.datetime.fromtimestamp(parts['timestamp'] / 1000.0)
         parts['locale'] = parts['locale'][:12]
+        # make sure locale starts with alphabetic characters only
+        assert parts['locale'][0].isalpha()
         if parts.get('action'):
             parts['action'] = parts['action'][:254]
         yield parts
