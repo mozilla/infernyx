@@ -1,3 +1,7 @@
+0.2.12
+======
+* add maxerror to redshift LOAD
+
 0.2.11
 ======
 * hotfix to handle the invalid locales
