@@ -212,6 +212,7 @@ RULES = [
                            'is_preloaded', 'is_prerendered', 'topsites_data_late_by_ms', 'highlights_data_late_by_ms',
                            'screenshot_with_icon', 'screenshot', 'tippytop', 'rich_icon', 'no_image',
                            'topsites_pinned', 'profile_creation_date', 'region', 'custom_screenshot',
+                           'topsites_search_shortcuts',
                            'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
                 # convert the timestamps to avoid the precision loss during the map/reduce
