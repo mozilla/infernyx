@@ -50,7 +50,8 @@ def generate_session_payload():
                 "rich_icon": 7,
                 "no_image": 1
             },
-            "topsites_pinned": 3
+            "topsites_pinned": 3,
+            "topsites_search_shortcuts": 2
         }
     }
     return payload
@@ -210,7 +211,7 @@ class TestActivityStreamSystemAddon(unittest.TestCase):
                       "highlights_data_late_by_ms", "topsites_data_late_by_ms",
                       "screenshot_with_icon", "screenshot", "tippytop", "rich_icon",
                       "no_image", "topsites_pinned", "profile_creation_date",
-                      "custom_screenshot"]
+                      "custom_screenshot", "topsites_search_shortcuts"]
         for field_name in int_fields:
             line = self.SESSION_PINGS[0].copy()
             line[field_name] = 2 ** 32
