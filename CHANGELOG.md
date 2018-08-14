@@ -1,3 +1,7 @@
+0.2.13
+======
+* process topsites_search_shortcuts for assa_sessions_daily
+
 0.2.12
 ======
 * add maxerror to redshift LOAD
