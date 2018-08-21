@@ -1,3 +1,7 @@
+0.2.15
+======
+* fix parse_locale
+
 0.2.14
 ======
 * process watchdog-proxy event ping
