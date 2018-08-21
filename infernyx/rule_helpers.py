@@ -51,6 +51,7 @@ def parse_locale(parts, params):
         parts['locale'] = parts['locale'][:12]
         # make sure locale starts with alphabetic characters only
         assert parts['locale'][0].isalpha()
+        yield parts
     except:
         pass
 
