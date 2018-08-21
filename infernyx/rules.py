@@ -20,7 +20,8 @@ from infernyx.rule_helpers import clean_data, parse_date, parse_time, parse_loca
     clean_assa_impression, firefox_onboarding_session_filter, firefox_onboarding_event_filter,\
     clean_firefox_onboarding_event, clean_firefox_onboarding_session, ping_centre_main_filter,\
     clean_ping_centre_main, firefox_onboarding_event_filter_v2, clean_firefox_onboarding_event_v2,\
-    validate_uuid4, activity_stream_router_event_filter, clean_assa_router_event
+    validate_uuid4, activity_stream_router_event_filter, clean_assa_router_event, check_locale_whitelist,\
+    watchdog_proxy_events_filter, clean_watchdog_proxy_event
 
 
 log = logging.getLogger(__name__)
@@ -116,7 +117,7 @@ RULES = [
         rule_cleanup=report_rule_stats,
         map_input_stream=chunk_json_stream,
         map_init_function=impression_stats_init,
-        parts_preprocess=[clean_data, parse_date, parse_locale, parse_ip, parse_ua, parse_tiles],
+        parts_preprocess=[clean_data, parse_date, parse_locale, check_locale_whitelist, parse_ip, parse_ua, parse_tiles],
         geoip_file=GEOIP,
         partitions=32,
         sort_buffer_size='25%',
@@ -158,7 +159,7 @@ RULES = [
         map_input_stream=chunk_json_stream,
         map_init_function=impression_stats_init,
         blacklisted=True,
-        parts_preprocess=[clean_data, parse_date, parse_locale, parse_ip, filter_blacklist, parse_ua, parse_tiles],
+        parts_preprocess=[clean_data, parse_date, parse_locale, check_locale_whitelist, parse_ip, filter_blacklist, parse_ua, parse_tiles],
         geoip_file=GEOIP,
         partitions=32,
         sort_buffer_size='25%',
@@ -191,7 +192,7 @@ RULES = [
         rule_cleanup=report_rule_stats,
         map_input_stream=chunk_json_stream,
         map_init_function=impression_stats_init,
-        parts_preprocess=[parse_batch, partial(clean_data, imps=False), parse_date, parse_ip,
+        parts_preprocess=[parse_batch, partial(clean_data, imps=False), parse_locale, parse_date, parse_ip,
                           parse_ua, create_timestamp_str],
         geoip_file=GEOIP,
         partitions=32,
@@ -276,7 +277,7 @@ RULES = [
         rule_cleanup=report_rule_stats,
         map_input_stream=chunk_json_stream,
         map_init_function=impression_stats_init,
-        parts_preprocess=[parse_batch, partial(clean_data, imps=False), parse_date, parse_ip, parse_ua],
+        parts_preprocess=[parse_batch, partial(clean_data, imps=False), parse_locale, parse_date, parse_ip, parse_ua],
         geoip_file=GEOIP,
         partitions=32,
         sort_buffer_size='25%',
@@ -324,7 +325,7 @@ RULES = [
                            'profile_creation_date',
                            'locale', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
-                parts_preprocess=[ping_centre_main_filter,
+                parts_preprocess=[ping_centre_main_filter, parse_locale,
                                   partial(validate_uuid4, fields=["client_id"]),
                                   clean_ping_centre_main],
                 table='ping_centre_main',
@@ -334,7 +335,7 @@ RULES = [
                            'locale', 'date', 'country_code', 'os', 'browser', 'version', 'device',
                            'release_channel'],
                 value_parts=[],  # no value_parts for this keyset
-                parts_preprocess=[activity_stream_mobile_session_filter, clean_activity_stream_mobile_session],
+                parts_preprocess=[activity_stream_mobile_session_filter, parse_locale, clean_activity_stream_mobile_session],
                 table='activity_stream_mobile_stats_daily',
             ),
             'activity_stream_mobile_event_stats': Keyset(
@@ -342,7 +343,7 @@ RULES = [
                            'app_version', 'locale', 'page', 'country_code', 'os', 'browser', 'version', 'device',
                            'release_channel'],
                 value_parts=[],  # no value_parts for this keyset
-                parts_preprocess=[activity_stream_mobile_event_filter, clean_activity_stream_mobile_event],
+                parts_preprocess=[activity_stream_mobile_event_filter, parse_locale, clean_activity_stream_mobile_event],
                 table='activity_stream_mobile_events_daily',
             ),
             'firefox_onboarding_session_stats': Keyset(
@@ -350,7 +351,7 @@ RULES = [
                            'event', 'category', 'tour_source', 'tour_type',
                            'receive_at', 'locale', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=["impression"],
-                parts_preprocess=[firefox_onboarding_session_filter,
+                parts_preprocess=[firefox_onboarding_session_filter, parse_locale,
                                   partial(validate_uuid4, fields=["client_id"]),
                                   clean_firefox_onboarding_session],
                 table='firefox_onboarding_sessions_daily',
@@ -360,7 +361,7 @@ RULES = [
                            'receive_at', 'locale', 'date', 'country_code', 'os', 'browser', 'version', 'device',
                            'timestamp', 'tour_type', 'tour_source', 'bubble_state', 'notification_state'],
                 value_parts=["impression"],
-                parts_preprocess=[firefox_onboarding_event_filter,
+                parts_preprocess=[firefox_onboarding_event_filter, parse_locale,
                                   partial(validate_uuid4, fields=["client_id"]),
                                   clean_firefox_onboarding_event],
                 table='firefox_onboarding_events_daily',
@@ -371,7 +372,7 @@ RULES = [
                            'timestamp', 'tour_type', 'type', 'width', 'target_tour_id', 'release_channel',
                            'receive_at', 'locale', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
-                parts_preprocess=[firefox_onboarding_event_filter_v2,
+                parts_preprocess=[firefox_onboarding_event_filter_v2, parse_locale,
                                   partial(validate_uuid4, fields=["client_id"]),
                                   clean_firefox_onboarding_event_v2],
                 table='firefox_onboarding_events2_daily',
@@ -381,10 +382,18 @@ RULES = [
                            "receive_at", "release_channel", "shield_id", "date",
                            "locale", "country_code", "os", "browser", "version", "device"],
                 value_parts=[],  # no value_parts for this keyset
-                parts_preprocess=[activity_stream_router_event_filter,
+                parts_preprocess=[activity_stream_router_event_filter, parse_locale,
                                   partial(validate_uuid4, fields=["impression_id"]),
                                   clean_assa_router_event],
                 table='assa_router_events_daily',
+            ),
+            'watchdog_proxy_events_stats': Keyset(
+                key_parts=["receive_at", "date", "event", "consumer_name", "watchdog_id", "type", "poller_id",
+                           "items_in_queue", "items_in_progress", "items_in_waiting", "photodna_tracking_id",
+                           "worker_id", "is_match", "is_error", "timing_sent", "timing_received", "timing_submitted"],
+                value_parts=[],  # no value_parts for this keyset
+                parts_preprocess=[watchdog_proxy_events_filter, clean_watchdog_proxy_event],
+                table='watchdog_proxy_events_daily',
             )
         },
     ),

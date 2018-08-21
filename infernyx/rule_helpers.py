@@ -8,9 +8,6 @@ def clean_data(parts, params, imps=True):
             ip = parts['ip'].split(',')[0].strip()
             assert params.ip_pattern.match(ip)
         assert datetime.datetime.fromtimestamp(parts['timestamp'] / 1000.0)
-        parts['locale'] = parts['locale'][:12]
-        # make sure locale starts with alphabetic characters only
-        assert parts['locale'][0].isalpha()
         if parts.get('action'):
             parts['action'] = parts['action'][:254]
         yield parts
@@ -50,7 +47,16 @@ def parse_time(parts, params):
 
 
 def parse_locale(parts, params):
-    # skip illegal locales
+    try:
+        parts['locale'] = parts['locale'][:12]
+        # make sure locale starts with alphabetic characters only
+        assert parts['locale'][0].isalpha()
+    except:
+        pass
+
+
+def check_locale_whitelist(parts, params):
+    # skip locales that are not on the whitelist
     try:
         if parts['locale'].lower() in params.locale_whitelist:
             yield parts
@@ -807,6 +813,42 @@ def clean_assa_router_event(parts, params):
             # This is necessary as Disco doesn't support "null"/"None" in the key part
             if parts.get(f, None) is None:
                 parts[f] = "n/a"
+
+        yield parts
+    except Exception:
+        pass
+
+
+def watchdog_proxy_events_filter(parts, params):
+    if "watchdog-proxy" == parts.get("topic", ""):
+        yield parts
+
+
+def clean_watchdog_proxy_event(parts, params):
+    try:
+        # check those required fields
+        assert parts["event"]
+
+        for f in ['consumer_name', 'watchdog_id', 'type', 'poller_id', 'photodna_tracking_id',
+                  'worker_id']:
+            # Populate the optional fields with default values if they are missing or with value "null"
+            # This is necessary as Disco doesn't support "null"/"None" in the key part
+            if parts.get(f, None) is None:
+                parts[f] = "n/a"
+
+        # check those optional integer fields
+        for f in ['items_in_queue', 'items_in_progress', 'items_in_waiting', 'timing_sent',
+                  'timing_received', 'timing_submitted']:
+            if parts.get(f, None) is None:
+                parts[f] = -1
+            else:
+                parts[f] = int(round(parts[f]))
+                if parts[f] >= 2 ** 31:
+                    parts[f] = -1
+
+        # check those optional boolean fields, set it to False if missing
+        for f in ['is_match', 'is_error']:
+            parts[f] = bool(parts.get(f))
 
         yield parts
     except Exception:
