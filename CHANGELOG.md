@@ -1,3 +1,7 @@
+0.2.14
+======
+* process watchdog-proxy event ping
+
 0.2.13
 ======
 * process topsites_search_shortcuts for assa_sessions_daily
