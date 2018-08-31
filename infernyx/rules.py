@@ -383,7 +383,7 @@ RULES = [
                            "locale", "country_code", "os", "browser", "version", "device"],
                 value_parts=[],  # no value_parts for this keyset
                 parts_preprocess=[activity_stream_router_event_filter, parse_locale,
-                                  partial(validate_uuid4, fields=["impression_id"]),
+                                  partial(validate_uuid4, fields=["impression_id", "client_id"]),
                                   clean_assa_router_event],
                 table='assa_router_events_daily',
             ),
