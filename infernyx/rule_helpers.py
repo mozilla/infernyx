@@ -798,6 +798,9 @@ def clean_assa_router_event(parts, params):
         assert parts["addon_version"]
         assert parts["event"]
         assert parts["action"]
+        # treat client_id as impression_id if it's a valid uuid
+        if parts.get("client_id", "n/a") != "n/a":
+            parts["impression_id"] = parts["client_id"]
         # action is the actual source since source is now hardcoded in the current implementation
         parts["source"] = parts["action"]
         assert parts["message_id"]

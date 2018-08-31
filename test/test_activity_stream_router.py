@@ -101,3 +101,13 @@ class TestActivityStreamRouter(unittest.TestCase):
                 # other "value" types should remain the same
                 parts = clean_assa_router_event(line, self.params).next()
                 self.assertEqual(parts["value"], value)
+
+    def test_clean_assa_router_event_for_client_id(self):
+        line = self.EVENT_PINGS[0].copy()
+        line["client_id"] = UUID[0]
+        parts = clean_assa_router_event(line, self.params).next()
+        self.assertEqual(parts["impression_id"], line["client_id"])
+
+        line["client_id"] = "n/a"
+        parts = clean_assa_router_event(line, self.params).next()
+        self.assertEqual(parts["impression_id"], line["impression_id"])
