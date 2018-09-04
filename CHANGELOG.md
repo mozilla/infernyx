@@ -1,3 +1,7 @@
+0.2.16
+======
+* treat client_id as impression_id if it's present in activity stream router pings
+
 0.2.15
 ======
 * fix parse_locale
