@@ -228,6 +228,7 @@ RULES = [
             'activity_stream_event_stats': Keyset(
                 key_parts=['client_id', 'addon_version', 'source', 'session_id', 'page', 'action_position',
                            'event', 'locale', 'user_prefs', 'release_channel', 'shield_id', 'value',
+                           'profile_creation_date',
                            'receive_at', 'date', 'country_code', 'os', 'browser', 'version', 'device'],
                 value_parts=[],  # no value_parts for this keyset
                 parts_preprocess=[assa_event_filter,

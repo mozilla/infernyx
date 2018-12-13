@@ -67,6 +67,7 @@ def generate_event_payload():
         "event": random.choice(EVENT),
         "source": random.choice(SOURCE),
         "action_position": "1",
+        "profile_creation_date": 16587,
         "value": {
             "card_type": "bookmark",
             "icon_type": "screenshot"
@@ -271,14 +272,14 @@ class TestActivityStreamSystemAddon(unittest.TestCase):
             self.assertRaises(StopIteration, ret.next)
 
         # test the filter on the numeric fields with invalid values
-        for field_name in ["user_prefs"]:
+        for field_name in ["user_prefs", "profile_creation_date"]:
             line = self.EVENT_PINGS[0].copy()
             line[field_name] = 2 ** 32
             parts = clean_assa_event(line, self.params).next()
             self.assertEquals(parts[field_name], -1)
 
         # test the filter on the numeric fields with invalid values
-        for field_name in ["user_prefs"]:
+        for field_name in ["user_prefs", "profile_creation_date"]:
             line = self.EVENT_PINGS[0].copy()
             line[field_name] = 100.4
             parts = clean_assa_event(line, self.params).next()

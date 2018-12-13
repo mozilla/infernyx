@@ -682,7 +682,7 @@ def clean_assa_event(parts, params):
                 parts[f] = "n/a"
 
         # check those optional integer fields
-        for f in ["user_prefs"]:
+        for f in ["user_prefs", "profile_creation_date"]:
             if parts.get(f, None) is None:
                 parts[f] = -1
             else:
