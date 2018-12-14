@@ -1,3 +1,7 @@
+0.2.17
+======
+* process profile_creation_date for assa_events_daily
+
 0.2.16
 ======
 * treat client_id as impression_id if it's present in activity stream router pings
