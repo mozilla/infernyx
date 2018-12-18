@@ -1,3 +1,7 @@
+0.2.18
+======
+* filter out PERSONALIZATION_V1_ITEM_RELEVANCE_SCORE_DURATION for activity stream performance pings
+
 0.2.17
 ======
 * process profile_creation_date for assa_events_daily
