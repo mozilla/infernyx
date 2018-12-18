@@ -316,6 +316,12 @@ class TestActivityStreamSystemAddon(unittest.TestCase):
             ret = clean_assa_event(line, self.params)
             self.assertRaises(StopIteration, ret.next)
 
+    def test_special_filter_for_assa_performance(self):
+        line = self.PERFORMANCE_PINGS[0].copy()
+        line["event"] = "PERSONALIZATION_V1_ITEM_RELEVANCE_SCORE_DURATION"
+        ret = assa_performance_filter(line, self.params)
+        self.assertRaises(StopIteration, ret.next)
+
     def test_clean_assa_performance(self):
         self.assertIsNotNone(clean_assa_performance(self.PERFORMANCE_PINGS[0], self.params).next())
 

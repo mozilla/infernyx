@@ -563,7 +563,9 @@ def assa_event_filter(parts, params):
 
 def assa_performance_filter(parts, params):
     if "activity_stream_performance_event" == parts.get("action", ""):
-        yield parts
+        # TODO: remove this filter once #1515163 is fixed
+        if parts.get("event", "") != "PERSONALIZATION_V1_ITEM_RELEVANCE_SCORE_DURATION":
+            yield parts
 
 
 def assa_masga_filter(parts, params):
