@@ -1,3 +1,7 @@
+0.2.19
+======
+* stop the duplication of activity stream session pings
+
 0.2.18
 ======
 * filter out PERSONALIZATION_V1_ITEM_RELEVANCE_SCORE_DURATION for activity stream performance pings
