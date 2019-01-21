@@ -259,7 +259,7 @@ RULES = [
             'activity_stream_impression_stats': Keyset(
                 key_parts=['client_id', 'addon_version', 'page', 'source', 'date', 'position', 'locale', 'tile_id',
                            'user_prefs', 'country_code', 'os', 'browser', 'version', 'device', 'blacklisted',
-                           'release_channel', 'shield_id', 'hour', 'minute', 'region'],
+                           'release_channel', 'shield_id', 'hour', 'minute', 'region', 'receive_at'],
                 value_parts=['impressions', 'clicks', 'pinned', 'blocked', 'pocketed'],
                 parts_preprocess=[assa_impression_filter,
                                   partial(validate_uuid4, fields=["client_id"]),
