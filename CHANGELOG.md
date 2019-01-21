@@ -1,3 +1,8 @@
+0.2.20
+======
+* drop the filter on `source` for assa_impression_stats_daily
+* store `receive_at` for assa_impression_stats_daily
+
 0.2.19
 ======
 * stop the duplication of activity stream session pings
