@@ -762,11 +762,6 @@ def clean_assa_impression(parts, params):
         assert parts["addon_version"]
         assert parts["page"]
 
-        if parts.get("source"):
-            # Temporarily exclude all the impression pings from non-topstories sources, see Github issue #102
-            # This is already fixed in AS, we still need this hot fix for the old versions of AS.
-            assert parts["source"] == "TOP_STORIES"
-
         for f in ['source', 'release_channel', 'shield_id', 'region']:
             # Populate the optional fields with default values if they are missing or with value "null"
             # This is necessary as Disco doesn't support "null"/"None" in the key part
