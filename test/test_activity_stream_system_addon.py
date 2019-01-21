@@ -404,12 +404,6 @@ class TestActivityStreamSystemAddon(unittest.TestCase):
             ret = clean_assa_impression(line, self.params)
             self.assertRaises(StopIteration, ret.next)
 
-        # test the non-topstories source should be rejected
-        line = self.IMPRESSION_PINGS[0].copy()
-        line["source"] = "HIGHLIGHTS"
-        ret = clean_assa_impression(line, self.params)
-        self.assertRaises(StopIteration, ret.next)
-
         # test the filter on the optional fields
         for field_name in ["source", "release_channel", "shield_id", "region"]:
             line = self.IMPRESSION_PINGS[0].copy()
