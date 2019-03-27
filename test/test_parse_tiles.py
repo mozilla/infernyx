@@ -71,6 +71,29 @@ class TestParseTiles(unittest.TestCase):
 
             self.assertEqual(total_imp, imp_count)
 
+    def test_parse_tiles_loaded(self):
+        loaded_pings = [
+            {u'tiles': [{u'id': 518}, {u'id': 519}, {u'id': 594}, {u'id': 520}, {u'id': 521}, {u'id': 522}],
+             u'loaded': 6,
+             u'locale': u'pt-BR', u'ip': u'124.179.24.69', u'timestamp': 1420648352586, u'date': u'2015-01-07',
+             u'ua': u'Mozilla/5.0 (Windows NT 6.1; rv:34.0) Gecko/20100101 Firefox/34.0'},
+            {u'tiles': [{}], u'loaded': 0, u'locale': u'ru', u'ip': u'170.79.137.117', u'timestamp': 1420648352583,
+             u'date': u'2015-01-07', u'ua': u'Mozilla/5.0 (Windows NT 6.1; rv:34.0) Gecko/20100101 Firefox/34.0'},
+            {u'tiles': [{}, {u'id': 518}, {u'id': 519}, {u'id': 594}, {u'id': 520}, {u'id': 521}, {u'id': 522},
+                            {u'id': 523}, {u'id': 524}, {u'id': 525}, {u'id': 526}, {}, {}],
+             u'click': 1,
+             u'locale': u'pt-BR', u'ip': u'124.179.24.69', u'timestamp': 1420648352586, u'date': u'2015-01-07',
+             u'ua': u'Mozilla/5.0 (Windows NT 6.1; rv:34.0) Gecko/20100101 Firefox/34.0'}
+        ]
+        total_loads = [6, 0, 0]
+        for loaded, expected in zip(loaded_pings, total_loads):
+            loaded_count = 0
+            for tile in parse_tiles(loaded, None):
+                if tile.get('tile_id') is not None:
+                    loaded_count += tile['loaded']
+
+            self.assertEqual(expected, loaded_count)
+
     def test_parse_tiles_urls(self):
         imps = [
             {u'tiles': [{}, {u'id': 518}, {u'id': 519}, {u'id': 594}, {u'id': 520}, {u'id': 521}, {u'id': 522},
