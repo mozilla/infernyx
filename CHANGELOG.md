@@ -1,3 +1,7 @@
+0.2.21
+======
+* process loaded ping for assa_impression_stats_daily
+
 0.2.20
 ======
 * drop the filter on `source` for assa_impression_stats_daily
