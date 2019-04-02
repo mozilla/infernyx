@@ -260,7 +260,7 @@ RULES = [
                 key_parts=['client_id', 'addon_version', 'page', 'source', 'date', 'position', 'locale', 'tile_id',
                            'user_prefs', 'country_code', 'os', 'browser', 'version', 'device', 'blacklisted',
                            'release_channel', 'shield_id', 'hour', 'minute', 'region', 'receive_at'],
-                value_parts=['impressions', 'clicks', 'pinned', 'blocked', 'pocketed'],
+                value_parts=['impressions', 'clicks', 'pinned', 'blocked', 'pocketed', 'loaded'],
                 parts_preprocess=[assa_impression_filter,
                                   partial(validate_uuid4, fields=["client_id"]),
                                   clean_assa_impression, parse_tiles, parse_time],

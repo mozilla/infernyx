@@ -110,7 +110,7 @@ def parse_tiles(parts, params):
     position = None
     vals = {'clicks': 0, 'impressions': 0, 'pinned': 0, 'blocked': 0,
             'sponsored': 0, 'sponsored_link': 0, 'newtabs': 0, 'enhanced': False,
-            'pocketed': 0}
+            'pocketed': 0, 'loaded': 0}
     view = parts.get('view', sys.maxint)
 
     try:
@@ -140,6 +140,8 @@ def parse_tiles(parts, params):
             position = parts['sponsored_link']
             vals['sponsored_link'] = one
             tiles = [tiles[position]]
+        elif parts.get('loaded') is not None:
+            vals['loaded'] = one
         else:
             vals['impressions'] = one
             cparts = parts.copy()
