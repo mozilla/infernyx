@@ -1,3 +1,7 @@
+0.2.22
+======
+* Increase the value range for `tile_id` for Pocket
+
 0.2.21
 ======
 * process loaded ping for assa_impression_stats_daily
