@@ -175,7 +175,7 @@ def parse_tiles(parts, params):
                 cparts['url'] = url
 
             tile_id = tile.get('id')
-            if tile_id is not None and isinstance(tile_id, int) and tile_id < 1000000 and slot <= view:
+            if tile_id is not None and isinstance(tile_id, int) and tile_id < 100000000 and slot <= view:
                 cparts['tile_id'] = tile_id
             yield cparts
     except:
